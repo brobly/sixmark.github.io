@@ -1120,7 +1120,7 @@
 
         .hf-panel-title {
             color: #333;
-            margin-bottom: 10px;
+            margin-bottom: 0;
             font-size: 1rem;
             font-weight: 600;
         }
@@ -1199,6 +1199,137 @@
         .hf-refresh-btn:hover {
             background: #5a3d7a;
             transform: translateY(-1px);
+        }
+
+        /* 抽號模式樣式 */
+        .hf-draw-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed rgba(118, 75, 162, 0.3);
+        }
+
+        .draw-mode-select-sm {
+            padding: 5px 10px;
+            border: 1px solid #764ba2;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            color: #333;
+            background: white;
+            cursor: pointer;
+        }
+
+        .draw-mode-select-sm:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(118, 75, 162, 0.2);
+        }
+
+        .draw-mode-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .draw-mode-option label {
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        .complex-count-select-sm {
+            padding: 5px 8px;
+            border: 1px solid #e83e8c;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            color: #333;
+            background: white;
+            cursor: pointer;
+        }
+
+        .complex-count-select-sm:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(232, 62, 140, 0.2);
+        }
+
+        .core-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #764ba2;
+        }
+
+        .core-checkbox-label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #764ba2;
+        }
+
+        .smart-core-select-sm {
+            padding: 5px 8px;
+            border: 1px solid #fd7e14;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            color: #333;
+            background: white;
+            cursor: pointer;
+        }
+
+        .smart-core-select-sm:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(253, 126, 20, 0.2);
+        }
+
+        .hf-draw-result-label {
+            margin-bottom: 8px;
+        }
+
+        /* 聰明組合多注顯示 */
+        .smart-bets-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .smart-bet-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            background: rgba(118, 75, 162, 0.05);
+            border-radius: 6px;
+            border-left: 3px solid #764ba2;
+        }
+
+        .smart-bet-row.has-remainder {
+            border-left-color: #fd7e14;
+            background: rgba(253, 126, 20, 0.05);
+        }
+
+        .smart-bet-label {
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #764ba2;
+            min-width: 50px;
+        }
+
+        .smart-bet-row.has-remainder .smart-bet-label {
+            color: #fd7e14;
+        }
+
+        .smart-bet-numbers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .hf-ball--core {
+            background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%) !important;
+            box-shadow: 0 2px 8px rgba(253, 126, 20, 0.4);
         }
 
         .hf-history-header {
@@ -1407,6 +1538,133 @@
         .filter-btn {
             margin-top: 10px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* 下10期按鈕樣式 */
+        .next-period-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .next-period-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(238, 90, 36, 0.3);
+        }
+
+        /* 高頻號碼篩選模式選擇器樣式（緊湊內聯版） */
+        .hf-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .hf-mode-inline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-mode-select-sm {
+            padding: 5px 10px;
+            border: 1px solid #667eea;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            color: #333;
+            background: white;
+            cursor: pointer;
+        }
+
+        .filter-mode-select-sm:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .filter-count-select-sm {
+            padding: 5px 8px;
+            border: 1px solid #20c997;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            color: #333;
+            background: white;
+            cursor: pointer;
+        }
+
+        .filter-count-select-sm:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(32, 201, 151, 0.2);
+        }
+
+        /* 排名+搭配模式顯示樣式 */
+        .hf-pairing-display {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .hf-pairing-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .hf-pairing-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .hf-pairing-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .hf-pairing-rank {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #667eea;
+            min-width: 50px;
+        }
+
+        .hf-pairing-arrow {
+            color: #20c997;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .hf-pairing-no-pair {
+            font-size: 0.8rem;
+            color: #999;
+            font-style: italic;
+        }
+
+        .hf-pairing-summary {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .hf-pairing-summary strong {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
         }
 
         /* 派彩獎金彈窗樣式 */
@@ -2213,6 +2471,40 @@
             color: #999;
         }
 
+        /* 歷史記錄聰明組合多注樣式 */
+        .hf-history-smart-bets {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 4px;
+        }
+
+        .hf-history-bet-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 6px;
+            background: rgba(118, 75, 162, 0.05);
+            border-radius: 4px;
+            border-left: 2px solid #764ba2;
+        }
+
+        .hf-history-bet-row--remainder {
+            border-left-color: #fd7e14;
+            background: rgba(253, 126, 20, 0.05);
+        }
+
+        .hf-history-bet-label {
+            font-size: 10px;
+            font-weight: bold;
+            color: #764ba2;
+            min-width: 40px;
+        }
+
+        .hf-history-bet-row--remainder .hf-history-bet-label {
+            color: #fd7e14;
+        }
+
         /* 高頻號碼容器 */
         .hf-top-item {
             display: flex;
@@ -2456,6 +2748,7 @@
                             </div>
 
                             <div class="quick-select">
+                                <button class="next-period-btn" onclick="shiftRangeForward('stats')">下10期 ➡️</button>
                                 <button class="quick-btn" onclick="setQuickRange(1, 10)">近10期</button>
                                 <button class="quick-btn" onclick="setQuickRange(1, 20)">近20期</button>
                                 <button class="quick-btn" onclick="setQuickRange(1, 30)">近30期</button>
@@ -2473,7 +2766,41 @@
                             <div class="hf-flex-container">
                                 <!-- 左側：當前篩選結果 -->
                                 <div class="hf-panel">
-                                    <h4 class="hf-panel-title">📊 高頻號碼篩選結果</h4>
+                                    <div class="hf-panel-header">
+                                        <h4 class="hf-panel-title">📊 高頻號碼篩選結果</h4>
+                                        <div class="hf-mode-inline">
+                                            <select id="filter-mode-select" class="filter-mode-select-sm" onchange="updateFilterModeDescription()">
+                                                <option value="default">預設模式</option>
+                                                <option value="rank">排名模式</option>
+                                                <option value="rank_with_pair">排名+搭配</option>
+                                            </select>
+                                            <select id="filter-count-select" class="filter-count-select-sm">
+                                                <option value="3">3個</option>
+                                                <option value="4">4個</option>
+                                                <option value="5">5個</option>
+                                                <option value="6" selected>6個</option>
+                                                <option value="7">7個</option>
+                                                <option value="8">8個</option>
+                                                <option value="9">9個</option>
+                                                <option value="10">10個</option>
+                                                <option value="11">11個</option>
+                                                <option value="12">12個</option>
+                                                <option value="13">13個</option>
+                                                <option value="14">14個</option>
+                                                <option value="15">15個</option>
+                                                <option value="16">16個</option>
+                                                <option value="17">17個</option>
+                                                <option value="18">18個</option>
+                                                <option value="19">19個</option>
+                                                <option value="20">20個</option>
+                                                <option value="25">25個</option>
+                                                <option value="30">30個</option>
+                                                <option value="35">35個</option>
+                                                <option value="40">40個</option>
+                                                <option value="49">49個</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                     <div class="hf-filter-info">
                                         <strong>篩選條件：</strong>
                                         <span id="filter-threshold-info" class="hf-highlight-text"></span>
@@ -2489,7 +2816,45 @@
                                         <div id="probability-info" class="hf-probability-info"></div>
                                     </div>
                                     <div class="hf-result-box-purple">
-                                        <strong>隨機抽取 6 個號碼：</strong>
+                                        <div class="hf-draw-header">
+                                            <strong>抽號模式：</strong>
+                                            <select id="draw-mode-select" class="draw-mode-select-sm" onchange="updateDrawModeUI()">
+                                                <option value="single">單式（6個號碼）</option>
+                                                <option value="complex">復式（7-15個號碼）</option>
+                                                <option value="smart">聰明組合</option>
+                                            </select>
+                                            
+                                            <!-- 復式模式：數量選擇器 -->
+                                            <div id="complex-count-container" class="draw-mode-option" style="display: none;">
+                                                <label>號碼數量：</label>
+                                                <select id="complex-count-select" class="complex-count-select-sm" onchange="onComplexCountChange()">
+                                                    <option value="7">7個</option>
+                                                    <option value="8">8個</option>
+                                                    <option value="9">9個</option>
+                                                    <option value="10">10個</option>
+                                                    <option value="11">11個</option>
+                                                    <option value="12">12個</option>
+                                                    <option value="13">13個</option>
+                                                    <option value="14">14個</option>
+                                                    <option value="15">15個</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <!-- 聰明組合模式：核心號碼選項 -->
+                                            <div id="smart-core-container" class="draw-mode-option" style="display: none;">
+                                                <label class="core-checkbox-label">
+                                                    <input type="checkbox" id="smart-core-checkbox" onchange="updateSmartCoreUI()">
+                                                    核心號碼
+                                                </label>
+                                                <select id="smart-core-number" class="smart-core-select-sm" style="display: none;" onchange="onSmartCoreNumberChange()">
+                                                    <!-- 選項會根據高頻號碼動態生成 -->
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="hf-draw-result-label">
+                                            <strong id="draw-result-title">隨機抽取 6 個號碼：</strong>
+                                        </div>
                                         <div id="random-6-numbers" class="hf-random-numbers"></div>
                                         <button onclick="refreshRandom6()" class="hf-refresh-btn">🔄 重新隨機抽取</button>
                                     </div>
@@ -2622,6 +2987,7 @@
                             </div>
 
                             <div class="quick-select">
+                                <button class="next-period-btn" onclick="shiftRangeForward('verification')">下10期 ➡️</button>
                                 <button class="quick-btn" onclick="setVerificationQuickRange(1, 10)">近10期</button>
                                 <button class="quick-btn" onclick="setVerificationQuickRange(1, 20)">近20期</button>
                                 <button class="quick-btn" onclick="setVerificationQuickRange(1, 30)">近30期</button>
@@ -2717,6 +3083,7 @@
 
         // 嵌入真實六合彩數據
         const lotteryData = [
+        {draw_number: "25/129", draw_date: "2025-12-13", numbers: [10, 17, 19, 28, 45, 49], extra_number: 1},
         {draw_number: "25/128", draw_date: "2025-12-11", numbers: [1, 5, 6, 25, 30, 42], extra_number: 43},
         {draw_number: "25/127", draw_date: "2025-12-06", numbers: [4, 6, 26, 28, 34, 40], extra_number: 25},
         {draw_number: "25/126", draw_date: "2025-12-02", numbers: [6, 18, 29, 34, 37, 38], extra_number: 39},
@@ -3395,6 +3762,66 @@ console.log('lotteryData', lotteryData.length);
             document.getElementById('start-period').value = start;
             document.getElementById('end-period').value = end;
             updateRangeInfo();
+        }
+
+        // 下10期按鈕功能 - 將範圍向前移動1期
+        function shiftRangeForward(type) {
+            let startInput, endInput, updateFunc;
+            
+            if (type === 'stats') {
+                startInput = document.getElementById('start-period');
+                endInput = document.getElementById('end-period');
+                updateFunc = updateRangeInfo;
+            } else if (type === 'verification') {
+                startInput = document.getElementById('verification-start-period');
+                endInput = document.getElementById('verification-end-period');
+                updateFunc = updateVerificationRangeInfo;
+            }
+            
+            const currentStart = parseInt(startInput.value) || 1;
+            const currentEnd = parseInt(endInput.value) || 1;
+            const maxPeriods = lotteryData.length;
+            
+            // 計算新的範圍（向前移動1期）
+            const newStart = currentStart + 1;
+            const newEnd = currentEnd + 1;
+            
+            // 檢查是否超出範圍
+            if (newEnd > maxPeriods) {
+                alert(`已達到最大期數範圍！目前最大期數為 ${maxPeriods}`);
+                return;
+            }
+            
+            // 更新輸入框的值
+            startInput.value = newStart;
+            endInput.value = newEnd;
+            
+            // 更新範圍資訊
+            updateFunc();
+            
+            // 如果是核對中獎頁面，立即更新統計
+            if (type === 'verification' && document.getElementById('verification').classList.contains('active')) {
+                loadVerification();
+            }
+
+            filterHighFrequencyNumbers();
+        }
+
+        // 更新篩選模式說明
+        function updateFilterModeDescription() {
+            const modeSelect = document.getElementById('filter-mode-select');
+            const countSelect = document.getElementById('filter-count-select');
+            
+            const mode = modeSelect.value;
+            
+            // 預設模式下禁用數量選擇
+            if (mode === 'default') {
+                countSelect.disabled = true;
+                countSelect.style.opacity = '0.5';
+            } else {
+                countSelect.disabled = false;
+                countSelect.style.opacity = '1';
+            }
         }
 
         // 更新範圍資訊顯示
@@ -4840,6 +5267,10 @@ console.log('lotteryData', lotteryData.length);
                 return;
             }
 
+            // 取得篩選模式
+            const filterMode = document.getElementById('filter-mode-select').value;
+            const filterCount = parseInt(document.getElementById('filter-count-select').value) || 6;
+
             // 計算號碼統計
             const numberFreq = {};
 
@@ -4872,19 +5303,79 @@ console.log('lotteryData', lotteryData.length);
             // 計算門檻值（一半次數）
             const threshold = Math.floor(maxFrequency / 2);
 
-            // 篩選出符合條件的號碼
+            // 根據模式篩選號碼
             currentFilteredNumbers = [];
-            for (let num = 1; num <= 49; num++) {
-                if (numberFreq[num] >= threshold) {
-                    currentFilteredNumbers.push(num);
+            let modeDescription = '';
+
+            if (filterMode === 'default') {
+                // 預設模式：篩選出現次數 >= 門檻值的號碼
+                for (let num = 1; num <= 49; num++) {
+                    if (numberFreq[num] >= threshold) {
+                        currentFilteredNumbers.push(num);
+                    }
                 }
+                // 排序（按號碼大小）
+                currentFilteredNumbers.sort((a, b) => a - b);
+                modeDescription = `預設模式 - 門檻值 ${threshold} 次`;
+            } else if (filterMode === 'rank') {
+                // 排名模式：按頻率排名選取指定數量的號碼
+                const sortedNumbers = Object.entries(numberFreq)
+                    .map(([num, freq]) => ({ number: parseInt(num), frequency: freq }))
+                    .sort((a, b) => b.frequency - a.frequency);
+                
+                // 取前N個號碼
+                currentFilteredNumbers = sortedNumbers.slice(0, filterCount).map(item => item.number);
+                // 按號碼大小排序以便顯示
+                currentFilteredNumbers.sort((a, b) => a - b);
+                modeDescription = `排名模式 - 選取頻率前 ${filterCount} 名`;
+            } else if (filterMode === 'rank_with_pair') {
+                // 排名+搭配模式：先選取排名前N的號碼，再加上常搭配的號碼（不重複）
+                const sortedNumbers = Object.entries(numberFreq)
+                    .map(([num, freq]) => ({ number: parseInt(num), frequency: freq }))
+                    .sort((a, b) => b.frequency - a.frequency);
+                
+                // 計算共現矩陣
+                const coMatrix = calculateCoOccurrence(selectedData);
+                
+                // 先取前N個排名號碼
+                const rankNumbers = sortedNumbers.slice(0, filterCount).map(item => item.number);
+                const resultSet = new Set(rankNumbers);
+                
+                // 記錄每個排名號碼的最佳搭配
+                const pairingInfo = [];
+                
+                // 為每個排名號碼找到最常搭配的號碼（不重複）
+                for (const rankNum of rankNumbers) {
+                    const topCoOccurring = getTopCoOccurring(rankNum, coMatrix, 49);
+                    let bestPair = null;
+                    
+                    // 找到第一個不在結果集中的搭配號碼
+                    for (const co of topCoOccurring) {
+                        if (!resultSet.has(co.number)) {
+                            bestPair = co.number;
+                            resultSet.add(co.number);
+                            break;
+                        }
+                    }
+                    
+                    pairingInfo.push({
+                        rankNumber: rankNum,
+                        pairNumber: bestPair
+                    });
+                }
+                
+                currentFilteredNumbers = Array.from(resultSet);
+                // 按號碼大小排序以便顯示
+                currentFilteredNumbers.sort((a, b) => a - b);
+                
+                // 儲存搭配資訊供顯示使用
+                window.lastPairingInfo = pairingInfo;
+                
+                modeDescription = `排名+搭配模式 - 前 ${filterCount} 名 + 常搭配號碼`;
             }
 
-            // 排序（按號碼大小）
-            currentFilteredNumbers.sort((a, b) => a - b);
-
             // 顯示結果
-            displayFilterResults(startPeriod, endPeriod, maxFrequency, threshold, currentFilteredNumbers);
+            displayFilterResults(startPeriod, endPeriod, maxFrequency, threshold, currentFilteredNumbers, filterMode, modeDescription);
         }
 
         // 計算組合數 C(n, k)
@@ -5024,7 +5515,7 @@ console.log('lotteryData', lotteryData.length);
         }
 
         // 顯示篩選結果
-        function displayFilterResults(startPeriod, endPeriod, maxFrequency, threshold, filteredNumbers) {
+        function displayFilterResults(startPeriod, endPeriod, maxFrequency, threshold, filteredNumbers, filterMode = 'default', modeDescription = '') {
             const resultDiv = document.getElementById('high-frequency-result');
             const thresholdInfo = document.getElementById('filter-threshold-info');
             const filteredNumbersDiv = document.getElementById('filtered-numbers');
@@ -5035,8 +5526,18 @@ console.log('lotteryData', lotteryData.length);
             // 顯示結果區域
             resultDiv.style.display = 'block';
 
-            // 顯示篩選條件（包含篩選出數字的數量）
-            thresholdInfo.textContent = `期數範圍：第 ${startPeriod} 期 ~ 第 ${endPeriod} 期（共 ${endPeriod - startPeriod + 1} 期）｜最高出現次數：${maxFrequency} 次｜門檻值：${threshold} 次｜篩選出 ${filteredNumbers.length} 個號碼`;
+            // 根據模式顯示不同的篩選條件信息
+            let infoText = `期數範圍：第 ${startPeriod} 期 ~ 第 ${endPeriod} 期（共 ${endPeriod - startPeriod + 1} 期）`;
+            
+            if (filterMode === 'default') {
+                infoText += `｜最高出現次數：${maxFrequency} 次｜門檻值：${threshold} 次｜篩選出 ${filteredNumbers.length} 個號碼`;
+            } else if (filterMode === 'rank') {
+                infoText += `｜${modeDescription}｜篩選出 ${filteredNumbers.length} 個號碼`;
+            } else if (filterMode === 'rank_with_pair') {
+                infoText += `｜${modeDescription}｜篩選出 ${filteredNumbers.length} 個號碼`;
+            }
+            
+            thresholdInfo.textContent = infoText;
 
             // 顯示篩選出數字的數量
             filteredNumbersCountDiv.textContent = `（共 ${filteredNumbers.length} 個）`;
@@ -5169,26 +5670,314 @@ console.log('lotteryData', lotteryData.length);
                 filteredNumbersDiv.innerHTML = '<span class="hf-text--muted">無符合條件的號碼</span>';
                 random6Div.innerHTML = '<span class="hf-text--muted">無法抽取</span>';
             } else {
-                // 顯示所有符合條件的號碼（帶有圓形背景）
-                filteredNumbersDiv.innerHTML = filteredNumbers.map(num => 
-                    `<span class="hf-ball hf-ball--md hf-ball--primary">${num}</span>`
-                ).join('');
+                // 根據模式顯示號碼
+                if (filterMode === 'rank_with_pair' && window.lastPairingInfo) {
+                    // 排名+搭配模式：顯示排名號碼及其搭配號碼
+                    let numbersHtml = '<div class="hf-pairing-display">';
+                    numbersHtml += '<div class="hf-pairing-title">🏆 排名號碼與搭配號碼：</div>';
+                    numbersHtml += '<div class="hf-pairing-list">';
+                    
+                    window.lastPairingInfo.forEach((info, index) => {
+                        numbersHtml += `
+                            <div class="hf-pairing-item">
+                                <span class="hf-pairing-rank">第${index + 1}名</span>
+                                <span class="hf-ball hf-ball--md hf-ball--primary">${info.rankNumber}</span>
+                                ${info.pairNumber ? `
+                                    <span class="hf-pairing-arrow">→</span>
+                                    <span class="hf-ball hf-ball--md hf-ball--success">${info.pairNumber}</span>
+                                ` : '<span class="hf-pairing-no-pair">無可用搭配</span>'}
+                            </div>
+                        `;
+                    });
+                    
+                    numbersHtml += '</div>';
+                    numbersHtml += '<div class="hf-pairing-summary">';
+                    numbersHtml += '<strong>所有篩選號碼（去重後）：</strong>';
+                    numbersHtml += filteredNumbers.map(num => 
+                        `<span class="hf-ball hf-ball--md hf-ball--primary">${num}</span>`
+                    ).join('');
+                    numbersHtml += '</div></div>';
+                    
+                    filteredNumbersDiv.innerHTML = numbersHtml;
+                } else {
+                    // 其他模式：直接顯示號碼
+                    filteredNumbersDiv.innerHTML = filteredNumbers.map(num => 
+                        `<span class="hf-ball hf-ball--md hf-ball--primary">${num}</span>`
+                    ).join('');
+                }
 
-                // 隨機抽取 6 個號碼
-                const random6 = getRandom6(filteredNumbers);
-                random6Div.innerHTML = random6.map(num => 
-                    `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
-                ).join('');
+                // 更新核心號碼選項
+                updateSmartCoreOptions();
+                
+                // 根據抽獎模式抽取號碼
+                const drawMode = document.getElementById('draw-mode-select').value;
+                const drawResultTitle = document.getElementById('draw-result-title');
+                let drawnNumbers = [];
+                let displayHtml = '';
+                let drawModeInfo = null;
+                
+                if (drawMode === 'single') {
+                    // 單式：抽取6個號碼
+                    drawnNumbers = getRandom6(filteredNumbers);
+                    drawResultTitle.textContent = '隨機抽取 6 個號碼：';
+                    displayHtml = drawnNumbers.map(num => 
+                        `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
+                    ).join('');
+                    drawModeInfo = { mode: 'single' };
+                } else if (drawMode === 'complex') {
+                    // 復式：抽取7-15個號碼
+                    const count = parseInt(document.getElementById('complex-count-select').value);
+                    drawnNumbers = getRandomNumbers(filteredNumbers, count);
+                    drawResultTitle.textContent = `隨機抽取 ${count} 個號碼（復式）：`;
+                    displayHtml = drawnNumbers.map(num => 
+                        `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
+                    ).join('');
+                    drawModeInfo = { mode: 'complex', count: count };
+                } else if (drawMode === 'smart') {
+                    // 聰明組合：生成多注
+                    const hasCoreNumber = document.getElementById('smart-core-checkbox').checked;
+                    const coreNumber = document.getElementById('smart-core-number').value;
+                    
+                    const bets = generateSmartBets(filteredNumbers, hasCoreNumber, coreNumber);
+                    drawResultTitle.textContent = `聰明組合（共 ${bets.length} 注）：`;
+                    
+                    displayHtml = '<div class="smart-bets-container">';
+                    bets.forEach((bet, index) => {
+                        const rowClass = bet.isRemainder ? 'smart-bet-row has-remainder' : 'smart-bet-row';
+                        const labelText = bet.isRemainder ? `第${index + 1}注 *` : `第${index + 1}注`;
+                        
+                        displayHtml += `<div class="${rowClass}">`;
+                        displayHtml += `<span class="smart-bet-label">${labelText}</span>`;
+                        displayHtml += '<div class="smart-bet-numbers">';
+                        
+                        bet.numbers.forEach(num => {
+                            const ballClass = (bet.coreNumber !== null && num === bet.coreNumber) 
+                                ? 'hf-ball hf-ball--md hf-ball--core' 
+                                : 'hf-ball hf-ball--md hf-ball--secondary';
+                            displayHtml += `<span class="${ballClass}">${num}</span>`;
+                        });
+                        
+                        displayHtml += '</div>';
+                        if (bet.isRemainder) {
+                            displayHtml += `<span style="font-size: 0.75rem; color: #888;">(*含補充號碼)</span>`;
+                        }
+                        displayHtml += '</div>';
+                    });
+                    displayHtml += '</div>';
+                    
+                    // 對於聰明組合，drawnNumbers 保存所有不重複的號碼
+                    drawnNumbers = [...new Set(bets.flatMap(b => b.numbers))].sort((a, b) => a - b);
+                    drawModeInfo = { mode: 'smart', bets: bets, hasCoreNumber: hasCoreNumber, coreNumber: coreNumber };
+                }
+                
+                random6Div.innerHTML = displayHtml;
                 
                 // 添加到歷史記錄
-                addToFilterHistory(startPeriod, endPeriod, maxFrequency, threshold, filteredNumbers, random6);
+                addToFilterHistory(startPeriod, endPeriod, maxFrequency, threshold, filteredNumbers, drawnNumbers, filterMode, drawModeInfo);
             }
 
             // 滾動到結果區域
-            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            // resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        // 重新隨機抽取 6 個號碼
+        // 更新抽獎模式UI
+        function updateDrawModeUI() {
+            const drawMode = document.getElementById('draw-mode-select').value;
+            const complexContainer = document.getElementById('complex-count-container');
+            const smartCoreContainer = document.getElementById('smart-core-container');
+            const drawResultTitle = document.getElementById('draw-result-title');
+            
+            // 隱藏所有選項容器
+            complexContainer.style.display = 'none';
+            smartCoreContainer.style.display = 'none';
+            
+            // 根據模式顯示對應的選項
+            if (drawMode === 'single') {
+                drawResultTitle.textContent = '隨機抽取 6 個號碼：';
+            } else if (drawMode === 'complex') {
+                complexContainer.style.display = 'flex';
+                const count = document.getElementById('complex-count-select').value;
+                drawResultTitle.textContent = `隨機抽取 ${count} 個號碼（復式）：`;
+            } else if (drawMode === 'smart') {
+                smartCoreContainer.style.display = 'flex';
+                drawResultTitle.textContent = '聰明組合（多注）：';
+                // 更新核心號碼選項
+                updateSmartCoreOptions();
+            }
+            
+            // 如果有篩選結果，立即刷新顯示
+            if (currentFilteredNumbers.length > 0) {
+                refreshRandom6();
+            }
+        }
+        
+        // 更新聰明組合核心號碼UI
+        function updateSmartCoreUI() {
+            const checkbox = document.getElementById('smart-core-checkbox');
+            const coreNumberSelect = document.getElementById('smart-core-number');
+            
+            coreNumberSelect.style.display = checkbox.checked ? 'inline-block' : 'none';
+            
+            // 如果有篩選結果，立即刷新顯示
+            if (currentFilteredNumbers.length > 0) {
+                refreshRandom6();
+            }
+        }
+        
+        // 復式模式數量改變時
+        function onComplexCountChange() {
+            const count = document.getElementById('complex-count-select').value;
+            const drawResultTitle = document.getElementById('draw-result-title');
+            drawResultTitle.textContent = `隨機抽取 ${count} 個號碼（復式）：`;
+            
+            // 如果有篩選結果，立即刷新顯示
+            if (currentFilteredNumbers.length > 0) {
+                refreshRandom6();
+            }
+        }
+        
+        // 聰明組合核心號碼改變時
+        function onSmartCoreNumberChange() {
+            // 如果有篩選結果，立即刷新顯示
+            if (currentFilteredNumbers.length > 0) {
+                refreshRandom6();
+            }
+        }
+        
+        // 更新核心號碼選項（根據高頻號碼）
+        function updateSmartCoreOptions() {
+            const coreNumberSelect = document.getElementById('smart-core-number');
+            
+            // 保存當前選中的值
+            const previousValue = coreNumberSelect.value;
+            
+            coreNumberSelect.innerHTML = '';
+            
+            if (currentFilteredNumbers.length > 0) {
+                currentFilteredNumbers.forEach(num => {
+                    const option = document.createElement('option');
+                    option.value = num;
+                    option.textContent = num;
+                    coreNumberSelect.appendChild(option);
+                });
+                
+                // 如果之前選中的值仍然在新的選項中，恢復選擇
+                if (previousValue && currentFilteredNumbers.includes(parseInt(previousValue))) {
+                    coreNumberSelect.value = previousValue;
+                }
+            }
+        }
+        
+        // 從號碼池中隨機抽取指定數量的號碼
+        function getRandomNumbers(pool, count) {
+            if (pool.length < count) {
+                return [...pool]; // 如果池中號碼不夠，返回全部
+            }
+            const copy = [...pool];
+            // Fisher-Yates 洗牌算法
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy.slice(0, count).sort((a, b) => a - b);
+        }
+        
+        // 生成聰明組合注數
+        function generateSmartBets(pool, hasCoreNumber, coreNumber) {
+            const poolSize = pool.length;
+            const betsPerGroup = 6;
+            const bets = [];
+            
+            if (poolSize < 6) {
+                // 號碼不夠，直接返回一注
+                return [{ numbers: [...pool], isRemainder: true, coreNumber: null }];
+            }
+            
+            // 複製並打亂號碼池
+            const shuffled = [...pool];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            
+            // 如果有核心號碼，先從洗牌後的號碼中移除核心號碼
+            let coreNum = null;
+            if (hasCoreNumber && coreNumber) {
+                coreNum = parseInt(coreNumber);
+                const coreIndex = shuffled.indexOf(coreNum);
+                if (coreIndex !== -1) {
+                    shuffled.splice(coreIndex, 1);
+                }
+            }
+            
+            // 根據是否有核心號碼計算每注需要從池中取的號碼數
+            const numbersPerBetFromPool = coreNum !== null ? (betsPerGroup - 1) : betsPerGroup;
+            
+            // 計算可以組成多少完整注
+            const fullBetCount = Math.floor(shuffled.length / numbersPerBetFromPool);
+            
+            let usedNumbers = [];
+            
+            // 生成完整注數
+            for (let i = 0; i < fullBetCount; i++) {
+                let betNumbers;
+                const startIdx = i * numbersPerBetFromPool;
+                const endIdx = (i + 1) * numbersPerBetFromPool;
+                
+                if (coreNum !== null) {
+                    // 如果有核心號碼，每注都要包含核心號碼
+                    const otherNumbers = shuffled.slice(startIdx, endIdx);
+                    betNumbers = [coreNum, ...otherNumbers];
+                } else {
+                    betNumbers = shuffled.slice(startIdx, endIdx);
+                }
+                usedNumbers = usedNumbers.concat(betNumbers);
+                bets.push({
+                    numbers: betNumbers.sort((a, b) => a - b),
+                    isRemainder: false,
+                    coreNumber: coreNum
+                });
+            }
+            
+            // 處理剩餘號碼
+            const remainingNumbers = shuffled.slice(fullBetCount * numbersPerBetFromPool);
+            
+            if (remainingNumbers.length > 0) {
+                // 需要補足到6個的數量
+                const currentCount = remainingNumbers.length + (coreNum !== null ? 1 : 0);
+                const needCount = betsPerGroup - currentCount;
+                
+                // 只有當需要補充時才補充
+                let supplementNumbers = [];
+                if (needCount > 0) {
+                    // 從原池中找出未在剩餘號碼中的號碼（排除核心號碼）
+                    const availableForSupplement = pool.filter(n => 
+                        !remainingNumbers.includes(n) && n !== coreNum
+                    );
+                    
+                    // 隨機選取補足號碼
+                    supplementNumbers = getRandomNumbers(availableForSupplement, needCount);
+                }
+                
+                let finalBet;
+                if (coreNum !== null) {
+                    finalBet = [coreNum, ...remainingNumbers, ...supplementNumbers];
+                } else {
+                    finalBet = [...remainingNumbers, ...supplementNumbers];
+                }
+                
+                bets.push({
+                    numbers: finalBet.sort((a, b) => a - b),
+                    isRemainder: true,
+                    remainderOriginal: currentCount,
+                    coreNumber: coreNum
+                });
+            }
+            
+            return bets;
+        }
+
+        // 重新隨機抽取號碼
         function refreshRandom6() {
             if (currentFilteredNumbers.length === 0) {
                 alert('請先執行「篩選高頻號碼」！');
@@ -5196,11 +5985,69 @@ console.log('lotteryData', lotteryData.length);
             }
 
             const random6Div = document.getElementById('random-6-numbers');
-            const random6 = getRandom6(currentFilteredNumbers);
+            const drawResultTitle = document.getElementById('draw-result-title');
+            const drawMode = document.getElementById('draw-mode-select').value;
             
-            random6Div.innerHTML = random6.map(num => 
-                `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
-            ).join('');
+            let drawnNumbers = [];
+            let displayHtml = '';
+            let drawModeInfo = null;
+            let bets = null; // 用於聰明組合
+            
+            if (drawMode === 'single') {
+                // 單式：抽取6個號碼
+                drawnNumbers = getRandom6(currentFilteredNumbers);
+                drawResultTitle.textContent = '隨機抽取 6 個號碼：';
+                displayHtml = drawnNumbers.map(num => 
+                    `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
+                ).join('');
+                drawModeInfo = { mode: 'single' };
+            } else if (drawMode === 'complex') {
+                // 復式：抽取7-15個號碼
+                const count = parseInt(document.getElementById('complex-count-select').value);
+                drawnNumbers = getRandomNumbers(currentFilteredNumbers, count);
+                drawResultTitle.textContent = `隨機抽取 ${count} 個號碼（復式）：`;
+                displayHtml = drawnNumbers.map(num => 
+                    `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
+                ).join('');
+                drawModeInfo = { mode: 'complex', count: count };
+            } else if (drawMode === 'smart') {
+                // 聰明組合：生成多注
+                const hasCoreNumber = document.getElementById('smart-core-checkbox').checked;
+                const coreNumber = document.getElementById('smart-core-number').value;
+                
+                bets = generateSmartBets(currentFilteredNumbers, hasCoreNumber, coreNumber);
+                drawResultTitle.textContent = `聰明組合（共 ${bets.length} 注）：`;
+                
+                displayHtml = '<div class="smart-bets-container">';
+                bets.forEach((bet, index) => {
+                    const rowClass = bet.isRemainder ? 'smart-bet-row has-remainder' : 'smart-bet-row';
+                    const labelText = bet.isRemainder ? `第${index + 1}注 *` : `第${index + 1}注`;
+                    
+                    displayHtml += `<div class="${rowClass}">`;
+                    displayHtml += `<span class="smart-bet-label">${labelText}</span>`;
+                    displayHtml += '<div class="smart-bet-numbers">';
+                    
+                    bet.numbers.forEach(num => {
+                        const ballClass = (bet.coreNumber !== null && num === bet.coreNumber) 
+                            ? 'hf-ball hf-ball--md hf-ball--core' 
+                            : 'hf-ball hf-ball--md hf-ball--secondary';
+                        displayHtml += `<span class="${ballClass}">${num}</span>`;
+                    });
+                    
+                    displayHtml += '</div>';
+                    if (bet.isRemainder) {
+                        displayHtml += `<span style="font-size: 0.75rem; color: #888;">(*含補充號碼)</span>`;
+                    }
+                    displayHtml += '</div>';
+                });
+                displayHtml += '</div>';
+                
+                // 對於聰明組合，drawnNumbers 保存所有不重複的號碼
+                drawnNumbers = [...new Set(bets.flatMap(b => b.numbers))].sort((a, b) => a - b);
+                drawModeInfo = { mode: 'smart', bets: bets, hasCoreNumber: hasCoreNumber, coreNumber: coreNumber };
+            }
+            
+            random6Div.innerHTML = displayHtml;
             
             // 取得當前的篩選參數（從最新的歷史記錄或當前顯示的資訊）
             if (filterHistory.length > 0) {
@@ -5212,13 +6059,15 @@ console.log('lotteryData', lotteryData.length);
                     latestItem.maxFrequency, 
                     latestItem.threshold, 
                     currentFilteredNumbers, 
-                    random6
+                    drawnNumbers,
+                    'default',
+                    drawModeInfo
                 );
             }
         }
 
         // 添加到歷史記錄
-        function addToFilterHistory(startPeriod, endPeriod, maxFrequency, threshold, filteredNumbers, random6) {
+        function addToFilterHistory(startPeriod, endPeriod, maxFrequency, threshold, filteredNumbers, random6, filterMode = 'default', drawModeInfo = null) {
             const timestamp = new Date().toLocaleString('zh-TW', { 
                 year: 'numeric', 
                 month: '2-digit', 
@@ -5235,7 +6084,8 @@ console.log('lotteryData', lotteryData.length);
                 maxFrequency,
                 threshold,
                 filteredNumbers: [...filteredNumbers],
-                random6: [...random6]
+                random6: [...random6],
+                drawModeInfo: drawModeInfo // 包含抽號模式和多注數據
             };
             
             // 添加到歷史記錄陣列（最新的在前面）
@@ -5262,6 +6112,85 @@ console.log('lotteryData', lotteryData.length);
             
             let html = '';
             filterHistory.forEach((item, index) => {
+                // 獲取上一期的中獎號碼（如果存在）
+                let previousPeriodRegularNumbers = new Set();
+                let previousPeriodExtraNumber = null;
+                if (item.startPeriod > 1) {
+                    const previousPeriodIndex = item.startPeriod - 2;
+                    if (previousPeriodIndex >= 0 && previousPeriodIndex < lotteryData.length) {
+                        const previousPeriodData = lotteryData[previousPeriodIndex];
+                        previousPeriodData.numbers.forEach(num => previousPeriodRegularNumbers.add(num));
+                        previousPeriodExtraNumber = previousPeriodData.extra_number;
+                    }
+                }
+                
+                // 生成號碼顯示（根據抽號模式）
+                let randomNumbersHtml = '';
+                let modeLabel = '隨機 6 碼：';
+                
+                if (item.drawModeInfo && item.drawModeInfo.mode === 'smart' && item.drawModeInfo.bets) {
+                    // 聰明組合：顯示多注
+                    modeLabel = `聰明組合（${item.drawModeInfo.bets.length} 注）：`;
+                    randomNumbersHtml = '<div class="hf-history-smart-bets">';
+                    item.drawModeInfo.bets.forEach((bet, betIndex) => {
+                        const rowClass = bet.isRemainder ? 'hf-history-bet-row hf-history-bet-row--remainder' : 'hf-history-bet-row';
+                        randomNumbersHtml += `<div class="${rowClass}">`;
+                        randomNumbersHtml += `<span class="hf-history-bet-label">第${betIndex + 1}注${bet.isRemainder ? '*' : ''}</span>`;
+                        
+                        bet.numbers.forEach(num => {
+                            const isRegularMatched = previousPeriodRegularNumbers.has(num);
+                            const isExtraMatched = (previousPeriodExtraNumber !== null && num === previousPeriodExtraNumber);
+                            const isCoreNumber = (bet.coreNumber !== null && num === bet.coreNumber);
+                            
+                            let ballClass = 'hf-ball hf-ball--sm hf-ball--secondary';
+                            if (isCoreNumber) {
+                                ballClass = 'hf-ball hf-ball--sm hf-ball--core';
+                            } else if (isExtraMatched) {
+                                ballClass = 'hf-ball hf-ball--sm hf-ball--orange hf-ball--highlight';
+                            } else if (isRegularMatched) {
+                                ballClass = 'hf-ball hf-ball--sm hf-ball--primary hf-ball--highlight';
+                            }
+                            
+                            randomNumbersHtml += `<span class="${ballClass}">${num}</span>`;
+                        });
+                        
+                        randomNumbersHtml += '</div>';
+                    });
+                    randomNumbersHtml += '</div>';
+                } else if (item.drawModeInfo && item.drawModeInfo.mode === 'complex') {
+                    // 復式：顯示號碼數量
+                    const count = item.random6.length;
+                    modeLabel = `復式 ${count} 碼：`;
+                    randomNumbersHtml = item.random6.map(num => {
+                        const isRegularMatched = previousPeriodRegularNumbers.has(num);
+                        const isExtraMatched = (previousPeriodExtraNumber !== null && num === previousPeriodExtraNumber);
+                        
+                        let ballClass = 'hf-ball hf-ball--sm hf-ball--secondary';
+                        if (isExtraMatched) {
+                            ballClass = 'hf-ball hf-ball--sm hf-ball--orange hf-ball--highlight';
+                        } else if (isRegularMatched) {
+                            ballClass = 'hf-ball hf-ball--sm hf-ball--primary hf-ball--highlight';
+                        }
+                        
+                        return `<span class="${ballClass}">${num}</span>`;
+                    }).join('');
+                } else {
+                    // 單式或舊格式
+                    randomNumbersHtml = item.random6.map(num => {
+                        const isRegularMatched = previousPeriodRegularNumbers.has(num);
+                        const isExtraMatched = (previousPeriodExtraNumber !== null && num === previousPeriodExtraNumber);
+                        
+                        let ballClass = 'hf-ball hf-ball--sm hf-ball--secondary';
+                        if (isExtraMatched) {
+                            ballClass = 'hf-ball hf-ball--sm hf-ball--orange hf-ball--highlight';
+                        } else if (isRegularMatched) {
+                            ballClass = 'hf-ball hf-ball--sm hf-ball--primary hf-ball--highlight';
+                        }
+                        
+                        return `<span class="${ballClass}">${num}</span>`;
+                    }).join('');
+                }
+                
                 html += `
                     <div class="hf-history-card ${index === 0 ? 'hf-history-card--active' : ''}">
                         <div class="hf-history-header">
@@ -5275,37 +6204,8 @@ console.log('lotteryData', lotteryData.length);
                             期數：第 ${item.startPeriod} ~ ${item.endPeriod} 期 | 門檻：${item.threshold} 次
                         </div>
                         <div class="hf-history-random">
-                            <strong class="hf-history-random-label">隨機 6 碼：</strong>
-                            ${(() => {
-                                // 獲取上一期的中獎號碼（如果存在）
-                                let previousPeriodRegularNumbers = new Set();
-                                let previousPeriodExtraNumber = null;
-                                if (item.startPeriod > 1) {
-                                    const previousPeriodIndex = item.startPeriod - 2;
-                                    if (previousPeriodIndex >= 0 && previousPeriodIndex < lotteryData.length) {
-                                        const previousPeriodData = lotteryData[previousPeriodIndex];
-                                        // 上一期的普通號碼
-                                        previousPeriodData.numbers.forEach(num => previousPeriodRegularNumbers.add(num));
-                                        // 上一期的特別號碼
-                                        previousPeriodExtraNumber = previousPeriodData.extra_number;
-                                    }
-                                }
-                                
-                                return item.random6.map(num => {
-                                    // 判斷號碼是否符合上一期的中獎號碼
-                                    const isRegularMatched = previousPeriodRegularNumbers.has(num);
-                                    const isExtraMatched = (previousPeriodExtraNumber !== null && num === previousPeriodExtraNumber);
-                                    
-                                    let ballClass = 'hf-ball hf-ball--sm hf-ball--secondary';
-                                    if (isExtraMatched) {
-                                        ballClass = 'hf-ball hf-ball--sm hf-ball--orange hf-ball--highlight';
-                                    } else if (isRegularMatched) {
-                                        ballClass = 'hf-ball hf-ball--sm hf-ball--primary hf-ball--highlight';
-                                    }
-                                    
-                                    return `<span class="${ballClass}">${num}</span>`;
-                                }).join('');
-                            })()}
+                            <strong class="hf-history-random-label">${modeLabel}</strong>
+                            ${randomNumbersHtml}
                         </div>
                         <div class="hf-history-count">
                             符合條件：${item.filteredNumbers.length} 個號碼
