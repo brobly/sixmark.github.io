@@ -1269,6 +1269,48 @@
             accent-color: #764ba2;
         }
 
+        .random-bet-label {
+            color: #28a745;
+            margin-left: 10px;
+            padding-left: 10px;
+            border-left: 1px solid #ddd;
+        }
+
+        .random-bet-label input[type="checkbox"] {
+            accent-color: #28a745;
+        }
+
+        /* 隨機注數顯示區域 */
+        .random-bet-section {
+            margin-top: 12px;
+            padding: 10px;
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(32, 201, 151, 0.1));
+            border-radius: 8px;
+            border-left: 3px solid #28a745;
+        }
+
+        .random-bet-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #28a745;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .random-bet-numbers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .hf-ball--random {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            font-weight: bold;
+        }
+
         .smart-core-select-sm {
             padding: 5px 8px;
             border: 1px solid #fd7e14;
@@ -2466,6 +2508,16 @@
             font-weight: bold;
         }
 
+        .hf-history-random-label--green {
+            color: #28a745;
+        }
+
+        .hf-history-random-bet {
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px dashed #e0e0e0;
+        }
+
         .hf-history-count {
             font-size: 11px;
             color: #999;
@@ -2651,7 +2703,7 @@
             }
 
             .hf-history-btn {
-                padding: 2px 6px;
+                padding: 2px 6px; 
                 font-size: 10px;
             }
 
@@ -2849,6 +2901,14 @@
                                                 <select id="smart-core-number" class="smart-core-select-sm" style="display: none;" onchange="onSmartCoreNumberChange()">
                                                     <!-- 選項會根據高頻號碼動態生成 -->
                                                 </select>
+                                            </div>
+                                            
+                                            <!-- 隨機注數選項 -->
+                                            <div id="random-bet-container" class="draw-mode-option">
+                                                <label class="core-checkbox-label random-bet-label">
+                                                    <input type="checkbox" id="random-bet-checkbox" onchange="onRandomBetChange()">
+                                                    🎰 隨機注數
+                                                </label>
                                             </div>
                                         </div>
                                         
@@ -3762,6 +3822,8 @@ console.log('lotteryData', lotteryData.length);
             document.getElementById('start-period').value = start;
             document.getElementById('end-period').value = end;
             updateRangeInfo();
+            // 自動執行篩選並更新隨機核心號碼
+            filterHighFrequencyNumbers();
         }
 
         // 下10期按鈕功能 - 將範圍向前移動1期
@@ -5376,6 +5438,9 @@ console.log('lotteryData', lotteryData.length);
 
             // 顯示結果
             displayFilterResults(startPeriod, endPeriod, maxFrequency, threshold, currentFilteredNumbers, filterMode, modeDescription);
+            
+            // 更新隨機核心號碼（每次篩選時都更新）
+            updateRandomCoreNumber();
         }
 
         // 計算組合數 C(n, k)
@@ -5736,10 +5801,18 @@ console.log('lotteryData', lotteryData.length);
                 } else if (drawMode === 'smart') {
                     // 聰明組合：生成多注
                     const hasCoreNumber = document.getElementById('smart-core-checkbox').checked;
-                    const coreNumber = document.getElementById('smart-core-number').value;
+                    const coreNumber = getCurrentCoreNumber();
+                    const isRandomCore = document.getElementById('smart-core-number').value === 'random';
                     
                     const bets = generateSmartBets(filteredNumbers, hasCoreNumber, coreNumber);
-                    drawResultTitle.textContent = `聰明組合（共 ${bets.length} 注）：`;
+                    
+                    // 顯示標題，如果是隨機核心號碼則顯示當前選中的號碼
+                    let titleText = `聰明組合（共 ${bets.length} 注）`;
+                    if (hasCoreNumber && coreNumber && isRandomCore) {
+                        titleText += ` 🎲膽=${coreNumber}`;
+                    }
+                    titleText += '：';
+                    drawResultTitle.textContent = titleText;
                     
                     displayHtml = '<div class="smart-bets-container">';
                     bets.forEach((bet, index) => {
@@ -5768,6 +5841,32 @@ console.log('lotteryData', lotteryData.length);
                     // 對於聰明組合，drawnNumbers 保存所有不重複的號碼
                     drawnNumbers = [...new Set(bets.flatMap(b => b.numbers))].sort((a, b) => a - b);
                     drawModeInfo = { mode: 'smart', bets: bets, hasCoreNumber: hasCoreNumber, coreNumber: coreNumber };
+                }
+                
+                // 檢查是否勾選隨機注數
+                const hasRandomBet = document.getElementById('random-bet-checkbox').checked;
+                if (hasRandomBet) {
+                    // 從1-49中隨機抽取6個號碼
+                    const fullPool = Array.from({length: 49}, (_, i) => (i + 1).toString().padStart(2, '0'));
+                    const randomBetNumbers = getRandomNumbers(fullPool, 6);
+                    
+                    displayHtml += `
+                        <div class="random-bet-section">
+                            <div class="random-bet-title">
+                                <span>🎰</span> 隨機注數（1-49全號池）
+                            </div>
+                            <div class="random-bet-numbers">
+                                ${randomBetNumbers.map(num => 
+                                    `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                    `;
+                    
+                    // 將隨機注數信息添加到 drawModeInfo
+                    if (drawModeInfo) {
+                        drawModeInfo.randomBet = randomBetNumbers;
+                    }
                 }
                 
                 random6Div.innerHTML = displayHtml;
@@ -5844,6 +5943,14 @@ console.log('lotteryData', lotteryData.length);
             }
         }
         
+        // 隨機注數 checkbox 改變時
+        function onRandomBetChange() {
+            // 如果有篩選結果，立即刷新顯示
+            if (currentFilteredNumbers.length > 0) {
+                refreshRandom6();
+            }
+        }
+        
         // 更新核心號碼選項（根據高頻號碼）
         function updateSmartCoreOptions() {
             const coreNumberSelect = document.getElementById('smart-core-number');
@@ -5853,6 +5960,12 @@ console.log('lotteryData', lotteryData.length);
             
             coreNumberSelect.innerHTML = '';
             
+            // 添加"隨機"選項
+            const randomOption = document.createElement('option');
+            randomOption.value = 'random';
+            randomOption.textContent = '🎲 隨機';
+            coreNumberSelect.appendChild(randomOption);
+            
             if (currentFilteredNumbers.length > 0) {
                 currentFilteredNumbers.forEach(num => {
                     const option = document.createElement('option');
@@ -5861,11 +5974,47 @@ console.log('lotteryData', lotteryData.length);
                     coreNumberSelect.appendChild(option);
                 });
                 
-                // 如果之前選中的值仍然在新的選項中，恢復選擇
-                if (previousValue && currentFilteredNumbers.includes(parseInt(previousValue))) {
+                // 如果之前選中的值仍然在新的選項中，恢復選擇（但不是隨機）
+                if (previousValue && previousValue !== 'random' && currentFilteredNumbers.includes(parseInt(previousValue))) {
                     coreNumberSelect.value = previousValue;
+                } else if (previousValue === 'random') {
+                    coreNumberSelect.value = 'random';
                 }
             }
+            
+            // 如果是隨機模式，更新當前隨機核心號碼
+            if (coreNumberSelect.value === 'random') {
+                updateRandomCoreNumber();
+            }
+        }
+        
+        // 當前隨機選中的核心號碼
+        let currentRandomCoreNumber = null;
+        
+        // 更新隨機核心號碼（從高頻號碼中隨機抽取一個）
+        function updateRandomCoreNumber() {
+            if (currentFilteredNumbers.length > 0) {
+                const randomIndex = Math.floor(Math.random() * currentFilteredNumbers.length);
+                currentRandomCoreNumber = currentFilteredNumbers[randomIndex];
+            } else {
+                currentRandomCoreNumber = null;
+            }
+            return currentRandomCoreNumber;
+        }
+        
+        // 獲取當前核心號碼（處理隨機選項）
+        function getCurrentCoreNumber() {
+            const coreNumberSelect = document.getElementById('smart-core-number');
+            const selectedValue = coreNumberSelect.value;
+            
+            if (selectedValue === 'random') {
+                // 如果沒有隨機核心號碼，則生成一個
+                if (currentRandomCoreNumber === null) {
+                    updateRandomCoreNumber();
+                }
+                return currentRandomCoreNumber;
+            }
+            return selectedValue;
         }
         
         // 從號碼池中隨機抽取指定數量的號碼
@@ -6013,10 +6162,18 @@ console.log('lotteryData', lotteryData.length);
             } else if (drawMode === 'smart') {
                 // 聰明組合：生成多注
                 const hasCoreNumber = document.getElementById('smart-core-checkbox').checked;
-                const coreNumber = document.getElementById('smart-core-number').value;
+                const coreNumber = getCurrentCoreNumber();
+                const isRandomCore = document.getElementById('smart-core-number').value === 'random';
                 
                 bets = generateSmartBets(currentFilteredNumbers, hasCoreNumber, coreNumber);
-                drawResultTitle.textContent = `聰明組合（共 ${bets.length} 注）：`;
+                
+                // 顯示標題，如果是隨機核心號碼則顯示當前選中的號碼
+                let titleText = `聰明組合（共 ${bets.length} 注）`;
+                if (hasCoreNumber && coreNumber && isRandomCore) {
+                    titleText += ` 🎲膽=${coreNumber}`;
+                }
+                titleText += '：';
+                drawResultTitle.textContent = titleText;
                 
                 displayHtml = '<div class="smart-bets-container">';
                 bets.forEach((bet, index) => {
@@ -6045,6 +6202,32 @@ console.log('lotteryData', lotteryData.length);
                 // 對於聰明組合，drawnNumbers 保存所有不重複的號碼
                 drawnNumbers = [...new Set(bets.flatMap(b => b.numbers))].sort((a, b) => a - b);
                 drawModeInfo = { mode: 'smart', bets: bets, hasCoreNumber: hasCoreNumber, coreNumber: coreNumber };
+            }
+            
+            // 檢查是否勾選隨機注數
+            const hasRandomBet = document.getElementById('random-bet-checkbox').checked;
+            if (hasRandomBet) {
+                // 從1-49中隨機抽取6個號碼
+                const fullPool = Array.from({length: 49}, (_, i) => (i + 1).toString().padStart(2, '0'));
+                const randomBetNumbers = getRandomNumbers(fullPool, 6);
+                
+                displayHtml += `
+                    <div class="random-bet-section">
+                        <div class="random-bet-title">
+                            <span>🎰</span> 隨機注數（1-49全號池）
+                        </div>
+                        <div class="random-bet-numbers">
+                            ${randomBetNumbers.map(num => 
+                                `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                // 將隨機注數信息添加到 drawModeInfo
+                if (drawModeInfo) {
+                    drawModeInfo.randomBet = randomBetNumbers;
+                }
             }
             
             random6Div.innerHTML = displayHtml;
@@ -6191,6 +6374,30 @@ console.log('lotteryData', lotteryData.length);
                     }).join('');
                 }
                 
+                // 處理隨機注數
+                let randomBetHtml = '';
+                if (item.drawModeInfo && item.drawModeInfo.randomBet && item.drawModeInfo.randomBet.length > 0) {
+                    randomBetHtml = `
+                        <div class="hf-history-random-bet">
+                            <strong class="hf-history-random-label hf-history-random-label--green">🎰 隨機注數：</strong>
+                            ${item.drawModeInfo.randomBet.map(num => {
+                                const isRegularMatched = previousPeriodRegularNumbers.has(num);
+                                const isExtraMatched = (previousPeriodExtraNumber !== null && num === previousPeriodExtraNumber);
+                                
+                                // 使用與其他注數相同的顏色邏輯
+                                let ballClass = 'hf-ball hf-ball--sm hf-ball--secondary'; // 沒中：紫色
+                                if (isExtraMatched) {
+                                    ballClass = 'hf-ball hf-ball--sm hf-ball--orange hf-ball--highlight'; // 中特別號碼：橙色
+                                } else if (isRegularMatched) {
+                                    ballClass = 'hf-ball hf-ball--sm hf-ball--primary hf-ball--highlight'; // 中正式號碼：藍紫色
+                                }
+                                
+                                return `<span class="${ballClass}">${num}</span>`;
+                            }).join('')}
+                        </div>
+                    `;
+                }
+                
                 html += `
                     <div class="hf-history-card ${index === 0 ? 'hf-history-card--active' : ''}">
                         <div class="hf-history-header">
@@ -6207,6 +6414,7 @@ console.log('lotteryData', lotteryData.length);
                             <strong class="hf-history-random-label">${modeLabel}</strong>
                             ${randomNumbersHtml}
                         </div>
+                        ${randomBetHtml}
                         <div class="hf-history-count">
                             符合條件：${item.filteredNumbers.length} 個號碼
                         </div>
