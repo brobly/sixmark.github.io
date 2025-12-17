@@ -3143,6 +3143,7 @@
 
         // 嵌入真實六合彩數據
         const lotteryData = [
+        {draw_number: "25/130", draw_date: "2025-12-16", numbers: [3, 12, 23, 28, 35, 38], extra_number: 24},
         {draw_number: "25/129", draw_date: "2025-12-13", numbers: [10, 17, 19, 28, 45, 49], extra_number: 1},
         {draw_number: "25/128", draw_date: "2025-12-11", numbers: [1, 5, 6, 25, 30, 42], extra_number: 43},
         {draw_number: "25/127", draw_date: "2025-12-06", numbers: [4, 6, 26, 28, 34, 40], extra_number: 25},
@@ -6381,8 +6382,10 @@ console.log('lotteryData', lotteryData.length);
                         <div class="hf-history-random-bet">
                             <strong class="hf-history-random-label hf-history-random-label--green">🎰 隨機注數：</strong>
                             ${item.drawModeInfo.randomBet.map(num => {
-                                const isRegularMatched = previousPeriodRegularNumbers.has(num);
-                                const isExtraMatched = (previousPeriodExtraNumber !== null && num === previousPeriodExtraNumber);
+                                // 將字符串號碼轉換為數字進行比對（lotteryData中的號碼是數字類型）
+                                const numAsInt = parseInt(num, 10);
+                                const isRegularMatched = previousPeriodRegularNumbers.has(numAsInt);
+                                const isExtraMatched = (previousPeriodExtraNumber !== null && numAsInt === previousPeriodExtraNumber);
                                 
                                 // 使用與其他注數相同的顏色邏輯
                                 let ballClass = 'hf-ball hf-ball--sm hf-ball--secondary'; // 沒中：紫色
