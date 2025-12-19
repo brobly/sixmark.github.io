@@ -1330,6 +1330,74 @@
             margin-bottom: 8px;
         }
 
+        /* 5膽拖全餐樣式 */
+        .five-banker-info {
+            margin-top: 12px;
+            padding: 12px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+        }
+
+        .five-banker-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .five-banker-numbers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .five-banker-stats {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #dee2e6;
+        }
+
+        .five-banker-bets-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .five-banker-bet-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 6px;
+        }
+
+        .five-banker-bet-label {
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #495057;
+            min-width: 50px;
+        }
+
+        .five-banker-bet-numbers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        /* 歷史記錄中的5膽拖全餐樣式 */
+        .hf-history-five-banker {
+            width: 100%;
+        }
+
         /* 聰明組合多注顯示 */
         .smart-bets-container {
             display: flex;
@@ -1361,6 +1429,15 @@
 
         .smart-bet-row.has-remainder .smart-bet-label {
             color: #fd7e14;
+        }
+        
+        .smart-bet-row.extra-random {
+            border-left-color: #e83e8c;
+            background: rgba(232, 62, 140, 0.08);
+        }
+        
+        .smart-bet-row.extra-random .smart-bet-label {
+            color: #e83e8c;
         }
 
         .smart-bet-numbers {
@@ -2344,6 +2421,11 @@
         .hf-ball--orange {
             background: #ff9800;
         }
+        
+        .hf-ball--pink {
+            background: linear-gradient(135deg, #e83e8c, #d63384);
+            box-shadow: 0 2px 4px rgba(232, 62, 140, 0.3);
+        }
 
         .hf-ball--highlight {
             box-shadow: 0 0 4px rgba(0,0,0,0.3);
@@ -2555,6 +2637,15 @@
 
         .hf-history-bet-row--remainder .hf-history-bet-label {
             color: #fd7e14;
+        }
+        
+        .hf-history-bet-row--extra {
+            border-left-color: #e83e8c;
+            background: rgba(232, 62, 140, 0.05);
+        }
+        
+        .hf-history-bet-row--extra .hf-history-bet-label {
+            color: #e83e8c;
         }
 
         /* 高頻號碼容器 */
@@ -2874,6 +2965,8 @@
                                                 <option value="single">單式（6個號碼）</option>
                                                 <option value="complex">復式（7-15個號碼）</option>
                                                 <option value="smart">聰明組合</option>
+                                                <option value="smartComplex">聰明組合+復式</option>
+                                                <option value="fiveBankerFullMeal">5膽拖全餐</option>
                                             </select>
                                             
                                             <!-- 復式模式：數量選擇器 -->
@@ -2900,6 +2993,17 @@
                                                 </label>
                                                 <select id="smart-core-number" class="smart-core-select-sm" style="display: none;" onchange="onSmartCoreNumberChange()">
                                                     <!-- 選項會根據高頻號碼動態生成 -->
+                                                </select>
+                                            </div>
+                                            
+                                            <!-- 聰明組合+復式模式：號碼數量選項 -->
+                                            <div id="smart-complex-container" class="draw-mode-option" style="display: none;">
+                                                <label>每注號碼數：</label>
+                                                <select id="smart-complex-count-select" class="complex-count-select-sm" onchange="onSmartComplexCountChange()">
+                                                    <option value="7">7個</option>
+                                                    <option value="8">8個</option>
+                                                    <option value="9">9個</option>
+                                                    <option value="10">10個</option>
                                                 </select>
                                             </div>
                                             
@@ -5842,8 +5946,125 @@ console.log('lotteryData', lotteryData.length);
                     // 對於聰明組合，drawnNumbers 保存所有不重複的號碼
                     drawnNumbers = [...new Set(bets.flatMap(b => b.numbers))].sort((a, b) => a - b);
                     drawModeInfo = { mode: 'smart', bets: bets, hasCoreNumber: hasCoreNumber, coreNumber: coreNumber };
+                } else if (drawMode === 'smartComplex') {
+                    // 聰明組合+復式：生成多注（每注可選7-10個號碼）
+                    const numbersPerBet = parseInt(document.getElementById('smart-complex-count-select').value);
+                    const hasCoreNumber = document.getElementById('smart-core-checkbox').checked;
+                    const coreNumber = getCurrentCoreNumber();
+                    const isRandomCore = document.getElementById('smart-core-number').value === 'random';
+                    
+                    const bets = generateSmartComplexBets(filteredNumbers, numbersPerBet, hasCoreNumber, coreNumber);
+                    
+                    // 顯示標題，如果是隨機核心號碼則顯示當前選中的號碼
+                    let titleText = `聰明組合+復式（每注${numbersPerBet}個，共 ${bets.length} 注）`;
+                    if (hasCoreNumber && coreNumber && isRandomCore) {
+                        titleText += ` 🎲膽=${coreNumber}`;
+                    }
+                    titleText += '：';
+                    drawResultTitle.textContent = titleText;
+                    
+                    displayHtml = '<div class="smart-bets-container">';
+                    bets.forEach((bet, index) => {
+                        let rowClass = 'smart-bet-row';
+                        let labelText = `第${index + 1}注`;
+                        let noteText = '';
+                        
+                        if (bet.isExtraRandom) {
+                            labelText += ' 🎲';
+                            noteText = '<span style="font-size: 0.75rem; color: #888;">(隨機注)</span>';
+                        } else if (bet.isRemainder) {
+                            rowClass += ' has-remainder';
+                            labelText += ' *';
+                            noteText = `<span style="font-size: 0.75rem; color: #888;">(*餘${bet.remainderOriginal}+補${numbersPerBet - bet.remainderOriginal})</span>`;
+                        }
+                        
+                        displayHtml += `<div class="${rowClass}">`;
+                        displayHtml += `<span class="smart-bet-label">${labelText}</span>`;
+                        displayHtml += '<div class="smart-bet-numbers">';
+                        
+                        bet.numbers.forEach(num => {
+                            const ballClass = (bet.coreNumber !== null && num === bet.coreNumber) 
+                                ? 'hf-ball hf-ball--md hf-ball--core' 
+                                : 'hf-ball hf-ball--md hf-ball--secondary';
+                            displayHtml += `<span class="${ballClass}">${num}</span>`;
+                        });
+                        
+                        displayHtml += '</div>';
+                        displayHtml += noteText;
+                        displayHtml += '</div>';
+                    });
+                    displayHtml += '</div>';
+                    
+                    // 對於聰明組合+復式，drawnNumbers 保存所有不重複的號碼
+                    drawnNumbers = [...new Set(bets.flatMap(b => b.numbers))].sort((a, b) => a - b);
+                    drawModeInfo = { mode: 'smartComplex', bets: bets, numbersPerBet: numbersPerBet, hasCoreNumber: hasCoreNumber, coreNumber: coreNumber };
+                } else if (drawMode === 'fiveBankerFullMeal') {
+                    // 5膽拖全餐：從高頻號碼中隨機選5個做膽，剩下的做腳
+                    if (filteredNumbers.length < 6) {
+                        drawResultTitle.textContent = '號碼不足（至少需要6個號碼）';
+                        displayHtml = '<span class="hf-text--muted">篩選號碼不足，無法使用5膽拖全餐</span>';
+                        drawModeInfo = { mode: 'fiveBankerFullMeal', error: 'insufficient' };
+                    } else {
+                        // 隨機選5個膽
+                        const bankers = getRandomNumbers(filteredNumbers, 5);
+                        // 剩下的作為腳
+                        const runners = filteredNumbers.filter(num => !bankers.includes(num));
+
+                        // 生成注數：每注 = 5個膽 + 1個腳
+                        const bets = runners.map(runner => ({
+                            numbers: [...bankers.sort((a, b) => a - b), runner],
+                            bankers: bankers,
+                            runner: runner
+                        }));
+
+                        console.log('5膽拖全餐 - 篩選號碼:', filteredNumbers.length, filteredNumbers);
+                        console.log('5膽拖全餐 - 膽碼:', bankers.length, bankers);
+                        console.log('5膽拖全餐 - 腳碼:', runners.length, runners);
+                        console.log('5膽拖全餐 - 總注數:', bets.length);
+
+                        drawResultTitle.textContent = `5膽拖全餐（共 ${bets.length} 注）：`;
+
+                        // 顯示膽碼信息
+                        displayHtml = '<div class="five-banker-info">';
+                        displayHtml += '<div class="five-banker-title">🎯 膽碼（固定5個）：</div>';
+                        displayHtml += '<div class="five-banker-numbers">';
+                        bankers.forEach(num => {
+                            displayHtml += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
+                        });
+                        displayHtml += '</div>';
+                        displayHtml += `<div class="five-banker-stats">`;
+                        displayHtml += `📊 篩選號碼: ${filteredNumbers.length}個 | 膽: ${bankers.length}個 | 腳: ${runners.length}個 | 共 ${bets.length} 注<br>`;
+                        displayHtml += `💰 每注成本：$10（全注）或 $5（半注） | 全注總成本：$${bets.length * 10} | 半注總成本：$${bets.length * 5}`;
+                        displayHtml += `</div>`;
+                        displayHtml += '</div>';
+
+                        // 顯示所有注數
+                        displayHtml += '<div class="five-banker-bets-container">';
+                        bets.forEach((bet, index) => {
+                            displayHtml += `<div class="five-banker-bet-row">`;
+                            displayHtml += `<span class="five-banker-bet-label">第${index + 1}注</span>`;
+                            displayHtml += '<div class="five-banker-bet-numbers">';
+
+                            bet.numbers.forEach(num => {
+                                displayHtml += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
+                            });
+
+                            displayHtml += '</div>';
+                            displayHtml += '</div>';
+                        });
+                        displayHtml += '</div>';
+
+                        // drawnNumbers 保存所有號碼（膽+腳）
+                        drawnNumbers = filteredNumbers;
+                        drawModeInfo = {
+                            mode: 'fiveBankerFullMeal',
+                            bets: bets,
+                            bankers: bankers,
+                            runners: runners
+                        };
+                    }
                 }
-                
+
                 // 檢查是否勾選隨機注數
                 const hasRandomBet = document.getElementById('random-bet-checkbox').checked;
                 if (hasRandomBet) {
@@ -5885,11 +6106,13 @@ console.log('lotteryData', lotteryData.length);
             const drawMode = document.getElementById('draw-mode-select').value;
             const complexContainer = document.getElementById('complex-count-container');
             const smartCoreContainer = document.getElementById('smart-core-container');
+            const smartComplexContainer = document.getElementById('smart-complex-container');
             const drawResultTitle = document.getElementById('draw-result-title');
             
             // 隱藏所有選項容器
             complexContainer.style.display = 'none';
             smartCoreContainer.style.display = 'none';
+            smartComplexContainer.style.display = 'none';
             
             // 根據模式顯示對應的選項
             if (drawMode === 'single') {
@@ -5903,6 +6126,15 @@ console.log('lotteryData', lotteryData.length);
                 drawResultTitle.textContent = '聰明組合（多注）：';
                 // 更新核心號碼選項
                 updateSmartCoreOptions();
+            } else if (drawMode === 'smartComplex') {
+                smartComplexContainer.style.display = 'flex';
+                smartCoreContainer.style.display = 'flex';
+                const count = document.getElementById('smart-complex-count-select').value;
+                drawResultTitle.textContent = `聰明組合+復式（每注${count}個）：`;
+                // 更新核心號碼選項
+                updateSmartCoreOptions();
+            } else if (drawMode === 'fiveBankerFullMeal') {
+                drawResultTitle.textContent = '5膽拖全餐：';
             }
             
             // 如果有篩選結果，立即刷新顯示
@@ -5946,6 +6178,18 @@ console.log('lotteryData', lotteryData.length);
         
         // 隨機注數 checkbox 改變時
         function onRandomBetChange() {
+            // 如果有篩選結果，立即刷新顯示
+            if (currentFilteredNumbers.length > 0) {
+                refreshRandom6();
+            }
+        }
+        
+        // 聰明組合+復式 數量改變時
+        function onSmartComplexCountChange() {
+            const count = document.getElementById('smart-complex-count-select').value;
+            const drawResultTitle = document.getElementById('draw-result-title');
+            drawResultTitle.textContent = `聰明組合+復式（每注${count}個）：`;
+            
             // 如果有篩選結果，立即刷新顯示
             if (currentFilteredNumbers.length > 0) {
                 refreshRandom6();
@@ -6126,6 +6370,120 @@ console.log('lotteryData', lotteryData.length);
             
             return bets;
         }
+        
+        // 生成聰明組合+復式注數
+        // 例：18個號碼 / 7 = 2注 + 餘數4
+        // 第1注：隨機7個不重複號碼（含核心號碼如有）
+        // 第2注：另外7個不重複號碼（從剩餘中，含核心號碼如有）
+        // 第3注：餘數4 + 隨機3個（從18個中抽取補足，含核心號碼如有）
+        // 第4注：從全部18個中完全隨機抽7個（額外隨機注，含核心號碼如有）
+        function generateSmartComplexBets(pool, numbersPerBet, hasCoreNumber, coreNumber) {
+            const poolSize = pool.length;
+            const bets = [];
+            
+            // 處理核心號碼
+            let coreNum = null;
+            if (hasCoreNumber && coreNumber) {
+                coreNum = parseInt(coreNumber);
+            }
+            
+            if (poolSize < numbersPerBet) {
+                // 號碼不夠，直接返回一注
+                return [{ numbers: [...pool], isRemainder: true, isExtraRandom: false, coreNumber: coreNum }];
+            }
+            
+            // 複製並打亂號碼池
+            const shuffled = [...pool];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            
+            // 如果有核心號碼，先從洗牌後的號碼中移除核心號碼
+            if (coreNum !== null) {
+                const coreIndex = shuffled.indexOf(coreNum);
+                if (coreIndex !== -1) {
+                    shuffled.splice(coreIndex, 1);
+                }
+            }
+            
+            // 根據是否有核心號碼計算每注需要從池中取的號碼數
+            const numbersPerBetFromPool = coreNum !== null ? (numbersPerBet - 1) : numbersPerBet;
+            
+            // 計算可以組成多少完整注
+            const fullBetCount = Math.floor(shuffled.length / numbersPerBetFromPool);
+            
+            // 生成完整注數（不重複）
+            for (let i = 0; i < fullBetCount; i++) {
+                const startIdx = i * numbersPerBetFromPool;
+                const endIdx = (i + 1) * numbersPerBetFromPool;
+                let betNumbers;
+                
+                if (coreNum !== null) {
+                    const otherNumbers = shuffled.slice(startIdx, endIdx);
+                    betNumbers = [coreNum, ...otherNumbers];
+                } else {
+                    betNumbers = shuffled.slice(startIdx, endIdx);
+                }
+                
+                bets.push({
+                    numbers: betNumbers.sort((a, b) => a - b),
+                    isRemainder: false,
+                    isExtraRandom: false,
+                    coreNumber: coreNum
+                });
+            }
+            
+            // 處理餘數（如果有）
+            const remainingNumbers = shuffled.slice(fullBetCount * numbersPerBetFromPool);
+            if (remainingNumbers.length > 0) {
+                const currentCount = remainingNumbers.length + (coreNum !== null ? 1 : 0);
+                const needCount = numbersPerBet - currentCount;
+                
+                // 從原始號碼池中隨機補足（可以與前面的注重複，排除核心號碼）
+                let supplementNumbers = [];
+                if (needCount > 0) {
+                    const availableForSupplement = pool.filter(n => 
+                        !remainingNumbers.includes(n) && n !== coreNum
+                    );
+                    supplementNumbers = getRandomNumbers(availableForSupplement, needCount);
+                }
+                
+                let finalBet;
+                if (coreNum !== null) {
+                    finalBet = [coreNum, ...remainingNumbers, ...supplementNumbers];
+                } else {
+                    finalBet = [...remainingNumbers, ...supplementNumbers];
+                }
+                
+                bets.push({
+                    numbers: finalBet.sort((a, b) => a - b),
+                    isRemainder: true,
+                    remainderOriginal: currentCount,
+                    isExtraRandom: false,
+                    coreNumber: coreNum
+                });
+            }
+            
+            // 額外隨機注：從全部號碼池中完全隨機抽取（含核心號碼如有）
+            let extraRandomBet;
+            if (coreNum !== null) {
+                // 從池中隨機抽取 numbersPerBet - 1 個，再加上核心號碼
+                const poolWithoutCore = pool.filter(n => n !== coreNum);
+                const randomPart = getRandomNumbers(poolWithoutCore, numbersPerBet - 1);
+                extraRandomBet = [coreNum, ...randomPart];
+            } else {
+                extraRandomBet = getRandomNumbers(pool, numbersPerBet);
+            }
+            bets.push({
+                numbers: extraRandomBet.sort((a, b) => a - b),
+                isRemainder: false,
+                isExtraRandom: true,
+                coreNumber: coreNum
+            });
+            
+            return bets;
+        }
 
         // 重新隨機抽取號碼
         function refreshRandom6() {
@@ -6203,8 +6561,125 @@ console.log('lotteryData', lotteryData.length);
                 // 對於聰明組合，drawnNumbers 保存所有不重複的號碼
                 drawnNumbers = [...new Set(bets.flatMap(b => b.numbers))].sort((a, b) => a - b);
                 drawModeInfo = { mode: 'smart', bets: bets, hasCoreNumber: hasCoreNumber, coreNumber: coreNumber };
+            } else if (drawMode === 'smartComplex') {
+                // 聰明組合+復式：生成多注（每注可選7-10個號碼）
+                const numbersPerBet = parseInt(document.getElementById('smart-complex-count-select').value);
+                const hasCoreNumber = document.getElementById('smart-core-checkbox').checked;
+                const coreNumber = getCurrentCoreNumber();
+                const isRandomCore = document.getElementById('smart-core-number').value === 'random';
+                
+                bets = generateSmartComplexBets(currentFilteredNumbers, numbersPerBet, hasCoreNumber, coreNumber);
+                
+                // 顯示標題，如果是隨機核心號碼則顯示當前選中的號碼
+                let titleText = `聰明組合+復式（每注${numbersPerBet}個，共 ${bets.length} 注）`;
+                if (hasCoreNumber && coreNumber && isRandomCore) {
+                    titleText += ` 🎲膽=${coreNumber}`;
+                }
+                titleText += '：';
+                drawResultTitle.textContent = titleText;
+                
+                displayHtml = '<div class="smart-bets-container">';
+                bets.forEach((bet, index) => {
+                    let rowClass = 'smart-bet-row';
+                    let labelText = `第${index + 1}注`;
+                    let noteText = '';
+                    
+                    if (bet.isExtraRandom) {
+                        labelText += ' 🎲';
+                        noteText = '<span style="font-size: 0.75rem; color: #888;">(隨機注)</span>';
+                    } else if (bet.isRemainder) {
+                        rowClass += ' has-remainder';
+                        labelText += ' *';
+                        noteText = `<span style="font-size: 0.75rem; color: #888;">(*餘${bet.remainderOriginal}+補${numbersPerBet - bet.remainderOriginal})</span>`;
+                    }
+                    
+                    displayHtml += `<div class="${rowClass}">`;
+                    displayHtml += `<span class="smart-bet-label">${labelText}</span>`;
+                    displayHtml += '<div class="smart-bet-numbers">';
+                    
+                    bet.numbers.forEach(num => {
+                        const ballClass = (bet.coreNumber !== null && num === bet.coreNumber) 
+                            ? 'hf-ball hf-ball--md hf-ball--core' 
+                            : 'hf-ball hf-ball--md hf-ball--secondary';
+                        displayHtml += `<span class="${ballClass}">${num}</span>`;
+                    });
+                    
+                    displayHtml += '</div>';
+                    displayHtml += noteText;
+                    displayHtml += '</div>';
+                });
+                displayHtml += '</div>';
+                
+                // 對於聰明組合+復式，drawnNumbers 保存所有不重複的號碼
+                drawnNumbers = [...new Set(bets.flatMap(b => b.numbers))].sort((a, b) => a - b);
+                drawModeInfo = { mode: 'smartComplex', bets: bets, numbersPerBet: numbersPerBet, hasCoreNumber: hasCoreNumber, coreNumber: coreNumber };
+            } else if (drawMode === 'fiveBankerFullMeal') {
+                // 5膽拖全餐：從高頻號碼中隨機選5個做膽，剩下的做腳
+                if (currentFilteredNumbers.length < 6) {
+                    drawResultTitle.textContent = '號碼不足（至少需要6個號碼）';
+                    displayHtml = '<span class="hf-text--muted">篩選號碼不足，無法使用5膽拖全餐</span>';
+                    drawModeInfo = { mode: 'fiveBankerFullMeal', error: 'insufficient' };
+                } else {
+                    // 隨機選5個膽
+                    const bankers = getRandomNumbers(currentFilteredNumbers, 5);
+                    // 剩下的作為腳
+                    const runners = currentFilteredNumbers.filter(num => !bankers.includes(num));
+
+                    // 生成注數：每注 = 5個膽 + 1個腳
+                    bets = runners.map(runner => ({
+                        numbers: [...bankers.sort((a, b) => a - b), runner],
+                        bankers: bankers,
+                        runner: runner
+                    }));
+
+                    console.log('5膽拖全餐(重抽) - 篩選號碼:', currentFilteredNumbers.length, currentFilteredNumbers);
+                    console.log('5膽拖全餐(重抽) - 膽碼:', bankers.length, bankers);
+                    console.log('5膽拖全餐(重抽) - 腳碼:', runners.length, runners);
+                    console.log('5膽拖全餐(重抽) - 總注數:', bets.length);
+
+                    drawResultTitle.textContent = `5膽拖全餐（共 ${bets.length} 注）：`;
+
+                    // 顯示膽碼信息
+                    displayHtml = '<div class="five-banker-info">';
+                    displayHtml += '<div class="five-banker-title">🎯 膽碼（固定5個）：</div>';
+                    displayHtml += '<div class="five-banker-numbers">';
+                    bankers.forEach(num => {
+                        displayHtml += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
+                    });
+                    displayHtml += '</div>';
+                    displayHtml += `<div class="five-banker-stats">`;
+                    displayHtml += `📊 篩選號碼: ${currentFilteredNumbers.length}個 | 膽: ${bankers.length}個 | 腳: ${runners.length}個 | 共 ${bets.length} 注<br>`;
+                    displayHtml += `💰 每注成本：$10（全注）或 $5（半注） | 全注總成本：$${bets.length * 10} | 半注總成本：$${bets.length * 5}`;
+                    displayHtml += `</div>`;
+                    displayHtml += '</div>';
+
+                    // 顯示所有注數
+                    displayHtml += '<div class="five-banker-bets-container">';
+                    bets.forEach((bet, index) => {
+                        displayHtml += `<div class="five-banker-bet-row">`;
+                        displayHtml += `<span class="five-banker-bet-label">第${index + 1}注</span>`;
+                        displayHtml += '<div class="five-banker-bet-numbers">';
+
+                        bet.numbers.forEach(num => {
+                            displayHtml += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
+                        });
+
+                        displayHtml += '</div>';
+                        displayHtml += '</div>';
+                    });
+                    displayHtml += '</div>';
+
+                    // drawnNumbers 保存所有號碼（膽+腳）
+                    drawnNumbers = currentFilteredNumbers;
+                    drawModeInfo = {
+                        mode: 'fiveBankerFullMeal',
+                        bets: bets,
+                        bankers: bankers,
+                        runners: runners
+                    };
+                }
             }
-            
+
             // 檢查是否勾選隨機注數
             const hasRandomBet = document.getElementById('random-bet-checkbox').checked;
             if (hasRandomBet) {
@@ -6341,6 +6816,93 @@ console.log('lotteryData', lotteryData.length);
                         randomNumbersHtml += '</div>';
                     });
                     randomNumbersHtml += '</div>';
+                } else if (item.drawModeInfo && item.drawModeInfo.mode === 'smartComplex' && item.drawModeInfo.bets) {
+                    // 聰明組合+復式：顯示多注
+                    const numbersPerBet = item.drawModeInfo.numbersPerBet || 7;
+                    modeLabel = `聰明組合+復式（每注${numbersPerBet}個，${item.drawModeInfo.bets.length} 注）：`;
+                    randomNumbersHtml = '<div class="hf-history-smart-bets">';
+                    item.drawModeInfo.bets.forEach((bet, betIndex) => {
+                        let rowClass = 'hf-history-bet-row';
+                        let labelSuffix = '';
+                        
+                        if (bet.isExtraRandom) {
+                            labelSuffix = ' 🎲';
+                        } else if (bet.isRemainder) {
+                            rowClass += ' hf-history-bet-row--remainder';
+                            labelSuffix = '*';
+                        }
+                        
+                        randomNumbersHtml += `<div class="${rowClass}">`;
+                        randomNumbersHtml += `<span class="hf-history-bet-label">第${betIndex + 1}注${labelSuffix}</span>`;
+                        
+                        bet.numbers.forEach(num => {
+                            const isRegularMatched = previousPeriodRegularNumbers.has(num);
+                            const isExtraMatched = (previousPeriodExtraNumber !== null && num === previousPeriodExtraNumber);
+                            const isCoreNumber = (bet.coreNumber !== null && num === bet.coreNumber);
+                            
+                            let ballClass = 'hf-ball hf-ball--sm hf-ball--secondary';
+                            if (isCoreNumber) {
+                                ballClass = 'hf-ball hf-ball--sm hf-ball--core';
+                            } else if (isExtraMatched) {
+                                ballClass = 'hf-ball hf-ball--sm hf-ball--orange hf-ball--highlight';
+                            } else if (isRegularMatched) {
+                                ballClass = 'hf-ball hf-ball--sm hf-ball--primary hf-ball--highlight';
+                            }
+                            
+                            randomNumbersHtml += `<span class="${ballClass}">${num}</span>`;
+                        });
+                        
+                        randomNumbersHtml += '</div>';
+                    });
+                    randomNumbersHtml += '</div>';
+                } else if (item.drawModeInfo && item.drawModeInfo.mode === 'fiveBankerFullMeal' && item.drawModeInfo.bets) {
+                    // 5膽拖全餐：顯示膽碼和多注
+                    const bankers = item.drawModeInfo.bankers || [];
+                    modeLabel = `5膽拖全餐（${item.drawModeInfo.bets.length} 注）：`;
+
+                    randomNumbersHtml = '<div class="hf-history-five-banker">';
+                    // 顯示膽碼
+                    randomNumbersHtml += '<div style="margin-bottom: 8px;">';
+                    randomNumbersHtml += '<strong style="color: #495057; font-size: 0.85rem;">🎯 膽碼：</strong>';
+                    bankers.forEach(num => {
+                        const isRegularMatched = previousPeriodRegularNumbers.has(num);
+                        const isExtraMatched = (previousPeriodExtraNumber !== null && num === previousPeriodExtraNumber);
+
+                        let ballClass = 'hf-ball hf-ball--sm hf-ball--secondary';
+                        if (isExtraMatched) {
+                            ballClass = 'hf-ball hf-ball--sm hf-ball--orange hf-ball--highlight';
+                        } else if (isRegularMatched) {
+                            ballClass = 'hf-ball hf-ball--sm hf-ball--primary hf-ball--highlight';
+                        }
+
+                        randomNumbersHtml += `<span class="${ballClass}">${num}</span>`;
+                    });
+                    randomNumbersHtml += '</div>';
+
+                    // 顯示所有注數（不限制高度，顯示全部）
+                    randomNumbersHtml += '<div class="hf-history-smart-bets">';
+                    item.drawModeInfo.bets.forEach((bet, betIndex) => {
+                        randomNumbersHtml += `<div class="hf-history-bet-row">`;
+                        randomNumbersHtml += `<span class="hf-history-bet-label">第${betIndex + 1}注</span>`;
+
+                        bet.numbers.forEach(num => {
+                            const isRegularMatched = previousPeriodRegularNumbers.has(num);
+                            const isExtraMatched = (previousPeriodExtraNumber !== null && num === previousPeriodExtraNumber);
+
+                            let ballClass = 'hf-ball hf-ball--sm hf-ball--secondary';
+                            if (isExtraMatched) {
+                                ballClass = 'hf-ball hf-ball--sm hf-ball--orange hf-ball--highlight';
+                            } else if (isRegularMatched) {
+                                ballClass = 'hf-ball hf-ball--sm hf-ball--primary hf-ball--highlight';
+                            }
+
+                            randomNumbersHtml += `<span class="${ballClass}">${num}</span>`;
+                        });
+
+                        randomNumbersHtml += '</div>';
+                    });
+                    randomNumbersHtml += '</div>';
+                    randomNumbersHtml += '</div>';
                 } else if (item.drawModeInfo && item.drawModeInfo.mode === 'complex') {
                     // 復式：顯示號碼數量
                     const count = item.random6.length;
@@ -6348,14 +6910,14 @@ console.log('lotteryData', lotteryData.length);
                     randomNumbersHtml = item.random6.map(num => {
                         const isRegularMatched = previousPeriodRegularNumbers.has(num);
                         const isExtraMatched = (previousPeriodExtraNumber !== null && num === previousPeriodExtraNumber);
-                        
+
                         let ballClass = 'hf-ball hf-ball--sm hf-ball--secondary';
                         if (isExtraMatched) {
                             ballClass = 'hf-ball hf-ball--sm hf-ball--orange hf-ball--highlight';
                         } else if (isRegularMatched) {
                             ballClass = 'hf-ball hf-ball--sm hf-ball--primary hf-ball--highlight';
                         }
-                        
+
                         return `<span class="${ballClass}">${num}</span>`;
                     }).join('');
                 } else {
@@ -6363,14 +6925,14 @@ console.log('lotteryData', lotteryData.length);
                     randomNumbersHtml = item.random6.map(num => {
                         const isRegularMatched = previousPeriodRegularNumbers.has(num);
                         const isExtraMatched = (previousPeriodExtraNumber !== null && num === previousPeriodExtraNumber);
-                        
+
                         let ballClass = 'hf-ball hf-ball--sm hf-ball--secondary';
                         if (isExtraMatched) {
                             ballClass = 'hf-ball hf-ball--sm hf-ball--orange hf-ball--highlight';
                         } else if (isRegularMatched) {
                             ballClass = 'hf-ball hf-ball--sm hf-ball--primary hf-ball--highlight';
                         }
-                        
+
                         return `<span class="${ballClass}">${num}</span>`;
                     }).join('');
                 }
