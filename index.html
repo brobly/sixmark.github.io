@@ -2916,6 +2916,7 @@
                                                 <option value="default">預設模式</option>
                                                 <option value="rank">排名模式</option>
                                                 <option value="rank_with_pair">排名+搭配</option>
+                                                <option value="cold_hot_balance">冷熱平衡</option>
                                             </select>
                                             <select id="filter-count-select" class="filter-count-select-sm">
                                                 <option value="3">3個</option>
@@ -2936,6 +2937,10 @@
                                                 <option value="18">18個</option>
                                                 <option value="19">19個</option>
                                                 <option value="20">20個</option>
+                                                <option value="21">21個</option>
+                                                <option value="22">22個</option>
+                                                <option value="23">23個</option>
+                                                <option value="24">24個</option>
                                                 <option value="25">25個</option>
                                                 <option value="30">30個</option>
                                                 <option value="35">35個</option>
@@ -3247,6 +3252,7 @@
 
         // 嵌入真實六合彩數據
         const lotteryData = [
+        {draw_number: "25/131", draw_date: "2025-12-18", numbers: [6, 23, 28, 31, 33, 34], extra_number: 11},
         {draw_number: "25/130", draw_date: "2025-12-16", numbers: [3, 12, 23, 28, 35, 38], extra_number: 24},
         {draw_number: "25/129", draw_date: "2025-12-13", numbers: [10, 17, 19, 28, 45, 49], extra_number: 1},
         {draw_number: "25/128", draw_date: "2025-12-11", numbers: [1, 5, 6, 25, 30, 42], extra_number: 43},
@@ -5539,8 +5545,62 @@ console.log('lotteryData', lotteryData.length);
                 window.lastPairingInfo = pairingInfo;
                 
                 modeDescription = `排名+搭配模式 - 前 ${filterCount} 名 + 常搭配號碼`;
+            } else if (filterMode === 'cold_hot_balance') {
+                // 冷熱平衡模式：從高頻和低頻號碼中各抽取一半
+                // 將所有1-49號碼按頻率排序
+                const allNumbers = [];
+                for (let i = 1; i <= 49; i++) {
+                    allNumbers.push({
+                        number: i,
+                        frequency: numberFreq[i] || 0
+                    });
+                }
+                
+                // 按頻率降序排序
+                allNumbers.sort((a, b) => b.frequency - a.frequency);
+                
+                // 找出中位數頻率（用於區分高頻和低頻）
+                const medianIndex = Math.floor(allNumbers.length / 2);
+                const medianFrequency = allNumbers[medianIndex].frequency;
+                
+                // 分離高頻和低頻號碼
+                const highFreqNumbers = allNumbers.filter(item => item.frequency > medianFrequency).map(item => item.number);
+                const lowFreqNumbers = allNumbers.filter(item => item.frequency < medianFrequency).map(item => item.number);
+                // 頻率等於中位數的號碼，一半歸高頻，一半歸低頻
+                const medianFreqNumbers = allNumbers.filter(item => item.frequency === medianFrequency).map(item => item.number);
+                const medianSplit = Math.floor(medianFreqNumbers.length / 2);
+                highFreqNumbers.push(...medianFreqNumbers.slice(0, medianSplit));
+                lowFreqNumbers.push(...medianFreqNumbers.slice(medianSplit));
+                
+                // 計算需要抽取的數量
+                const isOdd = filterCount % 2 === 1;
+                const highCount = isOdd ? Math.floor(filterCount / 2) + 1 : filterCount / 2;
+                const lowCount = Math.floor(filterCount / 2);
+                
+                // 從高頻號碼中隨機抽取
+                let selectedHigh = getRandomNumbers(highFreqNumbers, Math.min(highCount, highFreqNumbers.length));
+                
+                // 如果高頻號碼不夠，從低頻號碼中補足
+                if (selectedHigh.length < highCount) {
+                    const needFromLow = highCount - selectedHigh.length;
+                    const availableLow = lowFreqNumbers.filter(n => !selectedHigh.includes(n));
+                    const additionalFromLow = getRandomNumbers(availableLow, Math.min(needFromLow, availableLow.length));
+                    selectedHigh = [...selectedHigh, ...additionalFromLow];
+                }
+                
+                // 從低頻號碼中隨機抽取（排除已選的高頻號碼）
+                const availableLow = lowFreqNumbers.filter(n => !selectedHigh.includes(n));
+                const selectedLow = getRandomNumbers(availableLow, Math.min(lowCount, availableLow.length));
+                
+                // 合併結果並排序
+                currentFilteredNumbers = [...selectedHigh, ...selectedLow].sort((a, b) => a - b);
+                
+                modeDescription = `冷熱平衡模式 - 選取 ${filterCount} 個號碼（高頻${selectedHigh.length}個 + 低頻${selectedLow.length}個）`;
             }
 
+            // 保存頻率信息供其他功能使用
+            window.currentNumberFreq = numberFreq;
+            
             // 顯示結果
             displayFilterResults(startPeriod, endPeriod, maxFrequency, threshold, currentFilteredNumbers, filterMode, modeDescription);
             
@@ -5704,6 +5764,8 @@ console.log('lotteryData', lotteryData.length);
             } else if (filterMode === 'rank') {
                 infoText += `｜${modeDescription}｜篩選出 ${filteredNumbers.length} 個號碼`;
             } else if (filterMode === 'rank_with_pair') {
+                infoText += `｜${modeDescription}｜篩選出 ${filteredNumbers.length} 個號碼`;
+            } else if (filterMode === 'cold_hot_balance') {
                 infoText += `｜${modeDescription}｜篩選出 ${filteredNumbers.length} 個號碼`;
             }
             
