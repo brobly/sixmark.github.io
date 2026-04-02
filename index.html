@@ -1653,6 +1653,124 @@
             color: #666;
         }
 
+        .stats-summary-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px 16px;
+            margin-bottom: 20px;
+        }
+
+        .stats-summary-toolbar .stats-summary {
+            margin-bottom: 0;
+            text-align: left;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .stats-view-toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .stats-view-toggle-label {
+            font-size: 0.85rem;
+            color: #555;
+            white-space: nowrap;
+        }
+
+        .stats-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .stats-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .stats-switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .stats-switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .stats-switch input:checked + .stats-switch-slider {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stats-switch input:checked + .stats-switch-slider:before {
+            transform: translateX(20px);
+        }
+
+        .stat-draw-appearance {
+            margin-top: 15px;
+        }
+
+        .stat-draw-row {
+            /* display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start; */
+            text-align: left;
+            gap: 10px 14px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .stat-draw-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .stat-draw-period-label {
+            font-size: 0.9rem;
+            color: #444;
+            font-weight: 600;
+            min-width: 140px;
+            flex-shrink: 0;
+            padding-top: 4px;
+        }
+
+        .stat-draw-balls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            flex: 1;
+        }
+
+        .stat-draw-empty {
+            font-size: 0.9rem;
+            color: #888;
+            font-style: italic;
+        }
+
         /* 篩選按鈕樣式 */
         .filter-btn {
             margin-top: 10px;
@@ -3242,6 +3360,10 @@
         let runnerNumbers = []; // 腳碼
         const maxBankerNumbers = 5; // 最多5個膽碼
 
+        /** 統計頁：'cooccurrence' 共現分析 | 'periodBalls' 各期開獎號碼 */
+        let statsViewMode = 'cooccurrence';
+        let statsStatsSwitchBound = false;
+
         // 預設投注組合
         const quickSelections = {
             hot: [3, 7, 11, 13, 20, 21, 22, 23, 24, 27, 30], // 熱門號碼
@@ -3964,6 +4086,18 @@ console.log('lotteryData', lotteryData.length);
 
             // 初始化範圍資訊
             updateRangeInfo();
+
+            if (!statsStatsSwitchBound) {
+                statsStatsSwitchBound = true;
+                document.getElementById('stats-content').addEventListener('change', function (e) {
+                    if (e.target && e.target.id === 'stats-view-mode-switch') {
+                        statsViewMode = e.target.checked ? 'periodBalls' : 'cooccurrence';
+                        const sp = parseInt(document.getElementById('start-period').value) || 1;
+                        const ep = parseInt(document.getElementById('end-period').value) || 1;
+                        updateStatsWithRange(sp, ep);
+                    }
+                });
+            }
         }
 
         // 設置快速範圍選擇
@@ -4059,6 +4193,24 @@ console.log('lotteryData', lotteryData.length);
             }
         }
 
+        /** 單期開獎：六個正選（排序）+ 特別號，依排名號碼高亮球色 */
+        function buildDrawBallsHtml(row, rankNumber) {
+            const sortedRegular = [...row.numbers].sort((a, b) => a - b);
+            const extra = row.extra_number;
+            let html = '';
+            sortedRegular.forEach((n) => {
+                const cls = n === rankNumber
+                    ? 'hf-ball hf-ball--lg hf-ball--primary-glow'
+                    : 'hf-ball hf-ball--lg hf-ball--secondary';
+                html += `<span class="${cls}">${n}</span>`;
+            });
+            const extraCls = extra === rankNumber
+                ? 'hf-ball hf-ball--lg hf-ball--primary-glow'
+                : 'hf-ball hf-ball--lg hf-ball--warning';
+            html += `<span class="${extraCls}">${extra}</span>`;
+            return html;
+        }
+
         // 應用範圍選擇
         function applyRangeSelection() {
             const startPeriod = parseInt(document.getElementById('start-period').value) || 1;
@@ -4104,8 +4256,10 @@ console.log('lotteryData', lotteryData.length);
                     numberFreq[row.extra_number]++;
                 });
 
-                // 計算數字共現矩陣
-                const coMatrix = calculateCoOccurrence(selectedData);
+                // 共現模式才計算共現矩陣
+                const coMatrix = statsViewMode === 'cooccurrence'
+                    ? calculateCoOccurrence(selectedData)
+                    : null;
 
                 // 轉換為陣列並按頻率排序
                 const sortedNumbers = Object.entries(numberFreq)
@@ -4126,9 +4280,6 @@ console.log('lotteryData', lotteryData.length);
                     else if (rank <= 14) rankClass = 'rank-7';
                     else rankClass = 'rank-7';
 
-                    // 獲取與此數字最常共現的其他數字
-                    const topCoOccurring = getTopCoOccurring(item.number, coMatrix, 48);
-
                     html += `
                         <div class="number-stat">
                             <div class="stat-header">
@@ -4138,39 +4289,91 @@ console.log('lotteryData', lotteryData.length);
                                     <div class="stat-rank ${rankClass}">第${rank}名</div>
                                 </div>
                             </div>
+                    `;
+
+                    if (statsViewMode === 'cooccurrence') {
+                        const topCoOccurring = getTopCoOccurring(item.number, coMatrix, 48);
+
+                        html += `
                             <div class="co-occurrence">
                                 <div class="co-occurrence-title">常與以下數字同時出現：</div>
                                 <div class="co-numbers">
-                    `;
+                        `;
 
-                    if (topCoOccurring.length > 0) {
-                        topCoOccurring.forEach(co => {
-                            html += `
-                                <div class="co-number">
-                                    <div class="co-number-ball">${co.number}</div>
-                                    <span class="co-frequency">${co.frequency}次</span>
-                                </div>
-                            `;
-                        });
-                    } else {
-                        html += '<div class="co-number"><span class="co-frequency">暫無共現數據</span></div>';
-                    }
+                        if (topCoOccurring.length > 0) {
+                            topCoOccurring.forEach(co => {
+                                html += `
+                                    <div class="co-number">
+                                        <div class="co-number-ball">${co.number}</div>
+                                        <span class="co-frequency">${co.frequency}次</span>
+                                    </div>
+                                `;
+                            });
+                        } else {
+                            html += '<div class="co-number"><span class="co-frequency">暫無共現數據</span></div>';
+                        }
 
-                    html += `
+                        html += `
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        `;
+                    } else {
+                        html += `<div class="stat-draw-appearance">`;
+                        html += `<div class="co-occurrence-title">範圍內出現期數：</div>`;
+
+                        const matchingRows = [];
+                        selectedData.forEach((row, i) => {
+                            if (row.numbers.includes(item.number) || row.extra_number === item.number) {
+                                matchingRows.push({ row, relPeriod: startPeriod + i });
+                            }
+                        });
+
+                        if (matchingRows.length === 0) {
+                            html += `<div class="stat-draw-empty">本範圍內未出現此號碼</div>`;
+                        } else {
+                            matchingRows.forEach(({ row, relPeriod }) => {
+                                const ballsHtml = buildDrawBallsHtml(row, item.number);
+                                html += `
+                                    <div class="stat-draw-row">
+                                        <span class="stat-draw-period-label">第${relPeriod}期(${row.draw_number} - ${row.draw_date})</span>
+                                        <div class="stat-draw-balls">${ballsHtml}</div>
+                                    </div>
+                                `;
+                            });
+                        }
+
+                        html += `</div>`;
+                    }
+
+                    html += `</div>`;
                 });
 
                 html += '</div>';
 
                 const periodCount = endPeriod - startPeriod + 1;
+                const switchChecked = statsViewMode === 'periodBalls' ? 'checked' : '';
+                const summaryLine1 = statsViewMode === 'cooccurrence'
+                    ? `第${startPeriod}期至第${endPeriod}期號碼出現頻率統計與共現分析 (包含特別號)`
+                    : `第${startPeriod}期至第${endPeriod}期號碼出現頻率統計 — 各名顯示該號於範圍內出現之開獎期及該期全部號碼 (包含特別號)`;
+                const summaryLine2 = statsViewMode === 'cooccurrence'
+                    ? `統計期數：${periodCount}期 | 資料範圍：${selectedData.length}筆開獎記錄`
+                    : `統計期數：${periodCount}期 | 資料範圍：${selectedData.length}筆開獎記錄 | 排名號碼以藍色標示`;
+
                 statsContent.innerHTML = `
-                    <p class="stats-summary">
-                        第${startPeriod}期至第${endPeriod}期號碼出現頻率統計與共現分析 (包含特別號)<br>
-                        <small>統計期數：${periodCount}期 | 資料範圍：${selectedData.length}筆開獎記錄</small>
-                    </p>
+                    <div class="stats-summary-toolbar">
+                        <p class="stats-summary">
+                            ${summaryLine1}<br>
+                            <small>${summaryLine2}</small>
+                        </p>
+                        <div class="stats-view-toggle-wrap">
+                            <span class="stats-view-toggle-label">共現</span>
+                            <label class="stats-switch" title="切換：共現分析 / 各期開獎號碼">
+                                <input type="checkbox" id="stats-view-mode-switch" ${switchChecked}>
+                                <span class="stats-switch-slider"></span>
+                            </label>
+                            <span class="stats-view-toggle-label">開獎期</span>
+                        </div>
+                    </div>
                     ${html}
                 `;
 
