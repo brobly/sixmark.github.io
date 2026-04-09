@@ -649,14 +649,15 @@
                 width: 95%;
             }
 
-            /* 膽腳投注響應式 */
+            /* 投注模式響應式 */
             .betting-mode-tabs {
-                max-width: 250px;
+                max-width: 100%;
+                flex-wrap: wrap;
             }
 
             .mode-tab {
-                padding: 8px 15px;
-                font-size: 0.9rem;
+                padding: 8px 12px;
+                font-size: 0.8rem;
             }
 
             .banker-selection-status {
@@ -690,7 +691,7 @@
             background: #e9ecef;
             border-radius: 25px;
             padding: 5px;
-            max-width: 300px;
+            max-width: 500px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -1013,90 +1014,408 @@
             font-size: 1.2rem;
         }
 
-        /* 江恩螺旋四方圖樣式 */
-        .gann-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        /* Mandel 濃縮法樣式 */
+        .mandel-container {
+            max-width: 900px;
+            margin: 20px auto;
         }
 
-        .gann-cell {
-            width: 60px;
-            height: 60px;
+        .mandel-description {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .mandel-selector-box {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .mandel-selector-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .mandel-selector-label {
+            font-weight: 700;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .mandel-count {
+            font-weight: 600;
+            font-size: 14px;
+            color: #667eea;
+            background: rgba(102,126,234,0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .mandel-number-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+
+        .mandel-num-btn {
+            width: 100%;
+            aspect-ratio: 1;
+            border: 2px solid #e0e0e0;
+            border-radius: 50%;
+            background: white;
+            font-weight: 700;
+            font-size: 15px;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 18px;
-            border-radius: 8px;
+        }
+
+        .mandel-num-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            transform: scale(1.08);
+        }
+
+        .mandel-num-btn.selected {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
-            transition: all 0.3s ease;
+            border-color: transparent;
+            box-shadow: 0 3px 10px rgba(102,126,234,0.4);
+        }
+
+        .mandel-num-btn.selected:hover {
+            transform: scale(1.08);
+            box-shadow: 0 4px 14px rgba(102,126,234,0.6);
+        }
+
+        .mandel-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .mandel-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            position: relative;
+            transition: all 0.2s ease;
         }
 
-        .gann-cell:hover {
-            transform: scale(1.1) translateY(-3px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-            z-index: 10;
+        .mandel-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
-        .gann-cell.highlight {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.5);
-            animation: pulse 2s infinite;
+        .mandel-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
         }
 
-        .gann-cell.highlight:hover {
-            transform: scale(1.15) translateY(-3px);
-            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.7);
+        .mandel-btn-primary:hover:not(:disabled) {
+            box-shadow: 0 4px 15px rgba(102,126,234,0.5);
+            transform: translateY(-1px);
         }
 
-        @keyframes pulse {
-            0%, 100% {
-                box-shadow: 0 4px 15px rgba(240, 147, 251, 0.5);
-            }
-            50% {
-                box-shadow: 0 6px 20px rgba(240, 147, 251, 0.8);
-            }
+        .mandel-btn-secondary {
+            background: #f0f0f0;
+            color: #555;
         }
 
-        /* 江恩圖期數選擇器樣式增強 */
-        #gann-period-select:hover {
+        .mandel-btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        /* 進度條 */
+        .mandel-progress {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .mandel-progress-text {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 12px;
+        }
+
+        .mandel-progress-bar-outer {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .mandel-progress-bar-inner {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* 統計卡片 */
+        .mandel-results {
+            margin-top: 20px;
+        }
+
+        .mandel-stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .mandel-stat-card {
+            background: white;
+            padding: 18px 12px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .mandel-stat-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #667eea;
+        }
+
+        .mandel-stat-label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        /* 保證區塊 */
+        .mandel-guarantee-box {
+            background: linear-gradient(135deg, rgba(102,126,234,0.08), rgba(118,75,162,0.08));
+            border: 1px solid rgba(102,126,234,0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .mandel-guarantee-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .mandel-guarantee-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .mandel-guarantee-box li {
+            margin-bottom: 6px;
+            color: #444;
+        }
+
+        .mandel-prob-note {
+            margin-top: 12px;
+            padding: 10px;
+            background: rgba(255,193,7,0.1);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #856404;
+        }
+
+        /* 組合列表 */
+        .mandel-combos-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .mandel-combos-header h3 {
+            color: #333;
+        }
+
+        .mandel-combos-scroll {
+            max-height: 500px;
+            overflow-y: auto;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .mandel-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .mandel-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            font-size: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .mandel-table td {
+            padding: 8px 15px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        .mandel-table tr:hover {
+            background: rgba(102,126,234,0.04);
+        }
+
+        .combo-num {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            line-height: 32px;
+            text-align: center;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 700;
+            font-size: 13px;
+            margin: 2px 3px;
+        }
+
+        /* 說明區塊 */
+        .mandel-info-box {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .mandel-info-box h3 {
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .mandel-info-box ul {
+            padding-left: 20px;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        /* v 值選擇器 */
+        .mandel-v-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .mandel-v-label {
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .mandel-v-select {
+            padding: 8px 16px;
+            font-size: 15px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .mandel-v-select:hover {
             border-color: #764ba2;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
         }
 
-        #gann-period-select:focus {
-            border-color: #764ba2;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        .mandel-v-select:focus {
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
         }
 
-        /* 響應式設計 */
+        .mandel-estimate-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, rgba(102,126,234,0.12), rgba(118,75,162,0.12));
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .mandel-combos-preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 8px;
+        }
+
+        .mandel-combos-preview-table td {
+            padding: 6px 12px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+
+        /* 響應式 */
         @media (max-width: 768px) {
-            .gann-cell {
-                width: 45px;
-                height: 45px;
-                font-size: 14px;
+            .mandel-number-grid {
+                grid-template-columns: repeat(7, 1fr);
+            }
+
+            .mandel-stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .mandel-stat-value {
+                font-size: 1.3rem;
             }
         }
 
         @media (max-width: 480px) {
-            .gann-cell {
-                width: 38px;
-                height: 38px;
-                font-size: 12px;
+            .mandel-number-grid {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 4px;
             }
-            
-            .gann-grid {
-                gap: 5px;
-                padding: 10px;
+
+            .mandel-num-btn {
+                font-size: 13px;
+            }
+
+            .mandel-stats-row {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+
+            .mandel-actions {
+                flex-direction: column;
+            }
+
+            .combo-num {
+                width: 26px;
+                height: 26px;
+                line-height: 26px;
+                font-size: 11px;
+                margin: 1px 2px;
             }
         }
 
@@ -1531,114 +1850,7 @@
             text-align: center;
         }
 
-        /* 江恩圖區域樣式 */
-        .gann-container {
-            text-align: center;
-            margin: 30px auto;
-            max-width: 800px;
-        }
-
-        .gann-description {
-            color: #666;
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
-
-        .gann-selector-box {
-            margin-bottom: 25px;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .gann-selector-inner {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .gann-selector-label {
-            font-weight: 600;
-            color: #333;
-            font-size: 16px;
-        }
-
-        .gann-period-select {
-            padding: 10px 20px;
-            font-size: 16px;
-            border: 2px solid #667eea;
-            border-radius: 8px;
-            background: white;
-            color: #333;
-            cursor: pointer;
-            min-width: 200px;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        .gann-period-select:hover {
-            border-color: #764ba2;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-        }
-
-        .gann-period-select:focus {
-            border-color: #764ba2;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-        }
-
-        .gann-selected-info {
-            margin-top: 15px;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 8px;
-            color: white;
-            font-size: 14px;
-            display: none;
-        }
-
-        .gann-info-label {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .gann-selected-numbers {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .gann-grid-wrapper {
-            display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .gann-info-box {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            text-align: left;
-        }
-
-        .gann-info-title {
-            color: #333;
-            margin-bottom: 15px;
-        }
-
-        .gann-info-list {
-            color: #666;
-            line-height: 1.8;
-        }
-
-        .gann-highlight-color {
-            color: #f5576c;
-        }
+        /* (Mandel styles defined above) */
 
         /* 其他區域樣式 */
         .section-heading {
@@ -2300,15 +2512,7 @@
                 width: 100%;
             }
 
-            .gann-selector-inner {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .gann-period-select {
-                width: 100%;
-                max-width: 300px;
-            }
+            /* (removed gann responsive) */
         }
 
         @media (max-width: 768px) {
@@ -2345,26 +2549,7 @@
                 gap: 6px;
             }
 
-            .gann-container {
-                margin: 20px auto;
-                padding: 0 10px;
-            }
-
-            .gann-description {
-                font-size: 14px;
-            }
-
-            .gann-selector-box {
-                padding: 15px;
-            }
-
-            .gann-grid-wrapper {
-                padding: 15px;
-            }
-
-            .gann-info-box {
-                padding: 15px;
-            }
+            /* (removed gann responsive) */
         }
 
         @media (max-width: 480px) {
@@ -2439,32 +2624,7 @@
                 font-size: 10px;
             }
 
-            .gann-container {
-                margin: 15px auto;
-            }
-
-            .gann-selector-box {
-                padding: 12px;
-            }
-
-            .gann-period-select {
-                padding: 8px 15px;
-                font-size: 14px;
-            }
-
-            .gann-grid-wrapper {
-                padding: 10px;
-                border-radius: 10px;
-            }
-
-            .gann-info-box {
-                padding: 12px;
-            }
-
-            .gann-info-list {
-                font-size: 14px;
-                line-height: 1.6;
-            }
+            /* (removed gann responsive) */
         }
 
         /* ========== 動態生成元素的CSS Classes ========== */
@@ -2793,28 +2953,7 @@
             width: 100%;
         }
 
-        /* 江恩圖號碼球 */
-        .gann-ball {
-            display: inline-block;
-            width: 32px;
-            height: 32px;
-            line-height: 32px;
-            text-align: center;
-            border-radius: 50%;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .gann-ball--regular {
-            background: white;
-            color: #667eea;
-        }
-
-        .gann-ball--extra {
-            background: #ffd700;
-            color: #333;
-            border: 2px solid white;
-        }
+        /* (removed gann ball styles) */
 
         /* ========== 動態元素的Responsive設計 ========== */
         @media (max-width: 768px) {
@@ -2852,12 +2991,7 @@
                 font-size: 11px;
             }
 
-            .gann-ball {
-                width: 28px;
-                height: 28px;
-                line-height: 28px;
-                font-size: 12px;
-            }
+            /* (removed gann ball responsive) */
         }
 
         @media (max-width: 480px) {
@@ -2924,12 +3058,7 @@
                 font-size: 9px;
             }
 
-            .gann-ball {
-                width: 24px;
-                height: 24px;
-                line-height: 24px;
-                font-size: 11px;
-            }
+            /* (removed gann ball responsive) */
         }
 
         @media (max-width: 360px) {
@@ -2972,7 +3101,6 @@
                 <button class="tab-button active" onclick="switchTab('results')">開獎結果</button>
                 <button class="tab-button" onclick="switchTab('statistics')">統計分析</button>
                 <button class="tab-button" onclick="switchTab('verification')">核對中獎</button>
-                <button class="tab-button" onclick="switchTab('gann-square')">江恩螺旋四方圖</button>
             </div>
 
             <div class="tab-content">
@@ -3189,6 +3317,7 @@
                         <div class="betting-mode-tabs">
                             <button class="mode-tab active" onclick="switchBettingMode('complex')">複式投注</button>
                             <button class="mode-tab" onclick="switchBettingMode('banker')">膽腳投注</button>
+                            <button class="mode-tab" onclick="switchBettingMode('mandel')">Mandel 濃縮法</button>
                         </div>
 
                         <!-- 複式投注模式 -->
@@ -3229,6 +3358,121 @@
                                     <!-- 1-49的號碼將由JavaScript動態生成 -->
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Mandel 濃縮法模式 -->
+                        <div id="mandel-betting-mode" class="betting-mode-content hidden">
+                            <p class="mandel-description">
+                                Stefan Mandel 覆蓋設計法：選擇號碼後生成濃縮組合，保證覆蓋所有五元組。
+                            </p>
+
+                            <!-- v 值選擇器 -->
+                            <div class="mandel-v-selector">
+                                <label class="mandel-v-label">選擇號碼數量：</label>
+                                <select id="mandel-v-select" class="mandel-v-select" onchange="onMandelVChange()">
+                                    <option value="7">7 個</option>
+                                    <option value="8">8 個</option>
+                                    <option value="9">9 個</option>
+                                    <option value="10">10 個</option>
+                                    <option value="11">11 個</option>
+                                    <option value="12">12 個</option>
+                                    <option value="13">13 個</option>
+                                    <option value="14">14 個</option>
+                                    <option value="15" selected>15 個</option>
+                                    <option value="16">16 個</option>
+                                    <option value="17">17 個</option>
+                                    <option value="18">18 個</option>
+                                </select>
+                                <span id="mandel-estimate" class="mandel-estimate-badge">預估 ~569 注 ≈ $5,690</span>
+                            </div>
+
+                            <!-- 號碼選擇狀態 -->
+                            <div class="mandel-selector-header" style="margin-bottom:10px;">
+                                <span id="mandel-count" class="mandel-count">已選：0 / 15</span>
+                            </div>
+
+                            <!-- 號碼網格 -->
+                            <div id="mandel-grid" class="number-grid"></div>
+
+                            <!-- 操作按鈕 -->
+                            <div class="mandel-actions">
+                                <button onclick="mandelQuickRandom()" class="mandel-btn mandel-btn-secondary">隨機選號</button>
+                                <button onclick="mandelClearAll()" class="mandel-btn mandel-btn-secondary">清除全部</button>
+                                <button id="mandel-generate-btn" onclick="mandelGenerate()" class="mandel-btn mandel-btn-primary" disabled>生成濃縮組合</button>
+                            </div>
+
+                            <!-- 計算進度 -->
+                            <div id="mandel-progress" class="mandel-progress" style="display:none;">
+                                <div class="mandel-progress-text">正在計算覆蓋設計...</div>
+                                <div class="mandel-progress-bar-outer">
+                                    <div id="mandel-progress-bar" class="mandel-progress-bar-inner" style="width:0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- 結果摘要 -->
+                            <div id="mandel-results" class="mandel-results" style="display:none;">
+                                <div class="mandel-stats-row">
+                                    <div class="mandel-stat-card">
+                                        <div class="mandel-stat-value" id="mandel-total-bets">0</div>
+                                        <div class="mandel-stat-label">總注數</div>
+                                    </div>
+                                    <div class="mandel-stat-card">
+                                        <div class="mandel-stat-value" id="mandel-total-cost">$0</div>
+                                        <div class="mandel-stat-label">總成本（每注$10）</div>
+                                    </div>
+                                    <div class="mandel-stat-card">
+                                        <div class="mandel-stat-value" id="mandel-full-cost">$0</div>
+                                        <div class="mandel-stat-label">全買成本</div>
+                                    </div>
+                                    <div class="mandel-stat-card">
+                                        <div class="mandel-stat-value" id="mandel-saving">0%</div>
+                                        <div class="mandel-stat-label">節省比例</div>
+                                    </div>
+                                </div>
+
+                                <div class="mandel-guarantee-box">
+                                    <h3>覆蓋保證</h3>
+                                    <p>如果開獎 6 個號碼<strong>全部</strong>在你選的號碼之中：</p>
+                                    <ul>
+                                        <li>至少 <strong>1 注</strong> 中 5 個號碼（二獎級別）</li>
+                                        <li>多注中 4 個號碼（三獎級別）</li>
+                                        <li>大量中 3 個號碼（每注 $40）</li>
+                                    </ul>
+                                    <p class="mandel-prob-note" id="mandel-prob-note">
+                                        6 個開獎號碼全落在 15 個之中的機率：≈ 0.036%（約 1/2,794）
+                                    </p>
+                                </div>
+
+                                <!-- 組合列表（預設收合） -->
+                                <div class="mandel-combos-header">
+                                    <h3>組合列表 <span id="mandel-combo-count-label"></span></h3>
+                                    <div>
+                                        <button onclick="mandelToggleCombos()" class="mandel-btn mandel-btn-secondary" id="mandel-toggle-btn">展開全部</button>
+                                        <button onclick="mandelExport()" class="mandel-btn mandel-btn-secondary">匯出 CSV</button>
+                                    </div>
+                                </div>
+                                <div id="mandel-combos-preview"></div>
+                                <div class="mandel-combos-scroll" id="mandel-combos-full" style="display:none;">
+                                    <table class="mandel-table">
+                                        <thead>
+                                            <tr><th>#</th><th>號碼組合</th></tr>
+                                        </thead>
+                                        <tbody id="mandel-combos-body"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- 原理說明（折疊） -->
+                            <details class="mandel-info-box" style="margin-top:15px;">
+                                <summary style="cursor:pointer;font-weight:700;color:#333;">原理說明</summary>
+                                <ul style="margin-top:10px;">
+                                    <li>這是數學上的<strong>覆蓋設計 C(v, 6, 5)</strong></li>
+                                    <li>從 v 個號碼中，所有 5 個一組的組合 = C(v,5) 個</li>
+                                    <li>每注 6 個號碼包含 C(6,5) = 6 個五元組</li>
+                                    <li>用貪心演算法找最少注數，使每個五元組至少被覆蓋一次</li>
+                                    <li>Stefan Mandel 用此法歷史上贏了 14 次彩票</li>
+                                </ul>
+                            </details>
                         </div>
 
                         <!-- 控制按鈕 -->
@@ -3292,46 +3536,7 @@
                     <div id="verification-content" class="loading">正在載入統計分析數據...</div>
                 </div>
 
-                <!-- 江恩螺旋四方圖標籤頁 -->
-                <div id="gann-square" class="tab-pane">
-                    <h2>江恩螺旋四方圖</h2>
-                    <div class="gann-container">
-                        <p class="gann-description">
-                            江恩螺旋四方圖是由威廉·江恩（William D. Gann）創造的數字排列方法。<br>
-                            49個號碼按順時針方向由內向外螺旋排列，從中心的01開始，向右、向下、向左、向上依次展開。
-                        </p>
-                        
-                        <!-- 期數選擇器 -->
-                        <div class="gann-selector-box">
-                            <div class="gann-selector-inner">
-                                <label class="gann-selector-label">🎯 選擇期數：</label>
-                                <select id="gann-period-select" class="gann-period-select" onchange="updateGannSquareHighlight()">
-                                    <option value="">請選擇期數</option>
-                                </select>
-                            </div>
-                            <div id="gann-selected-info" class="gann-selected-info">
-                                <div class="gann-info-label">開獎號碼：</div>
-                                <div id="gann-selected-numbers" class="gann-selected-numbers"></div>
-                            </div>
-                        </div>
-                        
-                        <!-- 7x7 螺旋網格 -->
-                        <div id="gann-square-grid" class="gann-grid-wrapper">
-                            <!-- 將由 JavaScript 生成 -->
-                        </div>
-                        
-                        <div class="gann-info-box">
-                            <h3 class="gann-info-title">📖 說明</h3>
-                            <ul class="gann-info-list">
-                                <li>中心位置為 <strong>01</strong>，代表起始點</li>
-                                <li>數字按照 <strong>右→下→左→上</strong> 的順時針方向螺旋排列</li>
-                                <li>每個數字都有其獨特的空間位置，可用於號碼分析</li>
-                                <li>選擇期數後，該期開出的號碼將以<strong class="gann-highlight-color">粉紅色漸變</strong>高亮顯示</li>
-                                <li>江恩理論認為，這種排列方式能揭示數字間的內在關聯</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+                <!-- (Mandel 已移入核對中獎) -->
             </div>
         </div>
     </div>
@@ -3374,6 +3579,8 @@
 
         // 嵌入真實六合彩數據
         const lotteryData = [
+        {draw_number: "26/037", draw_date: "2026-04-07", numbers: [8, 23, 25, 29, 33, 34], extra_number: 49},
+        {draw_number: "26/036", draw_date: "2026-04-04", numbers: [20, 28, 32, 35, 40, 45], extra_number: 43},
         {draw_number: "26/035", draw_date: "2026-03-30", numbers: [9, 18, 19, 20, 28, 32], extra_number: 44},
         {draw_number: "26/034", draw_date: "2026-03-28", numbers: [11, 21, 26, 27, 42, 45], extra_number: 19},
         {draw_number: "26/033", draw_date: "2026-03-26", numbers: [12, 17, 23, 27, 28, 37], extra_number: 3},
@@ -3976,9 +4183,6 @@ console.log('lotteryData', lotteryData.length);
                 }
                 // 預設載入統計分析結果
                 loadVerification();
-            } else if (tabName === 'gann-square') {
-                // 初始化江恩螺旋四方圖
-                initializeGannSquare();
             }
         }
 
@@ -4398,15 +4602,20 @@ console.log('lotteryData', lotteryData.length);
             });
             event.target.classList.add('active');
 
-            // 切換顯示內容
+            // 隱藏所有模式
+            document.getElementById('complex-betting-mode').classList.add('hidden');
+            document.getElementById('banker-betting-mode').classList.add('hidden');
+            document.getElementById('mandel-betting-mode').classList.add('hidden');
+
+            // 顯示對應模式
             if (mode === 'complex') {
                 document.getElementById('complex-betting-mode').classList.remove('hidden');
-                document.getElementById('banker-betting-mode').classList.add('hidden');
-            } else {
-                document.getElementById('complex-betting-mode').classList.add('hidden');
+            } else if (mode === 'banker') {
                 document.getElementById('banker-betting-mode').classList.remove('hidden');
-                // 初始化膽腳投注網格
                 initializeBankerGrids();
+            } else if (mode === 'mandel') {
+                document.getElementById('mandel-betting-mode').classList.remove('hidden');
+                initializeMandel();
             }
 
             // 更新統計分析
@@ -4639,6 +4848,8 @@ console.log('lotteryData', lotteryData.length);
                 runnerNumbers = [];
                 updateBankerDisplay();
                 updateBankerStatus();
+            } else if (currentBettingMode === 'mandel') {
+                mandelClearAll();
             } else {
                 selectedNumbers = [];
                 updateNumberDisplay();
@@ -4832,7 +5043,16 @@ console.log('lotteryData', lotteryData.length);
             let analysisNumbers;
 
             // 根據投注模式驗證和生成組合
-            if (currentBettingMode === 'banker') {
+            if (currentBettingMode === 'mandel') {
+                // Mandel 濃縮法模式
+                if (mandelCombinations.length === 0) {
+                    alert('請先生成 Mandel 濃縮組合！');
+                    return;
+                }
+                analysisNumbers = [...mandelSelected];
+                allCombinations = mandelCombinations;
+                totalCombinations = mandelCombinations.length;
+            } else if (currentBettingMode === 'banker') {
                 // 膽腳投注模式驗證
                 if (bankerNumbers.length < 1 || bankerNumbers.length > 5) {
                     alert('請選擇1-5個膽碼！');
@@ -4970,7 +5190,17 @@ console.log('lotteryData', lotteryData.length);
 
             // 生成選擇的號碼顯示
             let selectedNumbersHtml;
-            if (data.bettingMode === 'banker') {
+            if (data.bettingMode === 'mandel') {
+                const numbersHtml = data.selectedNumbers.map(num =>
+                    `<span class="number-ball number-ball-margin">${num}</span>`
+                ).join('');
+                selectedNumbersHtml = `
+                    <div class="margin-bottom-10">
+                        <strong>Mandel C(${data.selectedNumbers.length},6,5) 濃縮組合</strong>
+                    </div>
+                    <div>${numbersHtml}</div>
+                `;
+            } else if (data.bettingMode === 'banker') {
                 const bankerHtml = data.bankerNumbers.map(num =>
                     `<span class="number-ball number-ball-banker">${num}</span>`
                 ).join('');
@@ -5344,7 +5574,17 @@ console.log('lotteryData', lotteryData.length);
                 let allCombinations;
                 let totalCombinations;
 
-                if (currentBettingMode === 'banker') {
+                if (currentBettingMode === 'mandel') {
+                    // Mandel 濃縮法模式
+                    if (mandelCombinations.length > 0) {
+                        analysisNumbers = [...mandelSelected];
+                        allCombinations = mandelCombinations;
+                        totalCombinations = mandelCombinations.length;
+                    } else {
+                        verificationContent.innerHTML = '<div class="info" style="text-align:center;padding:40px;color:#888;">請先選擇號碼並點擊「生成濃縮組合」</div>';
+                        return;
+                    }
+                } else if (currentBettingMode === 'banker') {
                     // 膽腳投注模式
                     if (bankerNumbers.length >= 1 && bankerNumbers.length <= 5 && runnerNumbers.length >= 1) {
                         const needFromRunner = 6 - bankerNumbers.length;
@@ -5353,12 +5593,11 @@ console.log('lotteryData', lotteryData.length);
                             // 生成膽腳組合
                             allCombinations = generateBankerCombinations(bankerNumbers, runnerNumbers);
                             totalCombinations = allCombinations.length;
-                            
+
                             // 驗證組合數計算是否正確
                             const expectedCombinations = getCombinationCount(runnerNumbers.length, needFromRunner);
                             if (totalCombinations !== expectedCombinations) {
                                 console.warn(`膽腳投注組合數不一致：實際=${totalCombinations}, 理論=${expectedCombinations}`);
-                                // 使用理論值確保正確性
                                 totalCombinations = expectedCombinations;
                             }
                         } else {
@@ -5638,10 +5877,7 @@ console.log('lotteryData', lotteryData.length);
                 }
                 loadVerification();
             }
-            // 如果當前在江恩螺旋四方圖標籤頁，初始化江恩圖
-            if (document.getElementById('gann-square').classList.contains('active')) {
-                initializeGannSquare();
-            }
+            // Mandel 已整合到核對中獎頁面內
         });
 
         // ========================================
@@ -7581,287 +7817,328 @@ console.log('lotteryData', lotteryData.length);
         }
 
         // ========================================
-        // 江恩螺旋四方圖功能
+        // Mandel 組合濃縮法功能
         // ========================================
 
-        // 生成螺旋矩陣（從中心向外順時針旋轉：右→下→左→上）
-        function generateSpiralMatrix(size) {
-            const matrix = Array.from({ length: size }, () => Array(size).fill(0));
-            
-            // 從中心開始
-            const center = Math.floor(size / 2);
-            let row = center;
-            let col = center;
-            let num = 1;
-            
-            matrix[row][col] = num++;
-            
-            // 螺旋方向：右(0)→下(1)→左(2)→上(3)
-            // 方向向量：[行變化, 列變化]
-            const directions = [
-                [0, 1],   // 右
-                [1, 0],   // 下
-                [0, -1],  // 左
-                [-1, 0]   // 上
-            ];
-            
-            let steps = 1; // 當前方向需要走的步數
-            let dirIndex = 0; // 當前方向索引
-            
-            while (num <= size * size) {
-                // 每個方向走兩次後，步數增加
-                for (let i = 0; i < 2; i++) {
-                    const [dr, dc] = directions[dirIndex];
-                    
-                    for (let step = 0; step < steps; step++) {
-                        row += dr;
-                        col += dc;
-                        
-                        if (row >= 0 && row < size && col >= 0 && col < size) {
-                            matrix[row][col] = num++;
-                        }
-                        
-                        if (num > size * size) break;
-                    }
-                    
-                    if (num > size * size) break;
-                    
-                    // 切換到下一個方向
-                    dirIndex = (dirIndex + 1) % 4;
-                }
-                
-                // 每完成兩個方向，步數增加
-                steps++;
+        let mandelSelected = [];
+        let mandelCombinations = [];
+        let mandelTargetV = 15;
+        let mandelCombosExpanded = false;
+
+        // 預估注數查表（La Jolla Covering Repository 最優值）
+        const MANDEL_ESTIMATE_TABLE = {
+            7: 7, 8: 11, 9: 22, 10: 50, 11: 77, 12: 132,
+            13: 226, 14: 390, 15: 569, 16: 812, 17: 1232, 18: 1872
+        };
+
+        function initializeMandel() {
+            const grid = document.getElementById('mandel-grid');
+            if (!grid || grid.children.length > 0) return;
+
+            let html = '';
+            for (let i = 1; i <= 49; i++) {
+                html += `<div class="number-cell" data-num="${i}" onclick="toggleMandelNum(${i})">${i}</div>`;
             }
-            
-            return matrix;
+            grid.innerHTML = html;
+            updateMandelUI();
         }
 
-        // 初始化江恩螺旋四方圖
-        function initializeGannSquare() {
-            const gridContainer = document.getElementById('gann-square-grid');
-            const periodSelect = document.getElementById('gann-period-select');
-            
-            // 生成7x7螺旋矩陣
-            const matrix = generateSpiralMatrix(7);
-            
-            // 創建網格HTML
-            let html = '<div class="gann-grid">';
-            
-            for (let i = 0; i < 7; i++) {
-                for (let j = 0; j < 7; j++) {
-                    const number = matrix[i][j];
-                    
-                    // 格式化數字為兩位數
-                    const displayNumber = number.toString().padStart(2, '0');
-                    
-                    html += `
-                        <div class="gann-cell" data-number="${number}" title="號碼: ${displayNumber}">
-                            ${displayNumber}
-                        </div>
-                    `;
-                }
+        function onMandelVChange() {
+            const sel = document.getElementById('mandel-v-select');
+            mandelTargetV = parseInt(sel.value);
+
+            // 如果已選數量超過新 v 值，裁剪
+            if (mandelSelected.length > mandelTargetV) {
+                mandelSelected = mandelSelected.slice(0, mandelTargetV);
             }
-            
-            html += '</div>';
-            gridContainer.innerHTML = html;
-            
-            // 初始化期數選擇器
-            initializeGannPeriodSelect();
+
+            // 清除已生成組合
+            mandelCombinations = [];
+            const resultsDiv = document.getElementById('mandel-results');
+            if (resultsDiv) resultsDiv.style.display = 'none';
+
+            updateMandelEstimate();
+            updateMandelUI();
         }
 
-        // 初始化期數選擇器
-        function initializeGannPeriodSelect() {
-            const periodSelect = document.getElementById('gann-period-select');
-            
-            if (!periodSelect || !lotteryData || lotteryData.length === 0) return;
-            
-            // 清空現有選項（保留第一個預設選項）
-            periodSelect.innerHTML = '<option value="">請選擇期數</option>';
-            
-            // 取最近100期（或全部，如果少於100期）
-            const periodsToShow = Math.min(100, lotteryData.length);
-            
-            for (let i = 0; i < periodsToShow; i++) {
-                const data = lotteryData[i];
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = `第 ${data.draw_number} 期 - ${data.draw_date}`;
-                periodSelect.appendChild(option);
-            }
+        function updateMandelEstimate() {
+            const est = MANDEL_ESTIMATE_TABLE[mandelTargetV] || '?';
+            const cost = typeof est === 'number' ? (est * 10).toLocaleString() : '?';
+            const badge = document.getElementById('mandel-estimate');
+            if (badge) badge.textContent = `預估 ~${est} 注 ≈ $${cost}`;
         }
 
-        // 獲取數字在螺旋矩陣中的位置
-        function getNumberPosition(number) {
-            const matrix = generateSpiralMatrix(7);
-            for (let i = 0; i < 7; i++) {
-                for (let j = 0; j < 7; j++) {
-                    if (matrix[i][j] === number) {
-                        return { row: i, col: j };
-                    }
-                }
-            }
-            return null;
-        }
-
-        // 檢查上一期的橫行或直行連續2個以上數字
-        function getConsecutiveRowColNumbers(previousNumbers) {
-            const consecutiveNumbers = new Set();
-            
-            // 獲取所有數字的位置（包含數字本身）
-            const numberPositions = [];
-            previousNumbers.forEach(num => {
-                const pos = getNumberPosition(num);
-                if (pos !== null) {
-                    numberPositions.push({ num, row: pos.row, col: pos.col });
-                }
-            });
-            
-            // 按行分組
-            const rowGroups = {};
-            numberPositions.forEach(item => {
-                if (!rowGroups[item.row]) {
-                    rowGroups[item.row] = [];
-                }
-                rowGroups[item.row].push(item);
-            });
-            
-            // 檢查每行是否有連續2個以上數字（相鄰或接近）
-            Object.keys(rowGroups).forEach(row => {
-                const rowNums = rowGroups[row].sort((a, b) => a.col - b.col);
-                if (rowNums.length >= 2) {
-                    // 檢查是否在同一行且連續或接近（列差<=1）
-                    for (let i = 0; i < rowNums.length - 1; i++) {
-                        if (Math.abs(rowNums[i].col - rowNums[i + 1].col) <= 1) {
-                            consecutiveNumbers.add(rowNums[i].num);
-                            consecutiveNumbers.add(rowNums[i + 1].num);
-                        }
-                    }
-                }
-            });
-            
-            // 按列分組
-            const colGroups = {};
-            numberPositions.forEach(item => {
-                if (!colGroups[item.col]) {
-                    colGroups[item.col] = [];
-                }
-                colGroups[item.col].push(item);
-            });
-            
-            // 檢查每列是否有連續2個以上數字（相鄰或接近）
-            Object.keys(colGroups).forEach(col => {
-                const colNums = colGroups[col].sort((a, b) => a.row - b.row);
-                if (colNums.length >= 2) {
-                    // 檢查是否在同一列且連續或接近（行差<=1）
-                    for (let i = 0; i < colNums.length - 1; i++) {
-                        if (Math.abs(colNums[i].row - colNums[i + 1].row) <= 1) {
-                            consecutiveNumbers.add(colNums[i].num);
-                            consecutiveNumbers.add(colNums[i + 1].num);
-                        }
-                    }
-                }
-            });
-            
-            return Array.from(consecutiveNumbers);
-        }
-
-        // 更新江恩圖高亮顯示
-        function updateGannSquareHighlight() {
-            const periodSelect = document.getElementById('gann-period-select');
-            const selectedInfo = document.getElementById('gann-selected-info');
-            const selectedNumbersDiv = document.getElementById('gann-selected-numbers');
-            
-            // 移除所有現有的高亮和樣式
-            document.querySelectorAll('.gann-cell').forEach(cell => {
-                cell.classList.remove('highlight', 'previous-period', 'consecutive-row-col');
-                cell.style.color = '';
-                cell.style.background = '';
-            });
-            
-            const selectedIndex = periodSelect.value;
-            
-            if (selectedIndex === '') {
-                // 未選擇期數，隱藏資訊區
-                selectedInfo.style.display = 'none';
+        function toggleMandelNum(num) {
+            const idx = mandelSelected.indexOf(num);
+            if (idx >= 0) {
+                mandelSelected.splice(idx, 1);
+            } else if (mandelSelected.length < mandelTargetV) {
+                mandelSelected.push(num);
+            } else {
                 return;
             }
-            
-            // 獲取選中期數的開獎數據
-            const drawData = lotteryData[parseInt(selectedIndex)];
-            
-            if (!drawData) return;
-            
-            // 獲取該期的所有號碼（包含特別號）
-            const currentNumbers = [...drawData.numbers, drawData.extra_number];
-            
-            // 獲取上一期的數據（如果存在）
-            let previousNumbers = [];
-            let consecutiveNumbers = [];
-            const previousIndex = parseInt(selectedIndex) + 1;
-            if (previousIndex < lotteryData.length) {
-                const previousData = lotteryData[previousIndex];
-                previousNumbers = [...previousData.numbers, previousData.extra_number];
-                consecutiveNumbers = getConsecutiveRowColNumbers(previousNumbers);
+            mandelSelected.sort((a, b) => a - b);
+            updateMandelUI();
+        }
+
+        function updateMandelUI() {
+            document.querySelectorAll('#mandel-grid .number-cell').forEach(cell => {
+                const n = parseInt(cell.dataset.num);
+                cell.classList.toggle('selected', mandelSelected.includes(n));
+            });
+            const countEl = document.getElementById('mandel-count');
+            if (countEl) countEl.textContent = `已選：${mandelSelected.length} / ${mandelTargetV}`;
+            const genBtn = document.getElementById('mandel-generate-btn');
+            if (genBtn) genBtn.disabled = mandelSelected.length !== mandelTargetV;
+        }
+
+        function mandelQuickRandom() {
+            mandelSelected = [];
+            const pool = [];
+            for (let i = 1; i <= 49; i++) pool.push(i);
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
             }
-            
-            // 定義顏色方案 - 設計明顯對比色
-            // 顏色1：當期數字 - 使用亮綠色/青色，在深色背景上非常明顯
-            const color1Bg = 'linear-gradient(135deg, #00d4ff 0%, #00ff88 100%)';
-            // 顏色2：上一期數字 - 使用亮橙色/黃色，與當期區分
-            const color2Bg = 'linear-gradient(135deg, #ff9500 0%, #ffcc00 100%)';
-            // 顏色3：上一期的橫行或直行連續2個以上數字 - 使用鮮明的紅色/粉紅色背景
-            const color3Bg = 'linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%)';
-            
-            // 先處理上一期的橫行或直行連續2個以上數字（顏色3：背景顏色）- 優先級最高
-            consecutiveNumbers.forEach(num => {
-                const cell = document.querySelector(`.gann-cell[data-number="${num}"]`);
-                if (cell) {
-                    cell.style.background = color3Bg;
-                    cell.style.color = 'white';
-                    cell.style.fontWeight = 'bold';
-                    cell.style.boxShadow = '0 0 10px rgba(255, 65, 108, 0.8)';
-                    cell.classList.add('consecutive-row-col');
+            mandelSelected = pool.slice(0, mandelTargetV).sort((a, b) => a - b);
+            updateMandelUI();
+        }
+
+        function mandelClearAll() {
+            mandelSelected = [];
+            mandelCombinations = [];
+            mandelCombosExpanded = false;
+            updateMandelUI();
+            const resultsDiv = document.getElementById('mandel-results');
+            if (resultsDiv) resultsDiv.style.display = 'none';
+            const progressDiv = document.getElementById('mandel-progress');
+            if (progressDiv) progressDiv.style.display = 'none';
+        }
+
+        // 生成 n 取 r 的所有組合（回傳索引陣列）
+        function combinations(n, r) {
+            const result = [];
+            const combo = [];
+            function gen(start) {
+                if (combo.length === r) {
+                    result.push([...combo]);
+                    return;
                 }
-            });
-            
-            // 高亮顯示上一期號碼（顏色2：背景顏色）- 如果不在連續數字中
-            previousNumbers.forEach(num => {
-                const cell = document.querySelector(`.gann-cell[data-number="${num}"]`);
-                if (cell && !currentNumbers.includes(num) && !consecutiveNumbers.includes(num)) {
-                    // 如果該號碼不在當期中且不在連續數字中，才應用上一期樣式
-                    cell.style.background = color2Bg;
-                    cell.style.color = '#333';
-                    cell.style.fontWeight = 'bold';
-                    cell.style.boxShadow = '0 0 8px rgba(255, 149, 0, 0.6)';
-                    cell.classList.add('previous-period');
+                for (let i = start; i < n; i++) {
+                    combo.push(i);
+                    gen(i + 1);
+                    combo.pop();
                 }
-            });
-            
-            // 高亮顯示當期號碼（顏色1：背景顏色）- 最後處理，優先顯示當期
-            currentNumbers.forEach(num => {
-                const cell = document.querySelector(`.gann-cell[data-number="${num}"]`);
-                if (cell) {
-                    // 當期號碼覆蓋上一期樣式
-                    cell.style.background = color1Bg;
-                    cell.style.color = '#333';
-                    cell.style.fontWeight = 'bold';
-                    cell.style.boxShadow = '0 0 10px rgba(0, 212, 255, 0.8)';
-                    cell.classList.remove('previous-period', 'consecutive-row-col');
+            }
+            gen(0);
+            return result;
+        }
+
+        // 從一個集合中取 r 個的所有子集
+        function subsetsOf(arr, r) {
+            const result = [];
+            const combo = [];
+            function gen(start) {
+                if (combo.length === r) {
+                    result.push([...combo]);
+                    return;
                 }
+                for (let i = start; i < arr.length; i++) {
+                    combo.push(arr[i]);
+                    gen(i + 1);
+                    combo.pop();
+                }
+            }
+            gen(0);
+            return result;
+        }
+
+        function subKey(arr) {
+            return arr.join(',');
+        }
+
+        // 計算 C(n,r)
+        function comb(n, r) {
+            if (r > n) return 0;
+            if (r === 0 || r === n) return 1;
+            let result = 1;
+            for (let i = 0; i < r; i++) {
+                result = result * (n - i) / (i + 1);
+            }
+            return Math.round(result);
+        }
+
+        async function mandelGenerate() {
+            if (mandelSelected.length !== mandelTargetV) return;
+
+            const progressDiv = document.getElementById('mandel-progress');
+            const progressBar = document.getElementById('mandel-progress-bar');
+            const resultsDiv = document.getElementById('mandel-results');
+            resultsDiv.style.display = 'none';
+            progressDiv.style.display = 'block';
+            progressBar.style.width = '0%';
+
+            await new Promise(r => setTimeout(r, 50));
+
+            const n = mandelTargetV;
+            const k = 6;
+            const t = 5;
+
+            // 生成所有 t-子集（用 0 ~ n-1 索引）
+            const tSubs = combinations(n, t);
+            const uncovered = new Set(tSubs.map(s => subKey(s)));
+            const totalTocover = uncovered.size;
+
+            // 生成所有 k-子集
+            const kSubs = combinations(n, k);
+
+            // 預計算每個 k-子集覆蓋的 t-子集 keys
+            const kSubCoverage = kSubs.map(ks => subsetsOf(ks, t).map(ts => subKey(ts)));
+
+            const selected = [];
+            let iteration = 0;
+            const yieldEvery = n <= 12 ? 100 : 30;
+
+            while (uncovered.size > 0) {
+                let bestIdx = -1;
+                let bestCount = 0;
+
+                for (let i = 0; i < kSubs.length; i++) {
+                    let count = 0;
+                    for (const key of kSubCoverage[i]) {
+                        if (uncovered.has(key)) count++;
+                    }
+                    if (count > bestCount) {
+                        bestCount = count;
+                        bestIdx = i;
+                    }
+                }
+
+                if (bestIdx === -1) break;
+
+                selected.push(kSubs[bestIdx]);
+
+                for (const key of kSubCoverage[bestIdx]) {
+                    uncovered.delete(key);
+                }
+
+                iteration++;
+
+                if (iteration % yieldEvery === 0 || uncovered.size === 0) {
+                    const pct = ((totalTocover - uncovered.size) / totalTocover * 100).toFixed(1);
+                    progressBar.style.width = pct + '%';
+                    await new Promise(r => setTimeout(r, 0));
+                }
+            }
+
+            // 將索引映射回實際號碼
+            mandelCombinations = selected.map(combo =>
+                combo.map(idx => mandelSelected[idx])
+            );
+
+            progressBar.style.width = '100%';
+            await new Promise(r => setTimeout(r, 200));
+            progressDiv.style.display = 'none';
+
+            mandelCombosExpanded = false;
+            displayMandelResults();
+
+            // 自動觸發下方統計分析更新
+            loadVerification();
+        }
+
+        function displayMandelResults() {
+            const v = mandelTargetV;
+            const total = mandelCombinations.length;
+            const fullBuy = comb(v, 6);
+            const saving = fullBuy > 0 ? ((1 - total / fullBuy) * 100).toFixed(1) : '0';
+
+            document.getElementById('mandel-total-bets').textContent = total;
+            document.getElementById('mandel-total-cost').textContent = '$' + (total * 10).toLocaleString();
+            document.getElementById('mandel-full-cost').textContent = '$' + (fullBuy * 10).toLocaleString();
+            document.getElementById('mandel-saving').textContent = saving + '%';
+
+            // 更新機率說明
+            const prob = comb(v, 6) / comb(49, 6);
+            const probPct = (prob * 100).toFixed(4);
+            const probInv = Math.round(1 / prob);
+            const probNote = document.getElementById('mandel-prob-note');
+            if (probNote) {
+                probNote.textContent = `6 個開獎號碼全落在 ${v} 個之中的機率：≈ ${probPct}%（約 1/${probInv.toLocaleString()}）`;
+            }
+
+            // 組合列表標籤
+            const countLabel = document.getElementById('mandel-combo-count-label');
+            if (countLabel) countLabel.textContent = `（共 ${total} 注）`;
+
+            // 預覽前 20 注
+            const previewDiv = document.getElementById('mandel-combos-preview');
+            const previewCount = Math.min(20, total);
+            let previewHtml = '<table class="mandel-combos-preview-table">';
+            for (let i = 0; i < previewCount; i++) {
+                const balls = mandelCombinations[i].map(n =>
+                    `<span class="combo-num">${n}</span>`
+                ).join('');
+                previewHtml += `<tr><td style="width:40px;color:#999;">${i + 1}</td><td>${balls}</td></tr>`;
+            }
+            if (total > 20) {
+                previewHtml += `<tr><td colspan="2" style="color:#999;padding:10px;">... 還有 ${total - 20} 注（點擊「展開全部」查看）</td></tr>`;
+            }
+            previewHtml += '</table>';
+            previewDiv.innerHTML = previewHtml;
+
+            // 填充完整組合表格（延遲填充）
+            const tbody = document.getElementById('mandel-combos-body');
+            let html = '';
+            mandelCombinations.forEach((combo, i) => {
+                const balls = combo.map(n =>
+                    `<span class="combo-num">${n}</span>`
+                ).join('');
+                html += `<tr><td>${i + 1}</td><td>${balls}</td></tr>`;
             });
-            
-            // 顯示開獎號碼資訊
-            selectedInfo.style.display = 'block';
-            
-            // 顯示號碼球
-            let numbersHtml = '';
-            drawData.numbers.forEach(num => {
-                numbersHtml += `<span class="gann-ball gann-ball--regular">${num}</span>`;
+            tbody.innerHTML = html;
+
+            // 收合狀態
+            document.getElementById('mandel-combos-full').style.display = 'none';
+            const toggleBtn = document.getElementById('mandel-toggle-btn');
+            if (toggleBtn) toggleBtn.textContent = '展開全部';
+            mandelCombosExpanded = false;
+
+            document.getElementById('mandel-results').style.display = 'block';
+        }
+
+        function mandelToggleCombos() {
+            mandelCombosExpanded = !mandelCombosExpanded;
+            const fullDiv = document.getElementById('mandel-combos-full');
+            const previewDiv = document.getElementById('mandel-combos-preview');
+            const toggleBtn = document.getElementById('mandel-toggle-btn');
+
+            if (mandelCombosExpanded) {
+                fullDiv.style.display = 'block';
+                previewDiv.style.display = 'none';
+                toggleBtn.textContent = '收合';
+            } else {
+                fullDiv.style.display = 'none';
+                previewDiv.style.display = 'block';
+                toggleBtn.textContent = '展開全部';
+            }
+        }
+
+        function mandelExport() {
+            if (mandelCombinations.length === 0) return;
+
+            let csv = '注數,號碼1,號碼2,號碼3,號碼4,號碼5,號碼6\n';
+            mandelCombinations.forEach((combo, i) => {
+                csv += (i + 1) + ',' + combo.join(',') + '\n';
             });
-            numbersHtml += `<span class="gann-ball gann-ball--extra">${drawData.extra_number}</span>`;
-            
-            selectedNumbersDiv.innerHTML = numbersHtml;
+
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mandel_C${mandelTargetV}_6_5.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
     </script>
