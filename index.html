@@ -16,6 +16,19 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
         }
+        .d-flex{
+            display: flex;
+        }
+        .align-items-center{
+            align-items: center;
+        }
+        .justify-content-center{
+            justify-content: center;
+        }
+
+        .mx-auto{
+            margin-left:auto
+        }
 
         .container {
             max-width: 1400px;
@@ -735,6 +748,7 @@
         }
 
         .banker-section, .runner-section {
+            /* display: flex; */
             margin-bottom: 25px;
         }
 
@@ -786,13 +800,57 @@
             opacity: 0.5;
         }
 
+        .random-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .random-controls .count-select {
+            padding: 6px 10px;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            background: white;
+            color: #333;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .random-controls .count-select:hover {
+            border-color: #764ba2;
+        }
+
+        .random-controls .random-btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .random-controls .random-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
         .selection-status {
             display: flex;
-            justify-content: center;
-            gap: 30px;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
             margin-bottom: 20px;
             font-weight: 600;
             color: #333;
+            max-width: 500px;
+            margin: 0 auto 1rem;
         }
 
         .number-grid {
@@ -837,7 +895,7 @@
             display: flex;
             justify-content: center;
             gap: 15px;
-            margin-bottom: 20px;
+            /* margin-bottom: 20px; */
         }
 
         .control-btn {
@@ -3308,221 +3366,279 @@
                 <!-- 核對中獎標籤頁 -->
                 <div id="verification" class="tab-pane">
                     <h2>核對中獎</h2>
+                    <div class="d-flex" style="gap: 2rem; display: flex; justify-content: center;">
+                        <!-- 投注號碼選擇區域 -->
+                        <div class="number-selection-container">
+                            <h3 class="section-heading">🎯 投注號碼選擇</h3>
 
-                    <!-- 投注號碼選擇區域 -->
-                    <div class="number-selection-container">
-                        <h3 class="section-heading">🎯 投注號碼選擇</h3>
-
-                        <!-- 投注模式切換 -->
-                        <div class="betting-mode-tabs">
-                            <button class="mode-tab active" onclick="switchBettingMode('complex')">複式投注</button>
-                            <button class="mode-tab" onclick="switchBettingMode('banker')">膽腳投注</button>
-                            <button class="mode-tab" onclick="switchBettingMode('mandel')">Mandel 濃縮法</button>
-                        </div>
-
-                        <!-- 複式投注模式 -->
-                        <div id="complex-betting-mode" class="betting-mode-content">
-                            <!-- 號碼選擇狀態 -->
-                            <div class="selection-status">
-                                <span id="selected-count">已選擇：0個號碼</span>
-                                <span id="combination-count">可組合：0注</span>
+                            <!-- 投注模式切換 -->
+                            <div class="betting-mode-tabs">
+                                <button class="mode-tab active" onclick="switchBettingMode('complex')">複式投注</button>
+                                <button class="mode-tab" onclick="switchBettingMode('banker')">膽腳投注</button>
+                                <button class="mode-tab" onclick="switchBettingMode('mandel')">Mandel 濃縮法</button>
                             </div>
 
-                            <!-- 號碼表格 -->
-                            <div class="number-grid" id="number-grid">
-                                <!-- 1-49的號碼將由JavaScript動態生成 -->
-                            </div>
-                        </div>
+                            <!-- 複式投注模式 -->
+                            <div id="complex-betting-mode" class="betting-mode-content">
+                                <!-- 號碼選擇狀態 -->
+                                <div class="selection-status">
+                                    <div class="random-controls">
+                                        <select id="bet-count-select" class="count-select">
+                                            <option value="6">6 個</option>
+                                            <option value="7">7 個</option>
+                                            <option value="8">8 個</option>
+                                            <option value="9">9 個</option>
+                                            <option value="10" selected>10 個</option>
+                                            <option value="11">11 個</option>
+                                            <option value="12">12 個</option>
+                                            <option value="13">13 個</option>
+                                            <option value="14">14 個</option>
+                                            <option value="15">15 個</option>
+                                            <option value="16">16 個</option>
+                                            <option value="17">17 個</option>
+                                            <option value="18">18 個</option>
+                                            <option value="19">19 個</option>
+                                            <option value="20">20 個</option>
+                                        </select>
+                                        <button onclick="complexRandomSelect()" class="random-btn">隨機號碼</button>
+                                    </div>
+                                    <span id="selected-count">已選擇：0個號碼</span>
+                                    <span id="combination-count">可組合：0注</span>
+                                </div>
 
-                        <!-- 膽腳投注模式 -->
-                        <div id="banker-betting-mode" class="betting-mode-content hidden">
-                            <!-- 膽腳投注狀態 -->
-                            <div class="banker-selection-status">
-                                <span id="banker-count">膽碼：0個</span>
-                                <span id="runner-count">腳碼：0個</span>
-                                <span id="banker-combination-count">總組合：0注</span>
-                            </div>
-
-                            <!-- 膽碼選擇區 -->
-                            <div class="banker-section">
-                                <h4 class="section-title">膽碼選擇（1-5個號碼）</h4>
-                                <div class="number-grid banker-grid" id="banker-grid">
+                                <!-- 號碼表格 -->
+                                <div class="number-grid" id="number-grid">
                                     <!-- 1-49的號碼將由JavaScript動態生成 -->
                                 </div>
                             </div>
 
-                            <!-- 腳碼選擇區 -->
-                            <div class="runner-section">
-                                <h4 class="section-title">腳碼選擇（至少1個號碼）</h4>
-                                <div class="number-grid runner-grid" id="runner-grid">
-                                    <!-- 1-49的號碼將由JavaScript動態生成 -->
+                            <!-- 膽腳投注模式 -->
+                            <div id="banker-betting-mode" class="betting-mode-content hidden">
+                                <!-- 膽腳投注狀態 -->
+                                <div class="banker-selection-status">
+                                    <span id="banker-count">膽碼：0個</span>
+                                    <span id="runner-count">腳碼：0個</span>
+                                    <span id="banker-combination-count">總組合：0注</span>
                                 </div>
-                            </div>
-                        </div>
 
-                        <!-- Mandel 濃縮法模式 -->
-                        <div id="mandel-betting-mode" class="betting-mode-content hidden">
-                            <p class="mandel-description">
-                                Stefan Mandel 覆蓋設計法：選擇號碼後生成濃縮組合，保證覆蓋所有五元組。
-                            </p>
-
-                            <!-- v 值選擇器 -->
-                            <div class="mandel-v-selector">
-                                <label class="mandel-v-label">選擇號碼數量：</label>
-                                <select id="mandel-v-select" class="mandel-v-select" onchange="onMandelVChange()">
-                                    <option value="7">7 個</option>
-                                    <option value="8">8 個</option>
-                                    <option value="9">9 個</option>
-                                    <option value="10">10 個</option>
-                                    <option value="11">11 個</option>
-                                    <option value="12">12 個</option>
-                                    <option value="13">13 個</option>
-                                    <option value="14">14 個</option>
-                                    <option value="15" selected>15 個</option>
-                                    <option value="16">16 個</option>
-                                    <option value="17">17 個</option>
-                                    <option value="18">18 個</option>
-                                </select>
-                                <span id="mandel-estimate" class="mandel-estimate-badge">預估 ~569 注 ≈ $5,690</span>
-                            </div>
-
-                            <!-- 號碼選擇狀態 -->
-                            <div class="mandel-selector-header" style="margin-bottom:10px;">
-                                <span id="mandel-count" class="mandel-count">已選：0 / 15</span>
-                            </div>
-
-                            <!-- 號碼網格 -->
-                            <div id="mandel-grid" class="number-grid"></div>
-
-                            <!-- 操作按鈕 -->
-                            <div class="mandel-actions">
-                                <button onclick="mandelQuickRandom()" class="mandel-btn mandel-btn-secondary">隨機選號</button>
-                                <button onclick="mandelClearAll()" class="mandel-btn mandel-btn-secondary">清除全部</button>
-                                <button id="mandel-generate-btn" onclick="mandelGenerate()" class="mandel-btn mandel-btn-primary" disabled>生成濃縮組合</button>
-                            </div>
-
-                            <!-- 計算進度 -->
-                            <div id="mandel-progress" class="mandel-progress" style="display:none;">
-                                <div class="mandel-progress-text">正在計算覆蓋設計...</div>
-                                <div class="mandel-progress-bar-outer">
-                                    <div id="mandel-progress-bar" class="mandel-progress-bar-inner" style="width:0%"></div>
-                                </div>
-                            </div>
-
-                            <!-- 結果摘要 -->
-                            <div id="mandel-results" class="mandel-results" style="display:none;">
-                                <div class="mandel-stats-row">
-                                    <div class="mandel-stat-card">
-                                        <div class="mandel-stat-value" id="mandel-total-bets">0</div>
-                                        <div class="mandel-stat-label">總注數</div>
+                                <!-- 膽碼選擇區 -->
+                                <div class="banker-section">
+                                    <div class="d-flex align-items-center mx-auto justify-content-center">
+                                        <h4 class="section-title">膽碼選擇（1-5個號碼）</h4>
+                                        <div class="random-controls" style="justify-content:center;margin-bottom:12px;">
+                                            <select id="banker-count-select" class="count-select">
+                                                <option value="1">1 個</option>
+                                                <option value="2" selected>2 個</option>
+                                                <option value="3">3 個</option>
+                                                <option value="4">4 個</option>
+                                                <option value="5">5 個</option>
+                                            </select>
+                                            <button onclick="bankerRandomSelect()" class="random-btn">隨機號碼</button>
+                                        </div>
                                     </div>
-                                    <div class="mandel-stat-card">
-                                        <div class="mandel-stat-value" id="mandel-total-cost">$0</div>
-                                        <div class="mandel-stat-label">總成本（每注$10）</div>
-                                    </div>
-                                    <div class="mandel-stat-card">
-                                        <div class="mandel-stat-value" id="mandel-full-cost">$0</div>
-                                        <div class="mandel-stat-label">全買成本</div>
-                                    </div>
-                                    <div class="mandel-stat-card">
-                                        <div class="mandel-stat-value" id="mandel-saving">0%</div>
-                                        <div class="mandel-stat-label">節省比例</div>
+                                    <div class="number-grid banker-grid" id="banker-grid">
+                                        <!-- 1-49的號碼將由JavaScript動態生成 -->
                                     </div>
                                 </div>
 
-                                <div class="mandel-guarantee-box">
-                                    <h3>覆蓋保證</h3>
-                                    <p>如果開獎 6 個號碼<strong>全部</strong>在你選的號碼之中：</p>
-                                    <ul>
-                                        <li>至少 <strong>1 注</strong> 中 5 個號碼（二獎級別）</li>
-                                        <li>多注中 4 個號碼（三獎級別）</li>
-                                        <li>大量中 3 個號碼（每注 $40）</li>
+                                <!-- 腳碼選擇區 -->
+                                <div class="runner-section">
+
+                                    <div class="d-flex align-items-center mx-auto justify-content-center">
+                                        <h4 class="section-title">腳碼選擇（至少1個號碼）</h4>
+                                        <div class="random-controls" style="justify-content:center;margin-bottom:12px;">
+                                            <select id="runner-count-select" class="count-select">
+                                                <option value="1">1 個</option>
+                                                <option value="2">2 個</option>
+                                                <option value="3">3 個</option>
+                                                <option value="4">4 個</option>
+                                                <option value="5">5 個</option>
+                                                <option value="6">6 個</option>
+                                                <option value="7">7 個</option>
+                                                <option value="8" selected>8 個</option>
+                                                <option value="9">9 個</option>
+                                                <option value="10">10 個</option>
+                                                <option value="11">11 個</option>
+                                                <option value="12">12 個</option>
+                                                <option value="13">13 個</option>
+                                                <option value="14">14 個</option>
+                                            </select>
+                                            <button onclick="runnerRandomSelect()" class="random-btn">隨機號碼</button>
+                                        </div>
+                                    </div>
+                                    <div class="number-grid runner-grid" id="runner-grid">
+                                        <!-- 1-49的號碼將由JavaScript動態生成 -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Mandel 濃縮法模式 -->
+                            <div id="mandel-betting-mode" class="betting-mode-content hidden">
+                                <p class="mandel-description">
+                                    Stefan Mandel 覆蓋設計法：選擇號碼後生成濃縮組合，保證覆蓋所有五元組。
+                                </p>
+
+                                <!-- v 值選擇器 -->
+                                <div class="mandel-v-selector">
+                                    <label class="mandel-v-label">選擇號碼數量：</label>
+                                    <select id="mandel-v-select" class="mandel-v-select" onchange="onMandelVChange()">
+                                        <option value="7">7 個</option>
+                                        <option value="8">8 個</option>
+                                        <option value="9">9 個</option>
+                                        <option value="10">10 個</option>
+                                        <option value="11">11 個</option>
+                                        <option value="12">12 個</option>
+                                        <option value="13">13 個</option>
+                                        <option value="14">14 個</option>
+                                        <option value="15" selected>15 個</option>
+                                        <option value="16">16 個</option>
+                                        <option value="17">17 個</option>
+                                        <option value="18">18 個</option>
+                                    </select>
+                                    <span id="mandel-estimate" class="mandel-estimate-badge">預估 ~569 注 ≈ $5,690</span>
+                                </div>
+
+                                <!-- 號碼選擇狀態 -->
+                                <div class="mandel-selector-header" style="margin-bottom:10px;">
+                                    <span id="mandel-count" class="mandel-count">已選：0 / 15</span>
+                                </div>
+
+                                <!-- 號碼網格 -->
+                                <div id="mandel-grid" class="number-grid"></div>
+
+                                <!-- 操作按鈕 -->
+                                <div class="mandel-actions">
+                                    <button onclick="mandelQuickRandom()" class="mandel-btn mandel-btn-secondary">隨機選號</button>
+                                    <button onclick="mandelClearAll()" class="mandel-btn mandel-btn-secondary">清除全部</button>
+                                    <button id="mandel-generate-btn" onclick="mandelGenerate()" class="mandel-btn mandel-btn-primary" disabled>生成濃縮組合</button>
+                                </div>
+
+                                <!-- 計算進度 -->
+                                <div id="mandel-progress" class="mandel-progress" style="display:none;">
+                                    <div class="mandel-progress-text">正在計算覆蓋設計...</div>
+                                    <div class="mandel-progress-bar-outer">
+                                        <div id="mandel-progress-bar" class="mandel-progress-bar-inner" style="width:0%"></div>
+                                    </div>
+                                </div>
+
+                                <!-- 結果摘要 -->
+                                <div id="mandel-results" class="mandel-results" style="display:none;">
+                                    <div class="mandel-stats-row">
+                                        <div class="mandel-stat-card">
+                                            <div class="mandel-stat-value" id="mandel-total-bets">0</div>
+                                            <div class="mandel-stat-label">總注數</div>
+                                        </div>
+                                        <div class="mandel-stat-card">
+                                            <div class="mandel-stat-value" id="mandel-total-cost">$0</div>
+                                            <div class="mandel-stat-label">總成本（每注$10）</div>
+                                        </div>
+                                        <div class="mandel-stat-card">
+                                            <div class="mandel-stat-value" id="mandel-full-cost">$0</div>
+                                            <div class="mandel-stat-label">全買成本</div>
+                                        </div>
+                                        <div class="mandel-stat-card">
+                                            <div class="mandel-stat-value" id="mandel-saving">0%</div>
+                                            <div class="mandel-stat-label">節省比例</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mandel-guarantee-box">
+                                        <h3>覆蓋保證</h3>
+                                        <p>如果開獎 6 個號碼<strong>全部</strong>在你選的號碼之中：</p>
+                                        <ul>
+                                            <li>至少 <strong>1 注</strong> 中 5 個號碼（三獎級別）</li>
+                                            <li>多注中 4 個號碼（五獎級別）</li>
+                                            <li>大量中 3 個號碼（七獎，每注 $40）</li>
+                                        </ul>
+                                        <p style="margin-top:8px;font-size:0.85em;color:#e67e22;">⚠ 此設計不保證頭獎（中6個）或二獎（中5個+特別號），僅保證至少三獎。</p>
+                                        <p class="mandel-prob-note" id="mandel-prob-note">
+                                            6 個開獎號碼全落在 15 個之中的機率：≈ 0.036%（約 1/2,794）
+                                        </p>
+                                    </div>
+
+                                    <!-- 組合列表（預設收合） -->
+                                    <div class="mandel-combos-header">
+                                        <h3>組合列表 <span id="mandel-combo-count-label"></span></h3>
+                                        <div>
+                                            <button onclick="mandelToggleSection()" class="mandel-btn mandel-btn-secondary" id="mandel-section-toggle-btn">隱藏</button>
+                                            <button onclick="mandelToggleCombos()" class="mandel-btn mandel-btn-secondary" id="mandel-toggle-btn">展開全部</button>
+                                            <button onclick="mandelExport()" class="mandel-btn mandel-btn-secondary">匯出 CSV</button>
+                                        </div>
+                                    </div>
+                                    <div id="mandel-combos-section">
+                                    <div id="mandel-combos-preview"></div>
+                                    <div class="mandel-combos-scroll" id="mandel-combos-full" style="display:none;">
+                                        <table class="mandel-table">
+                                            <thead>
+                                                <tr><th>#</th><th>號碼組合</th></tr>
+                                            </thead>
+                                            <tbody id="mandel-combos-body"></tbody>
+                                        </table>
+                                    </div>
+                                    </div>
+                                </div>
+
+                                <!-- 原理說明（折疊） -->
+                                <details class="mandel-info-box" style="margin-top:15px;">
+                                    <summary style="cursor:pointer;font-weight:700;color:#333;">原理說明</summary>
+                                    <ul style="margin-top:10px;">
+                                        <li>這是數學上的<strong>覆蓋設計 C(v, 6, 5)</strong></li>
+                                        <li>從 v 個號碼中，所有 5 個一組的組合 = C(v,5) 個</li>
+                                        <li>每注 6 個號碼包含 C(6,5) = 6 個五元組</li>
+                                        <li>用貪心演算法找最少注數，使每個五元組至少被覆蓋一次</li>
+                                        <li>Stefan Mandel 用此法歷史上贏了 14 次彩票</li>
                                     </ul>
-                                    <p class="mandel-prob-note" id="mandel-prob-note">
-                                        6 個開獎號碼全落在 15 個之中的機率：≈ 0.036%（約 1/2,794）
-                                    </p>
-                                </div>
+                                </details>
+                            </div>
 
-                                <!-- 組合列表（預設收合） -->
-                                <div class="mandel-combos-header">
-                                    <h3>組合列表 <span id="mandel-combo-count-label"></span></h3>
-                                    <div>
-                                        <button onclick="mandelToggleCombos()" class="mandel-btn mandel-btn-secondary" id="mandel-toggle-btn">展開全部</button>
-                                        <button onclick="mandelExport()" class="mandel-btn mandel-btn-secondary">匯出 CSV</button>
+                            <!-- 控制按鈕 -->
+                            <!-- <div class="random-controls">
+                                <button class="control-btn reset-btn" onclick="resetSelection()">🔄 重置</button>
+                                <button class="control-btn save-btn" onclick="saveSelection()">💾 保存選擇</button>
+                            </div>
+
+                            <div class="quick-selection">
+                                <h4>快速選擇預設組合：</h4>
+                                <div class="quick-options">
+                                    <button class="quick-option-btn" onclick="loadQuickSelection('hot')">熱門號碼</button>
+                                    <button class="quick-option-btn" onclick="loadQuickSelection('custom1')">組合一</button>
+                                    <button class="quick-option-btn" onclick="loadQuickSelection('custom2')">組合二</button>
+                                    <button class="quick-option-btn" onclick="loadQuickSelection('saved')">我的保存</button>
+                                </div>
+                            </div> -->
+                        </div>
+
+                        <!-- 期數範圍選擇區域 -->
+                        <div class="verification-controls">
+                            <div class="range-selection">
+                                <div class="range-title">📊 期數範圍選擇</div>
+
+                                <div class="range-inputs">
+                                    <div class="input-group">
+                                        <label class="input-label">開始期數</label>
+                                        <input type="number" id="verification-start-period" class="period-input" min="1" max="999" value="1" placeholder="1">
+                                    </div>
+
+                                    <div class="range-separator">至</div>
+
+                                    <div class="input-group">
+                                        <label class="input-label">結束期數</label>
+                                        <input type="number" id="verification-end-period" class="period-input" min="1" max="999" value="50" placeholder="40">
                                     </div>
                                 </div>
-                                <div id="mandel-combos-preview"></div>
-                                <div class="mandel-combos-scroll" id="mandel-combos-full" style="display:none;">
-                                    <table class="mandel-table">
-                                        <thead>
-                                            <tr><th>#</th><th>號碼組合</th></tr>
-                                        </thead>
-                                        <tbody id="mandel-combos-body"></tbody>
-                                    </table>
-                                </div>
-                            </div>
 
-                            <!-- 原理說明（折疊） -->
-                            <details class="mandel-info-box" style="margin-top:15px;">
-                                <summary style="cursor:pointer;font-weight:700;color:#333;">原理說明</summary>
-                                <ul style="margin-top:10px;">
-                                    <li>這是數學上的<strong>覆蓋設計 C(v, 6, 5)</strong></li>
-                                    <li>從 v 個號碼中，所有 5 個一組的組合 = C(v,5) 個</li>
-                                    <li>每注 6 個號碼包含 C(6,5) = 6 個五元組</li>
-                                    <li>用貪心演算法找最少注數，使每個五元組至少被覆蓋一次</li>
-                                    <li>Stefan Mandel 用此法歷史上贏了 14 次彩票</li>
-                                </ul>
-                            </details>
-                        </div>
-
-                        <!-- 控制按鈕 -->
-                        <div class="selection-controls">
-                            <button class="control-btn reset-btn" onclick="resetSelection()">🔄 重置</button>
-                            <button class="control-btn save-btn" onclick="saveSelection()">💾 保存選擇</button>
-                        </div>
-
-                        <!-- 快速選擇選項 -->
-                        <div class="quick-selection">
-                            <h4>快速選擇預設組合：</h4>
-                            <div class="quick-options">
-                                <button class="quick-option-btn" onclick="loadQuickSelection('hot')">熱門號碼</button>
-                                <button class="quick-option-btn" onclick="loadQuickSelection('custom1')">組合一</button>
-                                <button class="quick-option-btn" onclick="loadQuickSelection('custom2')">組合二</button>
-                                <button class="quick-option-btn" onclick="loadQuickSelection('saved')">我的保存</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 期數範圍選擇區域 -->
-                    <div class="verification-controls">
-                        <div class="range-selection">
-                            <div class="range-title">📊 期數範圍選擇</div>
-
-                            <div class="range-inputs">
-                                <div class="input-group">
-                                    <label class="input-label">開始期數</label>
-                                    <input type="number" id="verification-start-period" class="period-input" min="1" max="999" value="1" placeholder="1">
+                                <div class="range-info">
+                                    <span id="verification-period-count">統計期數：40期</span> |
+                                    <span id="verification-period-range">範圍：第1期 至 第40期</span>
                                 </div>
 
-                                <div class="range-separator">至</div>
-
-                                <div class="input-group">
-                                    <label class="input-label">結束期數</label>
-                                    <input type="number" id="verification-end-period" class="period-input" min="1" max="999" value="50" placeholder="40">
+                                <div class="quick-select">
+                                    <button class="next-period-btn" onclick="shiftRangeForward('verification')">下10期 ➡️</button>
+                                    <button class="quick-btn" onclick="setVerificationQuickRange(1, 10)">近10期</button>
+                                    <button class="quick-btn" onclick="setVerificationQuickRange(1, 20)">近20期</button>
+                                    <button class="quick-btn" onclick="setVerificationQuickRange(1, 30)">近30期</button>
+                                    <button class="quick-btn" onclick="setVerificationQuickRange(1, 40)">近40期</button>
                                 </div>
-                            </div>
-
-                            <div class="range-info">
-                                <span id="verification-period-count">統計期數：40期</span> |
-                                <span id="verification-period-range">範圍：第1期 至 第40期</span>
-                            </div>
-
-                            <div class="quick-select">
-                                <button class="next-period-btn" onclick="shiftRangeForward('verification')">下10期 ➡️</button>
-                                <button class="quick-btn" onclick="setVerificationQuickRange(1, 10)">近10期</button>
-                                <button class="quick-btn" onclick="setVerificationQuickRange(1, 20)">近20期</button>
-                                <button class="quick-btn" onclick="setVerificationQuickRange(1, 30)">近30期</button>
-                                <button class="quick-btn" onclick="setVerificationQuickRange(1, 40)">近40期</button>
                             </div>
                         </div>
                     </div>
@@ -3579,6 +3695,8 @@
 
         // 嵌入真實六合彩數據
         const lotteryData = [
+        {draw_number: "26/039", draw_date: "2026-04-11", numbers: [11, 14, 17, 28, 40, 42], extra_number: 2},
+        {draw_number: "26/038", draw_date: "2026-04-09", numbers: [13, 16, 24, 43, 44, 45], extra_number: 40},
         {draw_number: "26/037", draw_date: "2026-04-07", numbers: [8, 23, 25, 29, 33, 34], extra_number: 49},
         {draw_number: "26/036", draw_date: "2026-04-04", numbers: [20, 28, 32, 35, 40, 45], extra_number: 43},
         {draw_number: "26/035", draw_date: "2026-03-30", numbers: [9, 18, 19, 20, 28, 32], extra_number: 44},
@@ -4781,6 +4899,64 @@ console.log('lotteryData', lotteryData.length);
             updateSelectionStatus();
         }
 
+        // Fisher-Yates 洗牌
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // 複式投注隨機選號
+        function complexRandomSelect() {
+            const selectEl = document.getElementById('bet-count-select');
+            if (!selectEl) { console.error('bet-count-select not found'); return; }
+            const raw = parseInt(selectEl.value, 10);
+            const count = Math.max(6, Math.min(maxSelections, isNaN(raw) ? 10 : raw));
+
+            const pool = [];
+            for (let i = 1; i <= 49; i++) pool.push(i);
+            shuffleArray(pool);
+            selectedNumbers = pool.slice(0, count).sort((a, b) => a - b);
+            updateNumberDisplay();
+            updateSelectionStatus();
+        }
+
+        // 膽碼隨機選號
+        function bankerRandomSelect() {
+            const selectEl = document.getElementById('banker-count-select');
+            if (!selectEl) { console.error('banker-count-select not found'); return; }
+            const raw = parseInt(selectEl.value, 10);
+            const count = Math.max(1, Math.min(maxBankerNumbers, isNaN(raw) ? 2 : raw));
+
+            const pool = [];
+            for (let i = 1; i <= 49; i++) {
+                if (!runnerNumbers.includes(i)) pool.push(i);
+            }
+            shuffleArray(pool);
+            bankerNumbers = pool.slice(0, Math.min(count, pool.length)).sort((a, b) => a - b);
+            updateBankerDisplay();
+            updateBankerStatus();
+        }
+
+        // 腳碼隨機選號
+        function runnerRandomSelect() {
+            const selectEl = document.getElementById('runner-count-select');
+            if (!selectEl) { console.error('runner-count-select not found'); return; }
+            const raw = parseInt(selectEl.value, 10);
+            const count = Math.max(1, Math.min(14, isNaN(raw) ? 8 : raw));
+
+            const pool = [];
+            for (let i = 1; i <= 49; i++) {
+                if (!bankerNumbers.includes(i)) pool.push(i);
+            }
+            shuffleArray(pool);
+            runnerNumbers = pool.slice(0, Math.min(count, pool.length)).sort((a, b) => a - b);
+            updateBankerDisplay();
+            updateBankerStatus();
+        }
+
         // 切換號碼選擇狀態
         function toggleNumber(number) {
             const index = selectedNumbers.indexOf(number);
@@ -4802,11 +4978,11 @@ console.log('lotteryData', lotteryData.length);
             updateSelectionStatus();
         }
 
-        // 更新號碼顯示狀態
+        // 更新號碼顯示狀態（僅限複式投注網格）
         function updateNumberDisplay() {
-            const numberCells = document.querySelectorAll('.number-cell');
+            const numberCells = document.querySelectorAll('#number-grid .number-cell');
             numberCells.forEach(cell => {
-                const number = parseInt(cell.textContent);
+                const number = parseInt(cell.textContent, 10);
                 if (selectedNumbers.includes(number)) {
                     cell.classList.add('selected');
                 } else {
@@ -8105,6 +8281,18 @@ console.log('lotteryData', lotteryData.length);
             mandelCombosExpanded = false;
 
             document.getElementById('mandel-results').style.display = 'block';
+        }
+
+        function mandelToggleSection() {
+            const section = document.getElementById('mandel-combos-section');
+            const btn = document.getElementById('mandel-section-toggle-btn');
+            if (section.style.display === 'none') {
+                section.style.display = '';
+                btn.textContent = '隱藏';
+            } else {
+                section.style.display = 'none';
+                btn.textContent = '顯示';
+            }
         }
 
         function mandelToggleCombos() {
