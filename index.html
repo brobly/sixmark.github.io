@@ -1546,8 +1546,45 @@
             line-height: 1.8;
         }
 
+        .hf-probability-panel {
+            margin-top: 8px;
+        }
+
+        .hf-probability-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .hf-probability-toolbar-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2d6a4f;
+        }
+
+        .hf-probability-toggle {
+            flex-shrink: 0;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            border: 1px solid #2d6a4f;
+            border-radius: 4px;
+            background: #fff;
+            color: #2d6a4f;
+            cursor: pointer;
+        }
+
+        .hf-probability-toggle:hover {
+            background: rgba(45, 106, 79, 0.08);
+        }
+
+        .hf-probability-panel--collapsed .hf-probability-info {
+            display: none;
+        }
+
         .hf-probability-info {
-            margin-top: 10px;
+            margin-top: 0;
             padding: 8px;
             background: #f0f0f0;
             border-radius: 4px;
@@ -1579,6 +1616,29 @@
         }
 
         /* 抽號模式樣式 */
+        .hf-mandel-prize-line {
+            margin-top: 8px;
+            padding: 8px 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            line-height: 1.55;
+            color: #333;
+            border-left: 3px solid #764ba2;
+        }
+
+        .hf-mandel-prize-line--history {
+            margin-top: 6px;
+            font-size: 0.78rem;
+            padding: 6px 8px;
+        }
+
+        .hf-mandel-prize-period {
+            margin-bottom: 4px;
+            color: #6c757d;
+            font-size: 0.75rem;
+        }
+
         .hf-draw-header {
             display: flex;
             flex-wrap: wrap;
@@ -2047,7 +2107,25 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
-        /* 下10期按鈕樣式 */
+        /* 上期 / 下期 按鈕樣式（每次平移 1 期） */
+        .prev-period-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: #0d3b5c;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .prev-period-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.45);
+        }
+
         .next-period-btn {
             padding: 8px 16px;
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
@@ -2110,6 +2188,25 @@
         .filter-count-select-sm:focus {
             outline: none;
             box-shadow: 0 0 0 2px rgba(32, 201, 151, 0.2);
+        }
+
+        .rank-cold-toggle-btn {
+            padding: 5px 10px;
+            border: 1px solid #6c757d;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            color: #333;
+            background: #f8f9fa;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .rank-cold-toggle-btn:hover:not(:disabled) {
+            background: #e9ecef;
+        }
+
+        .rank-cold-toggle-btn:disabled {
+            cursor: not-allowed;
         }
 
         /* 排名+搭配模式顯示樣式 */
@@ -2639,6 +2736,15 @@
             .hf-numbers-display {
                 font-size: 13px;
                 line-height: 1.6;
+            }
+
+            .hf-probability-toolbar-title {
+                font-size: 0.8rem;
+            }
+
+            .hf-probability-toggle {
+                padding: 6px 12px;
+                font-size: 0.75rem;
             }
 
             .hf-probability-info {
@@ -3195,7 +3301,8 @@
                             </div>
 
                             <div class="quick-select">
-                                <button class="next-period-btn" onclick="shiftRangeForward('stats')">下10期 ➡️</button>
+                                <button type="button" class="prev-period-btn" onclick="shiftRangeBackward('stats')">⬅️ 上期</button>
+                                <button type="button" class="next-period-btn" onclick="shiftRangeForward('stats')">下期 ➡️</button>
                                 <button class="quick-btn" onclick="setQuickRange(1, 10)">近10期</button>
                                 <button class="quick-btn" onclick="setQuickRange(1, 20)">近20期</button>
                                 <button class="quick-btn" onclick="setQuickRange(1, 30)">近30期</button>
@@ -3222,7 +3329,7 @@
                                                 <option value="rank_with_pair">排名+搭配</option>
                                                 <option value="cold_hot_balance">冷熱平衡</option>
                                             </select>
-                                            <select id="filter-count-select" class="filter-count-select-sm">
+                                            <select id="filter-count-select" class="filter-count-select-sm" onchange="updateFilterModeDescription()">
                                                 <option value="3">3個</option>
                                                 <option value="4">4個</option>
                                                 <option value="5">5個</option>
@@ -3251,6 +3358,7 @@
                                                 <option value="40">40個</option>
                                                 <option value="49">49個</option>
                                             </select>
+                                            <button type="button" id="rank-cold-toggle-btn" class="rank-cold-toggle-btn" style="display:none;" onclick="toggleRankColdComplement()" title="在頻率前 N 名與其餘號碼間切換">切換冷門</button>
                                         </div>
                                     </div>
                                     <div class="hf-filter-info">
@@ -3265,7 +3373,13 @@
                                     <div class="hf-result-box-green">
                                         <strong>上一期：</strong>
                                         <div id="previous-period-numbers" class="hf-numbers-display"></div>
-                                        <div id="probability-info" class="hf-probability-info"></div>
+                                        <div id="probability-panel" class="hf-probability-panel">
+                                            <div class="hf-probability-toolbar">
+                                                <span class="hf-probability-toolbar-title">機率說明</span>
+                                                <button type="button" id="probability-toggle-btn" class="hf-probability-toggle" onclick="toggleProbabilityPanel()" aria-expanded="true" aria-controls="probability-info">收起</button>
+                                            </div>
+                                            <div id="probability-info" class="hf-probability-info" role="region" aria-label="機率說明"></div>
+                                        </div>
                                     </div>
                                     <div class="hf-result-box-purple">
                                         <div class="hf-draw-header">
@@ -3651,7 +3765,8 @@
                                 </div>
 
                                 <div class="quick-select">
-                                    <button class="next-period-btn" onclick="shiftRangeForward('verification')">下10期 ➡️</button>
+                                    <button type="button" class="prev-period-btn" onclick="shiftRangeBackward('verification')">⬅️ 上期</button>
+                                    <button type="button" class="next-period-btn" onclick="shiftRangeForward('verification')">下期 ➡️</button>
                                     <button class="quick-btn" onclick="setVerificationQuickRange(1, 10)">近10期</button>
                                     <button class="quick-btn" onclick="setVerificationQuickRange(1, 20)">近20期</button>
                                     <button class="quick-btn" onclick="setVerificationQuickRange(1, 30)">近30期</button>
@@ -3713,6 +3828,9 @@
 
         // 嵌入真實六合彩數據
         const lotteryData = [
+        {draw_number: "26/042", draw_date: "2026-04-18", numbers: [ 17, 20, 27, 32, 39, 46], extra_number: 34},
+        {draw_number: "26/041", draw_date: "2026-04-16", numbers: [6, 12, 14, 28, 44, 46], extra_number: 15},
+        {draw_number: "26/040", draw_date: "2026-04-14", numbers: [8, 19, 22, 34, 44, 46], extra_number: 18},
         {draw_number: "26/039", draw_date: "2026-04-11", numbers: [11, 14, 17, 28, 40, 42], extra_number: 2},
         {draw_number: "26/038", draw_date: "2026-04-09", numbers: [13, 16, 24, 43, 44, 45], extra_number: 40},
         {draw_number: "26/037", draw_date: "2026-04-07", numbers: [8, 23, 25, 29, 33, 34], extra_number: 49},
@@ -4449,10 +4567,12 @@ console.log('lotteryData', lotteryData.length);
             filterHighFrequencyNumbers();
         }
 
-        // 下10期按鈕功能 - 將範圍向前移動1期
+        const SHIFT_RANGE_STEP = 1;
+
+        // 下期：將期數範圍整段向後平移 1 期
         function shiftRangeForward(type) {
             let startInput, endInput, updateFunc;
-            
+
             if (type === 'stats') {
                 startInput = document.getElementById('start-period');
                 endInput = document.getElementById('end-period');
@@ -4461,30 +4581,66 @@ console.log('lotteryData', lotteryData.length);
                 startInput = document.getElementById('verification-start-period');
                 endInput = document.getElementById('verification-end-period');
                 updateFunc = updateVerificationRangeInfo;
+            } else {
+                return;
             }
-            
+
             const currentStart = parseInt(startInput.value) || 1;
             const currentEnd = parseInt(endInput.value) || 1;
             const maxPeriods = lotteryData.length;
-            
-            // 計算新的範圍（向前移動1期）
-            const newStart = currentStart + 1;
-            const newEnd = currentEnd + 1;
-            
-            // 檢查是否超出範圍
+
+            const newStart = currentStart + SHIFT_RANGE_STEP;
+            const newEnd = currentEnd + SHIFT_RANGE_STEP;
+
             if (newEnd > maxPeriods) {
                 alert(`已達到最大期數範圍！目前最大期數為 ${maxPeriods}`);
                 return;
             }
-            
-            // 更新輸入框的值
+
             startInput.value = newStart;
             endInput.value = newEnd;
-            
-            // 更新範圍資訊
+
             updateFunc();
-            
-            // 如果是核對中獎頁面，立即更新統計
+
+            if (type === 'verification' && document.getElementById('verification').classList.contains('active')) {
+                loadVerification();
+            }
+
+            filterHighFrequencyNumbers();
+        }
+
+        // 上期：將期數範圍整段向前平移 1 期（與下期相反）
+        function shiftRangeBackward(type) {
+            let startInput, endInput, updateFunc;
+
+            if (type === 'stats') {
+                startInput = document.getElementById('start-period');
+                endInput = document.getElementById('end-period');
+                updateFunc = updateRangeInfo;
+            } else if (type === 'verification') {
+                startInput = document.getElementById('verification-start-period');
+                endInput = document.getElementById('verification-end-period');
+                updateFunc = updateVerificationRangeInfo;
+            } else {
+                return;
+            }
+
+            const currentStart = parseInt(startInput.value) || 1;
+            const currentEnd = parseInt(endInput.value) || 1;
+
+            const newStart = currentStart - SHIFT_RANGE_STEP;
+            const newEnd = currentEnd - SHIFT_RANGE_STEP;
+
+            if (newStart < 1) {
+                alert('已達最早期數範圍！開始期數不能小於第 1 期');
+                return;
+            }
+
+            startInput.value = newStart;
+            endInput.value = newEnd;
+
+            updateFunc();
+
             if (type === 'verification' && document.getElementById('verification').classList.contains('active')) {
                 loadVerification();
             }
@@ -4498,6 +4654,10 @@ console.log('lotteryData', lotteryData.length);
             const countSelect = document.getElementById('filter-count-select');
             
             const mode = modeSelect.value;
+
+            if (mode !== 'rank') {
+                rankShowColdComplement = false;
+            }
             
             // 預設模式下禁用數量選擇
             if (mode === 'default') {
@@ -4507,6 +4667,37 @@ console.log('lotteryData', lotteryData.length);
                 countSelect.disabled = false;
                 countSelect.style.opacity = '1';
             }
+
+            updateRankColdToggleUI();
+        }
+
+        /** 機率說明區：收起 / 展開（偏好存於 localStorage） */
+        function toggleProbabilityPanel() {
+            const panel = document.getElementById('probability-panel');
+            const btn = document.getElementById('probability-toggle-btn');
+            if (!panel || !btn) return;
+            const collapsed = panel.classList.toggle('hf-probability-panel--collapsed');
+            btn.textContent = collapsed ? '展開' : '收起';
+            btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            try {
+                localStorage.setItem('hfProbabilityPanelCollapsed', collapsed ? '1' : '0');
+            } catch (e) {}
+        }
+
+        function applyProbabilityPanelCollapsedPreference() {
+            let pref = null;
+            try {
+                pref = localStorage.getItem('hfProbabilityPanelCollapsed');
+            } catch (e) {
+                return;
+            }
+            if (pref !== '1') return;
+            const panel = document.getElementById('probability-panel');
+            const btn = document.getElementById('probability-toggle-btn');
+            if (!panel || !btn) return;
+            panel.classList.add('hf-probability-panel--collapsed');
+            btn.textContent = '展開';
+            btn.setAttribute('aria-expanded', 'false');
         }
 
         // 更新範圍資訊顯示
@@ -6061,6 +6252,8 @@ console.log('lotteryData', lotteryData.length);
             if (document.getElementById('statistics').classList.contains('active')) {
                 initializeRangeSelection();
             }
+            updateFilterModeDescription();
+            applyProbabilityPanelCollapsedPreference();
             // 如果當前在核對中獎標籤頁，初始化號碼選擇和範圍選擇
             if (document.getElementById('verification').classList.contains('active')) {
                 initializeNumberSelection();
@@ -6080,6 +6273,40 @@ console.log('lotteryData', lotteryData.length);
         
         let currentFilteredNumbers = []; // 儲存當前篩選結果
         let filterHistory = []; // 儲存篩選歷史記錄
+        /** 排名模式專用：false = 頻率前 N 名，true = 其餘 (49−N) 個（互補池） */
+        let rankShowColdComplement = false;
+
+        function updateRankColdToggleUI() {
+            const modeSelect = document.getElementById('filter-mode-select');
+            const countSelect = document.getElementById('filter-count-select');
+            const btn = document.getElementById('rank-cold-toggle-btn');
+            if (!modeSelect || !countSelect || !btn) return;
+
+            const mode = modeSelect.value;
+            const count = parseInt(countSelect.value, 10) || 6;
+
+            if (mode !== 'rank') {
+                btn.style.display = 'none';
+                return;
+            }
+
+            btn.style.display = 'inline-block';
+            const disable = count >= 49;
+            btn.disabled = disable;
+            btn.style.opacity = disable ? '0.5' : '1';
+            btn.style.cursor = disable ? 'not-allowed' : 'pointer';
+            btn.textContent = rankShowColdComplement ? '切換熱門' : '切換冷門';
+        }
+
+        function toggleRankColdComplement() {
+            const mode = document.getElementById('filter-mode-select').value;
+            if (mode !== 'rank') return;
+            const count = parseInt(document.getElementById('filter-count-select').value, 10) || 6;
+            if (count >= 49) return;
+            rankShowColdComplement = !rankShowColdComplement;
+            updateRankColdToggleUI();
+            filterHighFrequencyNumbers();
+        }
         
         // getRandom6 函數：從陣列中隨機抽取 6 個號碼
         function getRandom6(arr) {
@@ -6162,16 +6389,23 @@ console.log('lotteryData', lotteryData.length);
                 currentFilteredNumbers.sort((a, b) => a - b);
                 modeDescription = `預設模式 - 門檻值 ${threshold} 次`;
             } else if (filterMode === 'rank') {
-                // 排名模式：按頻率排名選取指定數量的號碼
+                // 排名模式：按頻率排名選取指定數量的號碼（可切換為「其餘冷門」互補池）
+                if (filterCount >= 49) {
+                    rankShowColdComplement = false;
+                }
                 const sortedNumbers = Object.entries(numberFreq)
                     .map(([num, freq]) => ({ number: parseInt(num), frequency: freq }))
                     .sort((a, b) => b.frequency - a.frequency);
                 
-                // 取前N個號碼
-                currentFilteredNumbers = sortedNumbers.slice(0, filterCount).map(item => item.number);
+                if (rankShowColdComplement && filterCount < 49) {
+                    currentFilteredNumbers = sortedNumbers.slice(filterCount).map(item => item.number);
+                    modeDescription = `排名模式 - 其餘頻率後 ${49 - filterCount} 名（非前 ${filterCount} 名）`;
+                } else {
+                    currentFilteredNumbers = sortedNumbers.slice(0, filterCount).map(item => item.number);
+                    modeDescription = `排名模式 - 選取頻率前 ${filterCount} 名`;
+                }
                 // 按號碼大小排序以便顯示
                 currentFilteredNumbers.sort((a, b) => a - b);
-                modeDescription = `排名模式 - 選取頻率前 ${filterCount} 名`;
             } else if (filterMode === 'rank_with_pair') {
                 // 排名+搭配模式：先選取排名前N的號碼，再加上常搭配的號碼（不重複）
                 const sortedNumbers = Object.entries(numberFreq)
@@ -6277,6 +6511,7 @@ console.log('lotteryData', lotteryData.length);
             
             // 更新隨機核心號碼（每次篩選時都更新）
             updateRandomCoreNumber();
+            updateRankColdToggleUI();
         }
 
         // 計算組合數 C(n, k)
@@ -6413,6 +6648,308 @@ console.log('lotteryData', lotteryData.length);
                 probFrom49: prob2,
                 extraProb: extraProb
             };
+        }
+
+        /** 六合彩單注獎金（與「派彩獎金」彈窗一致） */
+        const MARK_SIX_PRIZE_AMOUNTS_SINGLE = {
+            first: 8000000, second: 1000000, third: 35000, fourth: 9600,
+            fifth: 640, sixth: 320, seventh: 40
+        };
+
+        function summarizeSixNumberBetsVsDraw(bets, drawRow) {
+            if (!drawRow || !Array.isArray(drawRow.numbers)) return null;
+            const winningNumbers = [...drawRow.numbers].sort((a, b) => a - b);
+            const extraNumber = drawRow.extra_number;
+            const counts = { first: 0, second: 0, third: 0, fourth: 0, fifth: 0, sixth: 0, seventh: 0 };
+            let total = 0;
+            const amt = MARK_SIX_PRIZE_AMOUNTS_SINGLE;
+            (bets || []).forEach(bet => {
+                const combo = bet.numbers;
+                if (!combo || combo.length !== 6) return;
+                const mainMatches = combo.filter(num => winningNumbers.includes(num)).length;
+                const extraMatch = combo.includes(extraNumber);
+                let tier = null;
+                if (mainMatches === 6) tier = 'first';
+                else if (mainMatches === 5 && extraMatch) tier = 'second';
+                else if (mainMatches === 5) tier = 'third';
+                else if (mainMatches === 4 && extraMatch) tier = 'fourth';
+                else if (mainMatches === 4) tier = 'fifth';
+                else if (mainMatches === 3 && extraMatch) tier = 'sixth';
+                else if (mainMatches === 3) tier = 'seventh';
+                if (tier) {
+                    counts[tier]++;
+                    total += amt[tier];
+                }
+            });
+            return { counts, total };
+        }
+
+        /**
+         * Mandel 多注對「篩選起始期數的上一期」開獎：各獎項注數 + 小計獎金
+         * @param {Array<{numbers:number[]}>} bets
+         * @param {number} startPeriod 篩選條件中的開始期數（與機率區「上一期」一致）
+         */
+        function buildMandelPrizeSummaryHtml(bets, startPeriod, options) {
+            const hist = options && options.history;
+            const lineClass = 'hf-mandel-prize-line' + (hist ? ' hf-mandel-prize-line--history' : '');
+            const sp = startPeriod != null ? startPeriod : (parseInt(document.getElementById('start-period').value) || 1);
+            if (sp <= 1) {
+                return `<div class="${lineClass}"><span class="hf-text--muted">📋 各獎中獎：（篩選由第1期起，無「上一期」開獎可對獎）</span></div>`;
+            }
+            const pi = sp - 2;
+            if (pi < 0 || pi >= lotteryData.length) {
+                return `<div class="${lineClass}"><span class="hf-text--muted">📋 各獎中獎：（無法取得上一期開獎）</span></div>`;
+            }
+            const summary = summarizeSixNumberBetsVsDraw(bets, lotteryData[pi]);
+            if (!summary) {
+                return `<div class="${lineClass}"><span class="hf-text--muted">📋 各獎中獎：（無法計算）</span></div>`;
+            }
+            const periodNo = pi + 1;
+            const { counts, total } = summary;
+            const parts = [
+                `頭獎×${counts.first}`, `二獎×${counts.second}`, `三獎×${counts.third}`, `四獎×${counts.fourth}`,
+                `五獎×${counts.fifth}`, `六獎×${counts.sixth}`, `七獎×${counts.seventh}`
+            ];
+            return `
+                <div class="${lineClass}">
+                    <div class="hf-mandel-prize-period">對上一期開獎（第${periodNo}期）・共 ${bets.length} 注</div>
+                    <div><strong>📋 各獎中獎：</strong>${parts.join('　')}　｜　<strong>小計獎金 $${total.toLocaleString()}</strong></div>
+                </div>`;
+        }
+
+        /**
+         * 依「抽號模式」產生高頻區塊的抽號 HTML 與 drawModeInfo（含 Mandel、5膽拖等）。
+         * 供 displayFilterResults 與 refreshRandom6 共用，避免 Mandel 等模式僅在重抽時才有畫面。
+         */
+        function buildHighFrequencyDrawDisplay(pool) {
+            const drawResultTitle = document.getElementById('draw-result-title');
+            const drawMode = document.getElementById('draw-mode-select').value;
+            let drawnNumbers = [];
+            let displayHtml = '';
+            let drawModeInfo = null;
+
+            if (drawMode === 'single') {
+                drawnNumbers = getRandom6(pool);
+                drawResultTitle.textContent = '隨機抽取 6 個號碼：';
+                displayHtml = drawnNumbers.map(num =>
+                    `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
+                ).join('');
+                drawModeInfo = { mode: 'single' };
+            } else if (drawMode === 'complex') {
+                const count = parseInt(document.getElementById('complex-count-select').value);
+                drawnNumbers = getRandomNumbers(pool, count);
+                drawResultTitle.textContent = `隨機抽取 ${count} 個號碼（復式）：`;
+                displayHtml = drawnNumbers.map(num =>
+                    `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
+                ).join('');
+                drawModeInfo = { mode: 'complex', count: count };
+            } else if (drawMode === 'smart') {
+                const hasCoreNumber = document.getElementById('smart-core-checkbox').checked;
+                const coreNumber = getCurrentCoreNumber();
+                const isRandomCore = document.getElementById('smart-core-number').value === 'random';
+
+                const bets = generateSmartBets(pool, hasCoreNumber, coreNumber);
+
+                let titleText = `聰明組合（共 ${bets.length} 注）`;
+                if (hasCoreNumber && coreNumber && isRandomCore) {
+                    titleText += ` 🎲膽=${coreNumber}`;
+                }
+                titleText += '：';
+                drawResultTitle.textContent = titleText;
+
+                displayHtml = '<div class="smart-bets-container">';
+                bets.forEach((bet, index) => {
+                    const rowClass = bet.isRemainder ? 'smart-bet-row has-remainder' : 'smart-bet-row';
+                    const labelText = bet.isRemainder ? `第${index + 1}注 *` : `第${index + 1}注`;
+
+                    displayHtml += `<div class="${rowClass}">`;
+                    displayHtml += `<span class="smart-bet-label">${labelText}</span>`;
+                    displayHtml += '<div class="smart-bet-numbers">';
+
+                    bet.numbers.forEach(num => {
+                        const ballClass = (bet.coreNumber !== null && num === bet.coreNumber)
+                            ? 'hf-ball hf-ball--md hf-ball--core'
+                            : 'hf-ball hf-ball--md hf-ball--secondary';
+                        displayHtml += `<span class="${ballClass}">${num}</span>`;
+                    });
+
+                    displayHtml += '</div>';
+                    if (bet.isRemainder) {
+                        displayHtml += `<span style="font-size: 0.75rem; color: #888;">(*含補充號碼)</span>`;
+                    }
+                    displayHtml += '</div>';
+                });
+                displayHtml += '</div>';
+
+                drawnNumbers = [...new Set(bets.flatMap(b => b.numbers))].sort((a, b) => a - b);
+                drawModeInfo = { mode: 'smart', bets: bets, hasCoreNumber: hasCoreNumber, coreNumber: coreNumber };
+            } else if (drawMode === 'smartComplex') {
+                const numbersPerBet = parseInt(document.getElementById('smart-complex-count-select').value);
+                const hasCoreNumber = document.getElementById('smart-core-checkbox').checked;
+                const coreNumber = getCurrentCoreNumber();
+                const isRandomCore = document.getElementById('smart-core-number').value === 'random';
+
+                const bets = generateSmartComplexBets(pool, numbersPerBet, hasCoreNumber, coreNumber);
+
+                let titleText = `聰明組合+復式（每注${numbersPerBet}個，共 ${bets.length} 注）`;
+                if (hasCoreNumber && coreNumber && isRandomCore) {
+                    titleText += ` 🎲膽=${coreNumber}`;
+                }
+                titleText += '：';
+                drawResultTitle.textContent = titleText;
+
+                displayHtml = '<div class="smart-bets-container">';
+                bets.forEach((bet, index) => {
+                    let rowClass = 'smart-bet-row';
+                    let labelText = `第${index + 1}注`;
+                    let noteText = '';
+
+                    if (bet.isExtraRandom) {
+                        labelText += ' 🎲';
+                        noteText = '<span style="font-size: 0.75rem; color: #888;">(隨機注)</span>';
+                    } else if (bet.isRemainder) {
+                        rowClass += ' has-remainder';
+                        labelText += ' *';
+                        noteText = `<span style="font-size: 0.75rem; color: #888;">(*餘${bet.remainderOriginal}+補${numbersPerBet - bet.remainderOriginal})</span>`;
+                    }
+
+                    displayHtml += `<div class="${rowClass}">`;
+                    displayHtml += `<span class="smart-bet-label">${labelText}</span>`;
+                    displayHtml += '<div class="smart-bet-numbers">';
+
+                    bet.numbers.forEach(num => {
+                        const ballClass = (bet.coreNumber !== null && num === bet.coreNumber)
+                            ? 'hf-ball hf-ball--md hf-ball--core'
+                            : 'hf-ball hf-ball--md hf-ball--secondary';
+                        displayHtml += `<span class="${ballClass}">${num}</span>`;
+                    });
+
+                    displayHtml += '</div>';
+                    displayHtml += noteText;
+                    displayHtml += '</div>';
+                });
+                displayHtml += '</div>';
+
+                drawnNumbers = [...new Set(bets.flatMap(b => b.numbers))].sort((a, b) => a - b);
+                drawModeInfo = { mode: 'smartComplex', bets: bets, numbersPerBet: numbersPerBet, hasCoreNumber: hasCoreNumber, coreNumber: coreNumber };
+            } else if (drawMode === 'mandel') {
+                const mandelCount = parseInt(document.getElementById('mandel-draw-count-select').value);
+                const topNums = pool.slice(0, mandelCount).sort((a, b) => a - b);
+
+                if (topNums.length < mandelCount) {
+                    drawResultTitle.textContent = `號碼不足（需要${mandelCount}個，僅有${topNums.length}個）`;
+                    displayHtml = '<span class="hf-text--muted">篩選號碼不足</span>';
+                    drawModeInfo = { mode: 'mandel', error: 'insufficient' };
+                } else {
+                    const n = topNums.length;
+                    const tSubs = combinations(n, 5);
+                    const uncovered = new Set(tSubs.map(s => s.join(',')));
+                    const kSubs = combinations(n, 6);
+                    const kSubCoverage = kSubs.map(ks => subsetsOf(ks, 5).map(ts => ts.join(',')));
+                    const selected = [];
+                    while (uncovered.size > 0) {
+                        let bestIdx = -1, bestCount = 0;
+                        for (let i = 0; i < kSubs.length; i++) {
+                            let count = 0;
+                            for (const key of kSubCoverage[i]) { if (uncovered.has(key)) count++; }
+                            if (count > bestCount) { bestCount = count; bestIdx = i; }
+                        }
+                        if (bestIdx === -1) break;
+                        selected.push(kSubs[bestIdx]);
+                        for (const key of kSubCoverage[bestIdx]) { uncovered.delete(key); }
+                    }
+                    const mandelBets = selected.map(combo => combo.map(idx => topNums[idx]));
+                    const totalCost = mandelBets.length * 10;
+                    const fullBuy = Math.round(mandelBets.length > 0 ? comb(n, 6) : 0);
+                    const saving = fullBuy > 0 ? ((1 - mandelBets.length / fullBuy) * 100).toFixed(1) : '0';
+
+                    drawResultTitle.textContent = `Mandel 濃縮法 C(${n},6,5)（共 ${mandelBets.length} 注）：`;
+
+                    displayHtml = '<div class="five-banker-info">';
+                    displayHtml += '<div class="five-banker-title">🎯 選取號碼（排名前' + n + '）：</div>';
+                    displayHtml += '<div class="five-banker-numbers">';
+                    topNums.forEach(num => {
+                        displayHtml += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
+                    });
+                    displayHtml += '</div>';
+                    const mandelBetsForInfo = mandelBets.map(b => ({ numbers: b }));
+                    displayHtml += buildMandelPrizeSummaryHtml(mandelBetsForInfo, parseInt(document.getElementById('start-period').value) || 1, {});
+                    displayHtml += `<div class="five-banker-stats">`;
+                    displayHtml += `📊 全買 C(${n},6) = ${fullBuy} 注 | 濃縮: ${mandelBets.length} 注 | 節省: ${saving}%<br>`;
+                    displayHtml += `💰 成本: $${totalCost.toLocaleString()}`;
+                    displayHtml += `</div></div>`;
+
+                    displayHtml += '<div class="five-banker-bets-container">';
+                    mandelBets.forEach((bet, index) => {
+                        displayHtml += `<div class="five-banker-bet-row">`;
+                        displayHtml += `<span class="five-banker-bet-label">第${index + 1}注</span>`;
+                        displayHtml += '<div class="five-banker-bet-numbers">';
+                        bet.forEach(num => {
+                            displayHtml += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
+                        });
+                        displayHtml += '</div></div>';
+                    });
+                    displayHtml += '</div>';
+
+                    drawnNumbers = topNums;
+                    drawModeInfo = { mode: 'mandel', bets: mandelBetsForInfo, selectedNumbers: topNums, count: mandelCount };
+                }
+            } else if (drawMode === 'fiveBankerFullMeal') {
+                if (pool.length < 6) {
+                    drawResultTitle.textContent = '號碼不足（至少需要6個號碼）';
+                    displayHtml = '<span class="hf-text--muted">篩選號碼不足，無法使用5膽拖全餐</span>';
+                    drawModeInfo = { mode: 'fiveBankerFullMeal', error: 'insufficient' };
+                } else {
+                    const bankers = getRandomNumbers(pool, 5);
+                    const runners = pool.filter(num => !bankers.includes(num));
+
+                    const bets = runners.map(runner => ({
+                        numbers: [...bankers.sort((a, b) => a - b), runner],
+                        bankers: bankers,
+                        runner: runner
+                    }));
+
+                    drawResultTitle.textContent = `5膽拖全餐（共 ${bets.length} 注）：`;
+
+                    displayHtml = '<div class="five-banker-info">';
+                    displayHtml += '<div class="five-banker-title">🎯 膽碼（固定5個）：</div>';
+                    displayHtml += '<div class="five-banker-numbers">';
+                    bankers.forEach(num => {
+                        displayHtml += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
+                    });
+                    displayHtml += '</div>';
+                    displayHtml += `<div class="five-banker-stats">`;
+                    displayHtml += `📊 篩選號碼: ${pool.length}個 | 膽: ${bankers.length}個 | 腳: ${runners.length}個 | 共 ${bets.length} 注<br>`;
+                    displayHtml += `💰 每注成本：$10（全注）或 $5（半注） | 全注總成本：$${bets.length * 10} | 半注總成本：$${bets.length * 5}`;
+                    displayHtml += `</div>`;
+                    displayHtml += '</div>';
+
+                    displayHtml += '<div class="five-banker-bets-container">';
+                    bets.forEach((bet, index) => {
+                        displayHtml += `<div class="five-banker-bet-row">`;
+                        displayHtml += `<span class="five-banker-bet-label">第${index + 1}注</span>`;
+                        displayHtml += '<div class="five-banker-bet-numbers">';
+
+                        bet.numbers.forEach(num => {
+                            displayHtml += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
+                        });
+
+                        displayHtml += '</div>';
+                        displayHtml += '</div>';
+                    });
+                    displayHtml += '</div>';
+
+                    drawnNumbers = pool;
+                    drawModeInfo = {
+                        mode: 'fiveBankerFullMeal',
+                        bets: bets,
+                        bankers: bankers,
+                        runners: runners
+                    };
+                }
+            }
+
+            return { displayHtml, drawnNumbers, drawModeInfo };
         }
 
         // 顯示篩選結果
@@ -6612,191 +7149,10 @@ console.log('lotteryData', lotteryData.length);
                 // 更新核心號碼選項
                 updateSmartCoreOptions();
                 
-                // 根據抽獎模式抽取號碼
-                const drawMode = document.getElementById('draw-mode-select').value;
-                const drawResultTitle = document.getElementById('draw-result-title');
-                let drawnNumbers = [];
-                let displayHtml = '';
-                let drawModeInfo = null;
-                
-                if (drawMode === 'single') {
-                    // 單式：抽取6個號碼
-                    drawnNumbers = getRandom6(filteredNumbers);
-                    drawResultTitle.textContent = '隨機抽取 6 個號碼：';
-                    displayHtml = drawnNumbers.map(num => 
-                        `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
-                    ).join('');
-                    drawModeInfo = { mode: 'single' };
-                } else if (drawMode === 'complex') {
-                    // 復式：抽取7-15個號碼
-                    const count = parseInt(document.getElementById('complex-count-select').value);
-                    drawnNumbers = getRandomNumbers(filteredNumbers, count);
-                    drawResultTitle.textContent = `隨機抽取 ${count} 個號碼（復式）：`;
-                    displayHtml = drawnNumbers.map(num => 
-                        `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
-                    ).join('');
-                    drawModeInfo = { mode: 'complex', count: count };
-                } else if (drawMode === 'smart') {
-                    // 聰明組合：生成多注
-                    const hasCoreNumber = document.getElementById('smart-core-checkbox').checked;
-                    const coreNumber = getCurrentCoreNumber();
-                    const isRandomCore = document.getElementById('smart-core-number').value === 'random';
-                    
-                    const bets = generateSmartBets(filteredNumbers, hasCoreNumber, coreNumber);
-                    
-                    // 顯示標題，如果是隨機核心號碼則顯示當前選中的號碼
-                    let titleText = `聰明組合（共 ${bets.length} 注）`;
-                    if (hasCoreNumber && coreNumber && isRandomCore) {
-                        titleText += ` 🎲膽=${coreNumber}`;
-                    }
-                    titleText += '：';
-                    drawResultTitle.textContent = titleText;
-                    
-                    displayHtml = '<div class="smart-bets-container">';
-                    bets.forEach((bet, index) => {
-                        const rowClass = bet.isRemainder ? 'smart-bet-row has-remainder' : 'smart-bet-row';
-                        const labelText = bet.isRemainder ? `第${index + 1}注 *` : `第${index + 1}注`;
-                        
-                        displayHtml += `<div class="${rowClass}">`;
-                        displayHtml += `<span class="smart-bet-label">${labelText}</span>`;
-                        displayHtml += '<div class="smart-bet-numbers">';
-                        
-                        bet.numbers.forEach(num => {
-                            const ballClass = (bet.coreNumber !== null && num === bet.coreNumber) 
-                                ? 'hf-ball hf-ball--md hf-ball--core' 
-                                : 'hf-ball hf-ball--md hf-ball--secondary';
-                            displayHtml += `<span class="${ballClass}">${num}</span>`;
-                        });
-                        
-                        displayHtml += '</div>';
-                        if (bet.isRemainder) {
-                            displayHtml += `<span style="font-size: 0.75rem; color: #888;">(*含補充號碼)</span>`;
-                        }
-                        displayHtml += '</div>';
-                    });
-                    displayHtml += '</div>';
-                    
-                    // 對於聰明組合，drawnNumbers 保存所有不重複的號碼
-                    drawnNumbers = [...new Set(bets.flatMap(b => b.numbers))].sort((a, b) => a - b);
-                    drawModeInfo = { mode: 'smart', bets: bets, hasCoreNumber: hasCoreNumber, coreNumber: coreNumber };
-                } else if (drawMode === 'smartComplex') {
-                    // 聰明組合+復式：生成多注（每注可選7-10個號碼）
-                    const numbersPerBet = parseInt(document.getElementById('smart-complex-count-select').value);
-                    const hasCoreNumber = document.getElementById('smart-core-checkbox').checked;
-                    const coreNumber = getCurrentCoreNumber();
-                    const isRandomCore = document.getElementById('smart-core-number').value === 'random';
-                    
-                    const bets = generateSmartComplexBets(filteredNumbers, numbersPerBet, hasCoreNumber, coreNumber);
-                    
-                    // 顯示標題，如果是隨機核心號碼則顯示當前選中的號碼
-                    let titleText = `聰明組合+復式（每注${numbersPerBet}個，共 ${bets.length} 注）`;
-                    if (hasCoreNumber && coreNumber && isRandomCore) {
-                        titleText += ` 🎲膽=${coreNumber}`;
-                    }
-                    titleText += '：';
-                    drawResultTitle.textContent = titleText;
-                    
-                    displayHtml = '<div class="smart-bets-container">';
-                    bets.forEach((bet, index) => {
-                        let rowClass = 'smart-bet-row';
-                        let labelText = `第${index + 1}注`;
-                        let noteText = '';
-                        
-                        if (bet.isExtraRandom) {
-                            labelText += ' 🎲';
-                            noteText = '<span style="font-size: 0.75rem; color: #888;">(隨機注)</span>';
-                        } else if (bet.isRemainder) {
-                            rowClass += ' has-remainder';
-                            labelText += ' *';
-                            noteText = `<span style="font-size: 0.75rem; color: #888;">(*餘${bet.remainderOriginal}+補${numbersPerBet - bet.remainderOriginal})</span>`;
-                        }
-                        
-                        displayHtml += `<div class="${rowClass}">`;
-                        displayHtml += `<span class="smart-bet-label">${labelText}</span>`;
-                        displayHtml += '<div class="smart-bet-numbers">';
-                        
-                        bet.numbers.forEach(num => {
-                            const ballClass = (bet.coreNumber !== null && num === bet.coreNumber) 
-                                ? 'hf-ball hf-ball--md hf-ball--core' 
-                                : 'hf-ball hf-ball--md hf-ball--secondary';
-                            displayHtml += `<span class="${ballClass}">${num}</span>`;
-                        });
-                        
-                        displayHtml += '</div>';
-                        displayHtml += noteText;
-                        displayHtml += '</div>';
-                    });
-                    displayHtml += '</div>';
-                    
-                    // 對於聰明組合+復式，drawnNumbers 保存所有不重複的號碼
-                    drawnNumbers = [...new Set(bets.flatMap(b => b.numbers))].sort((a, b) => a - b);
-                    drawModeInfo = { mode: 'smartComplex', bets: bets, numbersPerBet: numbersPerBet, hasCoreNumber: hasCoreNumber, coreNumber: coreNumber };
-                } else if (drawMode === 'fiveBankerFullMeal') {
-                    // 5膽拖全餐：從高頻號碼中隨機選5個做膽，剩下的做腳
-                    if (filteredNumbers.length < 6) {
-                        drawResultTitle.textContent = '號碼不足（至少需要6個號碼）';
-                        displayHtml = '<span class="hf-text--muted">篩選號碼不足，無法使用5膽拖全餐</span>';
-                        drawModeInfo = { mode: 'fiveBankerFullMeal', error: 'insufficient' };
-                    } else {
-                        // 隨機選5個膽
-                        const bankers = getRandomNumbers(filteredNumbers, 5);
-                        // 剩下的作為腳
-                        const runners = filteredNumbers.filter(num => !bankers.includes(num));
-
-                        // 生成注數：每注 = 5個膽 + 1個腳
-                        const bets = runners.map(runner => ({
-                            numbers: [...bankers.sort((a, b) => a - b), runner],
-                            bankers: bankers,
-                            runner: runner
-                        }));
-
-                        console.log('5膽拖全餐 - 篩選號碼:', filteredNumbers.length, filteredNumbers);
-                        console.log('5膽拖全餐 - 膽碼:', bankers.length, bankers);
-                        console.log('5膽拖全餐 - 腳碼:', runners.length, runners);
-                        console.log('5膽拖全餐 - 總注數:', bets.length);
-
-                        drawResultTitle.textContent = `5膽拖全餐（共 ${bets.length} 注）：`;
-
-                        // 顯示膽碼信息
-                        displayHtml = '<div class="five-banker-info">';
-                        displayHtml += '<div class="five-banker-title">🎯 膽碼（固定5個）：</div>';
-                        displayHtml += '<div class="five-banker-numbers">';
-                        bankers.forEach(num => {
-                            displayHtml += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
-                        });
-                        displayHtml += '</div>';
-                        displayHtml += `<div class="five-banker-stats">`;
-                        displayHtml += `📊 篩選號碼: ${filteredNumbers.length}個 | 膽: ${bankers.length}個 | 腳: ${runners.length}個 | 共 ${bets.length} 注<br>`;
-                        displayHtml += `💰 每注成本：$10（全注）或 $5（半注） | 全注總成本：$${bets.length * 10} | 半注總成本：$${bets.length * 5}`;
-                        displayHtml += `</div>`;
-                        displayHtml += '</div>';
-
-                        // 顯示所有注數
-                        displayHtml += '<div class="five-banker-bets-container">';
-                        bets.forEach((bet, index) => {
-                            displayHtml += `<div class="five-banker-bet-row">`;
-                            displayHtml += `<span class="five-banker-bet-label">第${index + 1}注</span>`;
-                            displayHtml += '<div class="five-banker-bet-numbers">';
-
-                            bet.numbers.forEach(num => {
-                                displayHtml += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
-                            });
-
-                            displayHtml += '</div>';
-                            displayHtml += '</div>';
-                        });
-                        displayHtml += '</div>';
-
-                        // drawnNumbers 保存所有號碼（膽+腳）
-                        drawnNumbers = filteredNumbers;
-                        drawModeInfo = {
-                            mode: 'fiveBankerFullMeal',
-                            bets: bets,
-                            bankers: bankers,
-                            runners: runners
-                        };
-                    }
-                }
+                const built = buildHighFrequencyDrawDisplay(filteredNumbers);
+                let displayHtml = built.displayHtml;
+                let drawnNumbers = built.drawnNumbers;
+                let drawModeInfo = built.drawModeInfo;
 
                 // 檢查是否勾選隨機注數
                 const hasRandomBet = document.getElementById('random-bet-checkbox').checked;
@@ -7232,255 +7588,11 @@ console.log('lotteryData', lotteryData.length);
             }
 
             const random6Div = document.getElementById('random-6-numbers');
-            const drawResultTitle = document.getElementById('draw-result-title');
-            const drawMode = document.getElementById('draw-mode-select').value;
-            
-            let drawnNumbers = [];
-            let displayHtml = '';
-            let drawModeInfo = null;
-            let bets = null; // 用於聰明組合
-            
-            if (drawMode === 'single') {
-                // 單式：抽取6個號碼
-                drawnNumbers = getRandom6(currentFilteredNumbers);
-                drawResultTitle.textContent = '隨機抽取 6 個號碼：';
-                displayHtml = drawnNumbers.map(num => 
-                    `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
-                ).join('');
-                drawModeInfo = { mode: 'single' };
-            } else if (drawMode === 'complex') {
-                // 復式：抽取7-15個號碼
-                const count = parseInt(document.getElementById('complex-count-select').value);
-                drawnNumbers = getRandomNumbers(currentFilteredNumbers, count);
-                drawResultTitle.textContent = `隨機抽取 ${count} 個號碼（復式）：`;
-                displayHtml = drawnNumbers.map(num => 
-                    `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
-                ).join('');
-                drawModeInfo = { mode: 'complex', count: count };
-            } else if (drawMode === 'smart') {
-                // 聰明組合：生成多注
-                const hasCoreNumber = document.getElementById('smart-core-checkbox').checked;
-                const coreNumber = getCurrentCoreNumber();
-                const isRandomCore = document.getElementById('smart-core-number').value === 'random';
-                
-                bets = generateSmartBets(currentFilteredNumbers, hasCoreNumber, coreNumber);
-                
-                // 顯示標題，如果是隨機核心號碼則顯示當前選中的號碼
-                let titleText = `聰明組合（共 ${bets.length} 注）`;
-                if (hasCoreNumber && coreNumber && isRandomCore) {
-                    titleText += ` 🎲膽=${coreNumber}`;
-                }
-                titleText += '：';
-                drawResultTitle.textContent = titleText;
-                
-                displayHtml = '<div class="smart-bets-container">';
-                bets.forEach((bet, index) => {
-                    const rowClass = bet.isRemainder ? 'smart-bet-row has-remainder' : 'smart-bet-row';
-                    const labelText = bet.isRemainder ? `第${index + 1}注 *` : `第${index + 1}注`;
-                    
-                    displayHtml += `<div class="${rowClass}">`;
-                    displayHtml += `<span class="smart-bet-label">${labelText}</span>`;
-                    displayHtml += '<div class="smart-bet-numbers">';
-                    
-                    bet.numbers.forEach(num => {
-                        const ballClass = (bet.coreNumber !== null && num === bet.coreNumber) 
-                            ? 'hf-ball hf-ball--md hf-ball--core' 
-                            : 'hf-ball hf-ball--md hf-ball--secondary';
-                        displayHtml += `<span class="${ballClass}">${num}</span>`;
-                    });
-                    
-                    displayHtml += '</div>';
-                    if (bet.isRemainder) {
-                        displayHtml += `<span style="font-size: 0.75rem; color: #888;">(*含補充號碼)</span>`;
-                    }
-                    displayHtml += '</div>';
-                });
-                displayHtml += '</div>';
-                
-                // 對於聰明組合，drawnNumbers 保存所有不重複的號碼
-                drawnNumbers = [...new Set(bets.flatMap(b => b.numbers))].sort((a, b) => a - b);
-                drawModeInfo = { mode: 'smart', bets: bets, hasCoreNumber: hasCoreNumber, coreNumber: coreNumber };
-            } else if (drawMode === 'smartComplex') {
-                // 聰明組合+復式：生成多注（每注可選7-10個號碼）
-                const numbersPerBet = parseInt(document.getElementById('smart-complex-count-select').value);
-                const hasCoreNumber = document.getElementById('smart-core-checkbox').checked;
-                const coreNumber = getCurrentCoreNumber();
-                const isRandomCore = document.getElementById('smart-core-number').value === 'random';
-                
-                bets = generateSmartComplexBets(currentFilteredNumbers, numbersPerBet, hasCoreNumber, coreNumber);
-                
-                // 顯示標題，如果是隨機核心號碼則顯示當前選中的號碼
-                let titleText = `聰明組合+復式（每注${numbersPerBet}個，共 ${bets.length} 注）`;
-                if (hasCoreNumber && coreNumber && isRandomCore) {
-                    titleText += ` 🎲膽=${coreNumber}`;
-                }
-                titleText += '：';
-                drawResultTitle.textContent = titleText;
-                
-                displayHtml = '<div class="smart-bets-container">';
-                bets.forEach((bet, index) => {
-                    let rowClass = 'smart-bet-row';
-                    let labelText = `第${index + 1}注`;
-                    let noteText = '';
-                    
-                    if (bet.isExtraRandom) {
-                        labelText += ' 🎲';
-                        noteText = '<span style="font-size: 0.75rem; color: #888;">(隨機注)</span>';
-                    } else if (bet.isRemainder) {
-                        rowClass += ' has-remainder';
-                        labelText += ' *';
-                        noteText = `<span style="font-size: 0.75rem; color: #888;">(*餘${bet.remainderOriginal}+補${numbersPerBet - bet.remainderOriginal})</span>`;
-                    }
-                    
-                    displayHtml += `<div class="${rowClass}">`;
-                    displayHtml += `<span class="smart-bet-label">${labelText}</span>`;
-                    displayHtml += '<div class="smart-bet-numbers">';
-                    
-                    bet.numbers.forEach(num => {
-                        const ballClass = (bet.coreNumber !== null && num === bet.coreNumber) 
-                            ? 'hf-ball hf-ball--md hf-ball--core' 
-                            : 'hf-ball hf-ball--md hf-ball--secondary';
-                        displayHtml += `<span class="${ballClass}">${num}</span>`;
-                    });
-                    
-                    displayHtml += '</div>';
-                    displayHtml += noteText;
-                    displayHtml += '</div>';
-                });
-                displayHtml += '</div>';
-                
-                // 對於聰明組合+復式，drawnNumbers 保存所有不重複的號碼
-                drawnNumbers = [...new Set(bets.flatMap(b => b.numbers))].sort((a, b) => a - b);
-                drawModeInfo = { mode: 'smartComplex', bets: bets, numbersPerBet: numbersPerBet, hasCoreNumber: hasCoreNumber, coreNumber: coreNumber };
-            } else if (drawMode === 'mandel') {
-                // Mandel 濃縮法：取排名前N個號碼，生成覆蓋設計組合
-                const mandelCount = parseInt(document.getElementById('mandel-draw-count-select').value);
-                const topNums = currentFilteredNumbers.slice(0, mandelCount).sort((a, b) => a - b);
 
-                if (topNums.length < mandelCount) {
-                    drawResultTitle.textContent = `號碼不足（需要${mandelCount}個，僅有${topNums.length}個）`;
-                    displayHtml = '<span class="hf-text--muted">篩選號碼不足</span>';
-                    drawModeInfo = { mode: 'mandel', error: 'insufficient' };
-                } else {
-                    // 用已有的 Mandel 覆蓋設計算法生成組合
-                    const n = topNums.length;
-                    const tSubs = combinations(n, 5);
-                    const uncovered = new Set(tSubs.map(s => s.join(',')));
-                    const kSubs = combinations(n, 6);
-                    const kSubCoverage = kSubs.map(ks => subsetsOf(ks, 5).map(ts => ts.join(',')));
-                    const selected = [];
-                    while (uncovered.size > 0) {
-                        let bestIdx = -1, bestCount = 0;
-                        for (let i = 0; i < kSubs.length; i++) {
-                            let count = 0;
-                            for (const key of kSubCoverage[i]) { if (uncovered.has(key)) count++; }
-                            if (count > bestCount) { bestCount = count; bestIdx = i; }
-                        }
-                        if (bestIdx === -1) break;
-                        selected.push(kSubs[bestIdx]);
-                        for (const key of kSubCoverage[bestIdx]) { uncovered.delete(key); }
-                    }
-                    const mandelBets = selected.map(combo => combo.map(idx => topNums[idx]));
-                    const totalCost = mandelBets.length * 10;
-                    const fullBuy = Math.round(mandelBets.length > 0 ? comb(n, 6) : 0);
-                    const saving = fullBuy > 0 ? ((1 - mandelBets.length / fullBuy) * 100).toFixed(1) : '0';
-
-                    drawResultTitle.textContent = `Mandel 濃縮法 C(${n},6,5)（共 ${mandelBets.length} 注）：`;
-
-                    displayHtml = '<div class="five-banker-info">';
-                    displayHtml += '<div class="five-banker-title">🎯 選取號碼（排名前' + n + '）：</div>';
-                    displayHtml += '<div class="five-banker-numbers">';
-                    topNums.forEach(num => {
-                        displayHtml += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
-                    });
-                    displayHtml += '</div>';
-                    displayHtml += `<div class="five-banker-stats">`;
-                    displayHtml += `📊 全買 C(${n},6) = ${fullBuy} 注 | 濃縮: ${mandelBets.length} 注 | 節省: ${saving}%<br>`;
-                    displayHtml += `💰 成本: $${totalCost.toLocaleString()}`;
-                    displayHtml += `</div></div>`;
-
-                    displayHtml += '<div class="five-banker-bets-container">';
-                    mandelBets.forEach((bet, index) => {
-                        displayHtml += `<div class="five-banker-bet-row">`;
-                        displayHtml += `<span class="five-banker-bet-label">第${index + 1}注</span>`;
-                        displayHtml += '<div class="five-banker-bet-numbers">';
-                        bet.forEach(num => {
-                            displayHtml += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
-                        });
-                        displayHtml += '</div></div>';
-                    });
-                    displayHtml += '</div>';
-
-                    drawnNumbers = topNums;
-                    bets = mandelBets.map(b => ({ numbers: b }));
-                    drawModeInfo = { mode: 'mandel', bets: bets, selectedNumbers: topNums, count: mandelCount };
-                }
-            } else if (drawMode === 'fiveBankerFullMeal') {
-                // 5膽拖全餐：從高頻號碼中隨機選5個做膽，剩下的做腳
-                if (currentFilteredNumbers.length < 6) {
-                    drawResultTitle.textContent = '號碼不足（至少需要6個號碼）';
-                    displayHtml = '<span class="hf-text--muted">篩選號碼不足，無法使用5膽拖全餐</span>';
-                    drawModeInfo = { mode: 'fiveBankerFullMeal', error: 'insufficient' };
-                } else {
-                    // 隨機選5個膽
-                    const bankers = getRandomNumbers(currentFilteredNumbers, 5);
-                    // 剩下的作為腳
-                    const runners = currentFilteredNumbers.filter(num => !bankers.includes(num));
-
-                    // 生成注數：每注 = 5個膽 + 1個腳
-                    bets = runners.map(runner => ({
-                        numbers: [...bankers.sort((a, b) => a - b), runner],
-                        bankers: bankers,
-                        runner: runner
-                    }));
-
-                    console.log('5膽拖全餐(重抽) - 篩選號碼:', currentFilteredNumbers.length, currentFilteredNumbers);
-                    console.log('5膽拖全餐(重抽) - 膽碼:', bankers.length, bankers);
-                    console.log('5膽拖全餐(重抽) - 腳碼:', runners.length, runners);
-                    console.log('5膽拖全餐(重抽) - 總注數:', bets.length);
-
-                    drawResultTitle.textContent = `5膽拖全餐（共 ${bets.length} 注）：`;
-
-                    // 顯示膽碼信息
-                    displayHtml = '<div class="five-banker-info">';
-                    displayHtml += '<div class="five-banker-title">🎯 膽碼（固定5個）：</div>';
-                    displayHtml += '<div class="five-banker-numbers">';
-                    bankers.forEach(num => {
-                        displayHtml += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
-                    });
-                    displayHtml += '</div>';
-                    displayHtml += `<div class="five-banker-stats">`;
-                    displayHtml += `📊 篩選號碼: ${currentFilteredNumbers.length}個 | 膽: ${bankers.length}個 | 腳: ${runners.length}個 | 共 ${bets.length} 注<br>`;
-                    displayHtml += `💰 每注成本：$10（全注）或 $5（半注） | 全注總成本：$${bets.length * 10} | 半注總成本：$${bets.length * 5}`;
-                    displayHtml += `</div>`;
-                    displayHtml += '</div>';
-
-                    // 顯示所有注數
-                    displayHtml += '<div class="five-banker-bets-container">';
-                    bets.forEach((bet, index) => {
-                        displayHtml += `<div class="five-banker-bet-row">`;
-                        displayHtml += `<span class="five-banker-bet-label">第${index + 1}注</span>`;
-                        displayHtml += '<div class="five-banker-bet-numbers">';
-
-                        bet.numbers.forEach(num => {
-                            displayHtml += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
-                        });
-
-                        displayHtml += '</div>';
-                        displayHtml += '</div>';
-                    });
-                    displayHtml += '</div>';
-
-                    // drawnNumbers 保存所有號碼（膽+腳）
-                    drawnNumbers = currentFilteredNumbers;
-                    drawModeInfo = {
-                        mode: 'fiveBankerFullMeal',
-                        bets: bets,
-                        bankers: bankers,
-                        runners: runners
-                    };
-                }
-            }
+            const built = buildHighFrequencyDrawDisplay(currentFilteredNumbers);
+            let displayHtml = built.displayHtml;
+            let drawnNumbers = built.drawnNumbers;
+            let drawModeInfo = built.drawModeInfo;
 
             // 檢查是否勾選隨機注數
             const hasRandomBet = document.getElementById('random-bet-checkbox').checked;
@@ -7726,6 +7838,7 @@ console.log('lotteryData', lotteryData.length);
                         randomNumbersHtml += `<span class="${ballClass}">${num}</span>`;
                     });
                     randomNumbersHtml += '</div>';
+                    randomNumbersHtml += buildMandelPrizeSummaryHtml(item.drawModeInfo.bets, item.startPeriod, { history: true });
 
                     // 顯示所有注數
                     randomNumbersHtml += '<div class="hf-history-smart-bets">';
@@ -8085,12 +8198,33 @@ console.log('lotteryData', lotteryData.length);
                 `<span class="hf-ball hf-ball--md hf-ball--primary">${num}</span>`
             ).join('');
             
-            // 更新隨機 6 個號碼
+            // 更新隨機 6 個號碼（Mandel 等多注模式需還原完整版面）
             const random6Div = document.getElementById('random-6-numbers');
-            random6Div.innerHTML = item.random6.map(num => 
-                `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
-            ).join('');
-            
+            if (item.drawModeInfo && item.drawModeInfo.mode === 'mandel' && item.drawModeInfo.bets && item.drawModeInfo.selectedNumbers) {
+                const sel = item.drawModeInfo.selectedNumbers;
+                const bets = item.drawModeInfo.bets;
+                let h = '<div class="five-banker-info"><div class="five-banker-title">🎯 選取號碼（Mandel）：</div><div class="five-banker-numbers">';
+                sel.forEach(num => {
+                    h += `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`;
+                });
+                h += '</div>';
+                h += buildMandelPrizeSummaryHtml(bets, item.startPeriod, {});
+                h += '</div><div class="five-banker-bets-container">';
+                bets.forEach((bet, index) => {
+                    h += `<div class="five-banker-bet-row"><span class="five-banker-bet-label">第${index + 1}注</span><div class="five-banker-bet-numbers">`;
+                    bet.numbers.forEach(num => {
+                        h += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
+                    });
+                    h += '</div></div>';
+                });
+                h += '</div>';
+                random6Div.innerHTML = h;
+            } else {
+                random6Div.innerHTML = item.random6.map(num =>
+                    `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
+                ).join('');
+            }
+
             // 滾動到結果區域
             resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
