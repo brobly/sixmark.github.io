@@ -3395,7 +3395,7 @@
 
                                             <!-- Mandel 模式：號碼數量選擇器 -->
                                             <div id="mandel-draw-count-container" class="draw-mode-option" style="display: none;">
-                                                <label>選取號碼數：</label>
+                                                <label>隨機選取號碼數：</label>
                                                 <select id="mandel-draw-count-select" class="complex-count-select-sm">
                                                     <option value="7">7個</option>
                                                     <option value="8">8個</option>
@@ -6834,14 +6834,15 @@ console.log('lotteryData', lotteryData.length);
                 drawModeInfo = { mode: 'smartComplex', bets: bets, numbersPerBet: numbersPerBet, hasCoreNumber: hasCoreNumber, coreNumber: coreNumber };
             } else if (drawMode === 'mandel') {
                 const mandelCount = parseInt(document.getElementById('mandel-draw-count-select').value);
-                const topNums = pool.slice(0, mandelCount).sort((a, b) => a - b);
+                // 從篩選池隨機抽 N 個（非頻率排名前 N）
+                const mandelNums = getRandomNumbers(pool, mandelCount);
 
-                if (topNums.length < mandelCount) {
-                    drawResultTitle.textContent = `號碼不足（需要${mandelCount}個，僅有${topNums.length}個）`;
+                if (mandelNums.length < mandelCount) {
+                    drawResultTitle.textContent = `號碼不足（需要${mandelCount}個，僅有${mandelNums.length}個）`;
                     displayHtml = '<span class="hf-text--muted">篩選號碼不足</span>';
                     drawModeInfo = { mode: 'mandel', error: 'insufficient' };
                 } else {
-                    const n = topNums.length;
+                    const n = mandelNums.length;
                     const tSubs = combinations(n, 5);
                     const uncovered = new Set(tSubs.map(s => s.join(',')));
                     const kSubs = combinations(n, 6);
@@ -6858,7 +6859,7 @@ console.log('lotteryData', lotteryData.length);
                         selected.push(kSubs[bestIdx]);
                         for (const key of kSubCoverage[bestIdx]) { uncovered.delete(key); }
                     }
-                    const mandelBets = selected.map(combo => combo.map(idx => topNums[idx]));
+                    const mandelBets = selected.map(combo => combo.map(idx => mandelNums[idx]));
                     const totalCost = mandelBets.length * 10;
                     const fullBuy = Math.round(mandelBets.length > 0 ? comb(n, 6) : 0);
                     const saving = fullBuy > 0 ? ((1 - mandelBets.length / fullBuy) * 100).toFixed(1) : '0';
@@ -6866,9 +6867,9 @@ console.log('lotteryData', lotteryData.length);
                     drawResultTitle.textContent = `Mandel 濃縮法 C(${n},6,5)（共 ${mandelBets.length} 注）：`;
 
                     displayHtml = '<div class="five-banker-info">';
-                    displayHtml += '<div class="five-banker-title">🎯 選取號碼（排名前' + n + '）：</div>';
+                    displayHtml += '<div class="five-banker-title">🎯 選取號碼（隨機' + n + '個）：</div>';
                     displayHtml += '<div class="five-banker-numbers">';
-                    topNums.forEach(num => {
+                    mandelNums.forEach(num => {
                         displayHtml += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
                     });
                     displayHtml += '</div>';
@@ -6891,8 +6892,8 @@ console.log('lotteryData', lotteryData.length);
                     });
                     displayHtml += '</div>';
 
-                    drawnNumbers = topNums;
-                    drawModeInfo = { mode: 'mandel', bets: mandelBetsForInfo, selectedNumbers: topNums, count: mandelCount };
+                    drawnNumbers = mandelNums;
+                    drawModeInfo = { mode: 'mandel', bets: mandelBetsForInfo, selectedNumbers: mandelNums, count: mandelCount };
                 }
             } else if (drawMode === 'fiveBankerFullMeal') {
                 if (pool.length < 6) {
@@ -7211,7 +7212,7 @@ console.log('lotteryData', lotteryData.length);
             } else if (drawMode === 'mandel') {
                 mandelDrawContainer.style.display = 'flex';
                 const count = document.getElementById('mandel-draw-count-select').value;
-                drawResultTitle.textContent = `Mandel 濃縮法（取前${count}個號碼）：`;
+                drawResultTitle.textContent = `Mandel 濃縮法（隨機${count}個號碼）：`;
             } else if (drawMode === 'complex') {
                 complexContainer.style.display = 'flex';
                 const count = document.getElementById('complex-count-select').value;
