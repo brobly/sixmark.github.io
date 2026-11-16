@@ -1,0 +1,10 @@
+GitHub Pages 上載說明
+
+1. 解壓縮本檔案。
+2. 將 index.html、test.html、整個 assets 資料夾及 .nojekyll 放到 brobly/sixmark.github.io 的網站發布根目錄。
+3. 保留 assets 資料夾層級，請勿只上載 index.html，亦不要只把 ZIP 上載到 GitHub。
+4. 沿用現有 GitHub Pages 發布設定，待發布完成後瀏覽 https://brobly.github.io/sixmark.github.io/。
+
+此版本是純靜態 HTML/CSS/JavaScript；不需要 npm、Node 或自設後端伺服器。
+所有運算及儲存由瀏覽器完成；Mandel 支援背景計算，必要時自動改用分段計算。
+直接以瀏覽器開啟解壓後的 index.html 亦可使用。
