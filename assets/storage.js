@@ -46,6 +46,7 @@ function validPairEvidence(p){
 }
 function validHistoryItem(h){
  if(!h||!Engine.validNumbers(h.filteredNumbers)||!Engine.validNumbers(h.random6)||typeof h.timestamp!=='string'||/[<>]/.test(h.timestamp)||!Number.isInteger(h.startPeriod)||!Number.isInteger(h.endPeriod)||h.startPeriod<1||h.endPeriod<h.startPeriod||!Number.isFinite(h.maxFrequency)||!Number.isFinite(h.threshold))return false;
+ if(h.selectionSettings){const s=h.selectionSettings;if(s.version!==1||!Object.hasOwn(Selection.labels,s.mode)||s.mode!==h.filterMode||s.count!==h.filteredNumbers.length||!Number.isInteger(s.train)||s.train!==h.endPeriod-h.startPeriod+1||!Number.isInteger(s.short)||s.short<1||s.short>s.train||typeof s.cold!=='boolean')return false;}
  if(h.pairing&&!validPairEvidence(h.pairing))return false;
  const d=h.drawModeInfo;if(!d)return true;
  if(!['single','complex','smart','smartComplex','paired','mandel','fiveBankerFullMeal','unavailable'].includes(d.mode))return false;

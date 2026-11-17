@@ -14,3 +14,5 @@
 .report-selection{padding:14px;background:#faf9ff;border:1px solid var(--line);border-radius:10px;margin:16px 0}.report-selection h4{margin-bottom:8px}.report-selection .number-ball{margin:3px}.report-draw{min-width:220px}.report-draw .number-ball{width:26px;height:26px;line-height:26px;font-size:.8rem;margin:2px}
 
 .mandel-advanced-option{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0;font-weight:600}.mandel-advanced-option input{width:auto}.mandel-filter-summary{padding:12px;margin:12px 0;border:1px solid #ecdba8;border-radius:8px;background:#fff9e8}.mandel-filter-summary p{margin:6px 0}#mandel-draw-count-container{flex-wrap:wrap}#mandel-draw-count-container small{flex-basis:100%}#mandel-guarantee[hidden]{display:none}
+
+#blend-controls[hidden]{display:none}#blend-controls input{width:80px}#forecast-panel>button{background:#fff;border:1px solid #cbc4e6;color:var(--accent);border-radius:8px;padding:9px 14px;margin:6px 6px 6px 0}#forecast-status{font-weight:600;margin:12px 0}#forecast-results td{overflow-wrap:anywhere}#pool-comparison input{width:90px}

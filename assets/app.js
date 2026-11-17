@@ -242,14 +242,9 @@
                 rankShowColdComplement = false;
             }
             
-            // 預設模式下禁用數量選擇
-            if (mode === 'default') {
-                countSelect.disabled = true;
-                countSelect.style.opacity = '0.5';
-            } else {
-                countSelect.disabled = false;
-                countSelect.style.opacity = '1';
-            }
+            countSelect.disabled = false;
+            countSelect.style.opacity = '1';
+            document.getElementById('blend-controls').hidden=mode!=='blend';
 
             updateRankColdToggleUI();
             if(refresh && document.getElementById('high-frequency-result').style.display === 'block') filterHighFrequencyNumbers();

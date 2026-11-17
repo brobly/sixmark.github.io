@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>六合彩數據工作台</title>
-    <link rel="stylesheet" href="assets/base.css?v=20261116-advanced"><link rel="stylesheet" href="assets/ui.css?v=20261116-advanced">
+    <link rel="stylesheet" href="assets/base.css?v=20261116-fixed-pool"><link rel="stylesheet" href="assets/ui.css?v=20261116-fixed-pool">
 </head>
 <body>
     <div class="container">
@@ -77,20 +77,19 @@
                                         <h4 class="hf-panel-title">📊 高頻號碼篩選結果</h4>
                                         <div class="hf-mode-inline">
                                             <select id="filter-mode-select" class="filter-mode-select-sm" onchange="updateFilterModeDescription()">
-                                                <option value="default">預設模式</option>
-                                                <option value="rank">排名模式</option>
+                                                <option value="default">純排名（固定總數，含特別號）</option>
+                                                <option value="rank">排名模式（可切冷門，固定總數）</option>
+                                                <option value="rank_regular">純排名（只計正選）</option>
+                                                <option value="blend">長短期混合（含特別號）</option>
                                                 <option value="rank_with_pair">排名＋搭配（固定總數）</option>
                                                 <option value="cold_hot_balance">冷熱平衡</option>
                                             </select>
-                                            <select id="filter-count-select" aria-label="最終篩選號碼數" title="排名＋搭配模式以此數量作最終號碼總數" class="filter-count-select-sm" onchange="updateFilterModeDescription()">
-                                                <option value="3">3個</option>
-                                                <option value="4">4個</option>
-                                                <option value="5">5個</option>
-                                                <option value="6" selected>6個</option>
+                                            <select id="filter-count-select" aria-label="最終篩選號碼數" title="所有模式均以此數量作最終號碼總數" class="filter-count-select-sm" onchange="updateFilterModeDescription()">
+                                                <option value="6">6個</option>
                                                 <option value="7">7個</option>
                                                 <option value="8">8個</option>
                                                 <option value="9">9個</option>
-                                                <option value="10">10個</option>
+                                                <option value="10" selected>10個</option>
                                                 <option value="11">11個</option>
                                                 <option value="12">12個</option>
                                                 <option value="13">13個</option>
@@ -111,9 +110,11 @@
                                                 <option value="40">40個</option>
                                                 <option value="49">49個</option>
                                             </select>
-                                            <button type="button" id="rank-cold-toggle-btn" class="rank-cold-toggle-btn" style="display:none;" onclick="toggleRankColdComplement()" title="在頻率前 N 名與其餘號碼間切換">切換冷門</button>
+                                            <button type="button" id="rank-cold-toggle-btn" class="rank-cold-toggle-btn" style="display:none;" onclick="toggleRankColdComplement()" title="在頻率最高 N 碼與最低 N 碼間切換">切換冷門</button>
                                         </div>
                                     </div>
+                                    <div id="blend-controls" hidden><label for="filter-short-periods">混合短期期數</label> <input id="filter-short-periods" type="number" min="1" value="10" onchange="updateFilterModeDescription()"><p class="muted">短期使用所選範圍中最新的幾期；長期使用整個所選範圍。兩邊先按期數換算頻率，再各佔50%。</p></div>
+                                    <p class="muted">所有模式固定最終碼數，同頻以號碼排序。正選命中數及特別號分開核對；舊歷史注碼保留原樣。</p>
                                     <div class="hf-filter-info">
                                         <strong>篩選條件：</strong>
                                         <span id="filter-threshold-info" class="hf-highlight-text"></span>
@@ -248,6 +249,30 @@
                             </div>
                         </div>
                     </div>
+                    <section id="pool-comparison" class="backtest">
+                        <h3>固定碼數：較新一期命中比較</h3>
+                        <p>比較純排名、只計正選、長短期混合及排名＋搭配。每個核對期只用更早資料選同樣數量的號碼；統計的是號碼池覆蓋，並非投注中獎或盈利。</p>
+                        <div class="search-row">
+                            <label>每期選號用前幾期 <input id="pool-train" type="number" min="1" value="100"></label>
+                            <label>混合短期 <input id="pool-short" type="number" min="1" value="10"></label>
+                            <label>每次選幾碼 <input id="pool-size" type="number" min="6" max="49" value="10"></label>
+                            <label>核對最近幾期 <input id="pool-periods" type="number" min="1" value="100"></label>
+                            <button onclick="comparePoolSelections()">比較四種篩選</button>
+                            <label>表格排序 <select id="pool-goal" onchange="renderPoolComparison()"><option value="mean">平均命中正選</option><option value="hit3">中3碼或以上期數</option><option value="hit4">中4碼或以上期數</option></select></label>
+                            <button id="export-pool-comparison" onclick="exportPoolComparison()" disabled>匯出逐期選號</button>
+                        </div>
+                        <div id="pool-comparison-results" role="status" aria-live="polite"></div>
+                    </section>
+                    <section id="forecast-panel" class="backtest">
+                        <h3>預先保存選號，等待下一期核對</h3>
+                        <p>先以最新一期為起點篩選，再保存目前號碼池。同一基準期只保存第一筆，並一併保存同碼數的純排名作比較。新增開獎資料後，會核對基準期緊接的下一期。</p>
+                        <button onclick="saveForecast()">鎖定目前篩選，等待下一期</button>
+                        <button onclick="renderForecasts()">更新核對顯示</button>
+                        <button onclick="exportForecasts()">匯出預存記錄 CSV</button>
+                        <p id="forecast-status" role="status"></p>
+                        <p class="muted">記錄保存在此瀏覽器，並納入「核對中獎 → 匯出備份」。本機時間及匯入檔案沒有獨立時間驗證；只把保存日期早於開獎日期的記錄納入前瞻統計。同日或較後保存只列為補錄。網站不會自動下載新開獎資料。</p>
+                        <div id="forecast-results"></div>
+                    </section>
                     <section id="pair-comparison" class="backtest"></section>
                     <div id="stats-content" class="loading">正在載入統計數據...</div>
                 </div>
@@ -564,16 +589,19 @@
         </div>
     </div>
 
-    <script src="assets/draws.js?v=20261116-advanced"></script>
-<script src="assets/core.js?v=20261116-advanced"></script>
-<script src="assets/coverage.js?v=20261116-advanced"></script>
-<script src="assets/pairing.js?v=20261116-advanced"></script>
-<script src="assets/storage.js?v=20261116-advanced"></script>
-<script src="assets/app.js?v=20261116-advanced"></script>
-<script src="assets/statistics.js?v=20261116-advanced"></script>
-<script src="assets/mandel-engine.js?v=20261116-advanced"></script>
-<script src="assets/mandel.js?v=20261116-advanced"></script>
-<script src="assets/ui.js?v=20261116-advanced"></script>
-<script src="assets/pairing-ui.js?v=20261116-advanced"></script>
+    <script src="assets/draws.js?v=20261116-fixed-pool"></script>
+<script src="assets/core.js?v=20261116-fixed-pool"></script>
+<script src="assets/coverage.js?v=20261116-fixed-pool"></script>
+<script src="assets/pairing.js?v=20261116-fixed-pool"></script>
+<script src="assets/selection.js?v=20261116-fixed-pool"></script>
+<script src="assets/forecast.js?v=20261116-fixed-pool"></script>
+<script src="assets/storage.js?v=20261116-fixed-pool"></script>
+<script src="assets/app.js?v=20261116-fixed-pool"></script>
+<script src="assets/statistics.js?v=20261116-fixed-pool"></script>
+<script src="assets/mandel-engine.js?v=20261116-fixed-pool"></script>
+<script src="assets/mandel.js?v=20261116-fixed-pool"></script>
+<script src="assets/ui.js?v=20261116-fixed-pool"></script>
+<script src="assets/pairing-ui.js?v=20261116-fixed-pool"></script>
+<script src="assets/selection-ui.js?v=20261116-fixed-pool"></script>
 </body>
 </html> 

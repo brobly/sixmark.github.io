@@ -82,7 +82,7 @@ function saveWorkspace(){if(!workspaceRestoring)Store.set('workspace',captureWor
 function clearWorkspaceSelection(){selectedNumbers=[];bankerNumbers=[];runnerNumbers=[];mandelClearAll();updateNumberDisplay();updateSelectionStatus();updateBankerDisplay();updateBankerStatus();loadVerification();}
 function download(name,text,type='text/plain'){const u=URL.createObjectURL(new Blob([type==='application/json'?text:'\ufeff'+text],{type}));const a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
 function exportReport(target){const lastReport=reports[target];if(!lastReport)return;download('核對結果.csv',['期號,日期,開獎正選,特別號,使用號碼,膽碼,濃縮注碼,成本,估算獎金,'+names.join(','),...lastReport.map(r=>[r.draw.draw_number,r.draw.draw_date,r.draw.numbers.join(' '),r.draw.extra_number,r.bet.numbers.join(' '),(r.bet.bankers||[]).join(' '),(r.bet.bets||[]).map(b=>b.join(' ')).join(' | '),r.cost,r.prize,...r.counts].join(','))].join('\n'),'text/csv');}
-function exportWorkspace(){download('sixmark-backup.json',JSON.stringify({version:2,workspace:captureWorkspace(),history:filterHistory,sets:Store.get('sets',[])},null,2),'application/json');}
+function exportWorkspace(){download('sixmark-backup.json',JSON.stringify({version:2,workspace:captureWorkspace(),history:filterHistory,sets:Store.get('sets',[]),forecasts:forecastRecords()},null,2),'application/json');}
 function saveSet(){try{const bet=currentBet(),sets=Store.get('sets',[]);sets.unshift({...bet,name:new Date().toLocaleString('zh-HK')});if(!Store.set('sets',sets.slice(0,30)))return;renderSets();$('save-status').textContent='已保存號碼組。';}catch(e){$('save-status').textContent=e.message;}}
 function renderSets(){const sets=Store.get('sets',[]);$('saved-sets').innerHTML=sets.map((s,i)=>`<button onclick="restoreSet(${i})">${escapeText(s.name)} · ${s.mode==='banker'?'膽拖':s.mode==='mandel'?(s.filterInfo?.advanced?'進階濃縮':'濃縮'):'複式'} ${s.numbers.length} 碼</button>`).join('')||'<span class="muted">尚未保存號碼組</span>';}
 function restoreSet(i){const s=Store.get('sets',[])[i];if(!s)return;invalidateMandel();selectedNumbers=s.mode==='complex'?s.numbers:[];bankerNumbers=s.bankers||[];runnerNumbers=s.mode==='banker'?s.numbers:[];if(s.mode==='mandel'){mandelSelected=s.numbers;mandelTargetV=s.numbers.length;$('mandel-v-select').value=mandelTargetV;$('mandel-advanced').checked=!!s.filterInfo?.advanced;mandelAdvancedEnabled=!!s.filterInfo?.advanced;mandelCombinations=s.bets;mandelFilterInfo=s.filterInfo||null;}switchBettingMode(s.mode);updateNumberDisplay();updateSelectionStatus();updateBankerDisplay();updateBankerStatus();if(s.mode==='mandel'){updateMandelUI();displayMandelResults();}loadVerification();}
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded',()=>{ workspaceRestoring=true;
  Promise.resolve().then(()=>{workspaceRestoring=false;syncButtons();saveWorkspace();});
  document.addEventListener('change',saveWorkspace);document.addEventListener('click',()=>{syncButtons();saveWorkspace();});
  document.querySelectorAll('label.input-label').forEach(el=>{const input=el.parentElement.querySelector('input');if(input)el.htmlFor=input.id;});
- $('import-backup').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>2000000)throw Error();const d=JSON.parse((await file.text()).replace(/^\uFEFF/,''));if(d.version!==2||!validBackup(d))throw Error();if(!importWorkspace(d)){ $('save-status').textContent='儲存空間不足或瀏覽器禁止儲存，未能完成匯入。請保留備份檔。';return;}location.reload();}catch{$('save-status').textContent='備份格式或號碼無效，未匯入。';}};
+ $('import-backup').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>2000000)throw Error();const d=JSON.parse((await file.text()).replace(/^\uFEFF/,''));if(d.version!==2||!validBackup(d))throw Error();if(!importWorkspace(d)){ $('save-status').textContent='未能完成匯入：請檢查瀏覽器儲存空間及預存記錄數量（最多500筆），並保留備份檔。';return;}location.reload();}catch{$('save-status').textContent='備份格式或號碼無效，未匯入。';}};
 });
 function validBackup(d){
  if(!d||typeof d!=='object')return false;
@@ -115,10 +115,13 @@ function validBackup(d){
  if(w.mode!==undefined&&!['complex','banker','mandel'].includes(w.mode))return false;
  if(w.mandelNumbers!==undefined&&!Engine.validNumbers(w.mandelNumbers,0,18))return false;
  if(w.mandelBets!==undefined&&(!Array.isArray(w.mandelBets)||((w.mandelBets.length||w.mandelFilterInfo)&&!validMandelRecord(w.mandelNumbers,w.mandelBets,w.mandelFilterInfo))))return false;
+ if(d.forecasts!==undefined&&!Forecast.validList(d.forecasts))return false;
  return Array.isArray(d.history)&&d.history.length<=20&&d.history.every(validHistoryItem)&&Array.isArray(d.sets)&&d.sets.length<=30&&d.sets.every(validSavedSet);
 }
 function importWorkspace(data){
- const keys=['workspace','history','sets'],before=keys.map(k=>Store.rawGet('sixmark.v2.'+k));
+ const keys=['workspace','history','sets'];
+ if(data.forecasts!==undefined){try{data={...data,forecasts:Forecast.merge(forecastRecords(),data.forecasts)};keys.push('forecasts');}catch{return false;}}
+ const before=keys.map(k=>Store.rawGet('sixmark.v2.'+k));
  for(const key of keys)if(!Store.set(key,data[key])){
   keys.forEach((k,i)=>{try{if(before[i]===null)localStorage.removeItem('sixmark.v2.'+k);else localStorage.setItem('sixmark.v2.'+k,before[i]);}catch{}});
   return false;

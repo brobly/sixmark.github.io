@@ -6,7 +6,7 @@
         let currentMandelDrawPool = null;
         let currentFilteredNumbers = []; // 儲存當前篩選結果
         let filterHistory = Store.get('history', []); // 儲存篩選歷史記錄
-        /** 排名模式專用：false = 頻率前 N 名，true = 其餘 (49−N) 個（互補池） */
+        /** 排名模式專用：false = 頻率前 N 名，true = 頻率最低 N 個（固定總數） */
         let rankShowColdComplement = false;
 
         function updateRankColdToggleUI() {
@@ -78,6 +78,10 @@
             const filterMode = document.getElementById('filter-mode-select').value;
             const filterCount = parseInt(document.getElementById('filter-count-select').value) || 6;
 
+            if(!Number.isInteger(filterCount)||filterCount<6||filterCount>49){alert('請選擇6–49個號碼。');return;}
+            const short=Number(document.getElementById('filter-short-periods').value);
+            if(filterMode==='blend'&&(!Number.isInteger(short)||short<1||short>endPeriod-startPeriod+1)){alert('短期期數必須為正整數，且不可超過所選範圍期數。');return;}
+
             // 計算號碼統計
             const numberFreq = {};
 
@@ -115,34 +119,11 @@
             window.currentPairResult = null;
             let modeDescription = '';
 
-            if (filterMode === 'default') {
-                // 預設模式：篩選出現次數 >= 門檻值的號碼
-                for (let num = 1; num <= 49; num++) {
-                    if (numberFreq[num] >= threshold) {
-                        currentFilteredNumbers.push(num);
-                    }
-                }
-                // 排序（按號碼大小）
-                currentFilteredNumbers.sort((a, b) => a - b);
-                modeDescription = `預設模式 - 門檻值 ${threshold} 次`;
-            } else if (filterMode === 'rank') {
-                // 排名模式：按頻率排名選取指定數量的號碼（可切換為「其餘冷門」互補池）
-                if (filterCount >= 49) {
-                    rankShowColdComplement = false;
-                }
-                const sortedNumbers = Object.entries(numberFreq)
-                    .map(([num, freq]) => ({ number: parseInt(num), frequency: freq }))
-                    .sort((a, b) => b.frequency - a.frequency);
-                
-                if (rankShowColdComplement && filterCount < 49) {
-                    currentFilteredNumbers = sortedNumbers.slice(filterCount).map(item => item.number);
-                    modeDescription = `排名模式 - 其餘頻率後 ${49 - filterCount} 名（非前 ${filterCount} 名）`;
-                } else {
-                    currentFilteredNumbers = sortedNumbers.slice(0, filterCount).map(item => item.number);
-                    modeDescription = `排名模式 - 選取頻率前 ${filterCount} 名`;
-                }
-                // 按號碼大小排序以便顯示
-                currentFilteredNumbers.sort((a, b) => a - b);
+            if (['default','rank','rank_regular','blend'].includes(filterMode)) {
+                try{currentFilteredNumbers=Selection.select(selectedData,{mode:filterMode,count:filterCount,short:Number(document.getElementById('filter-short-periods').value),cold:rankShowColdComplement});}
+                catch(e){alert(e.message);return;}
+                modeDescription=Selection.labels[filterMode]+(filterMode==='rank'&&rankShowColdComplement?' · 最低頻率':'')+` · 固定 ${filterCount} 碼`;
+                if(filterMode==='blend')modeDescription+=` · 短期${document.getElementById('filter-short-periods').value}／長期${selectedData.length}期，各50%`;
             } else if (filterMode === 'rank_with_pair') {
                 const result = Pairing.select(selectedData, filterCount);
                 currentFilteredNumbers = result.numbers;
@@ -203,6 +184,10 @@
                 
                 modeDescription = `冷熱平衡模式 - 選取 ${filterCount} 個號碼（高頻${selectedHigh.length}個 + 低頻${selectedLow.length}個）`;
             }
+
+            const scoringFreq=Selection.frequencies(selectedData,filterMode!=='rank_regular');
+            const unseen=currentFilteredNumbers.filter(n=>scoringFreq[n]===0).length;
+            if(unseen)modeDescription+=` · ${unseen} 碼於此區間未出現，依同頻排序補滿固定總數`;
 
             // 保存頻率信息供其他功能使用
             window.currentNumberFreq = numberFreq;
@@ -534,22 +519,17 @@
             // 根據模式顯示不同的篩選條件信息
             let infoText = `期數範圍：第 ${startPeriod} 期 ~ 第 ${endPeriod} 期（共 ${endPeriod - startPeriod + 1} 期）`;
             
-            if (filterMode === 'default') {
-                infoText += `｜最高出現次數：${maxFrequency} 次｜門檻值：${threshold} 次｜篩選出 ${filteredNumbers.length} 個號碼`;
-            } else if (filterMode === 'rank') {
-                infoText += `｜${modeDescription}｜篩選出 ${filteredNumbers.length} 個號碼`;
-            } else if (filterMode === 'rank_with_pair') {
-                infoText += `｜${modeDescription}｜篩選出 ${filteredNumbers.length} 個號碼`;
-            } else if (filterMode === 'cold_hot_balance') {
-                infoText += `｜${modeDescription}｜篩選出 ${filteredNumbers.length} 個號碼`;
-            }
-            
+            infoText += `｜${modeDescription}｜最終 ${filteredNumbers.length} 個號碼`;
+
             thresholdInfo.textContent = infoText;
 
             // 顯示篩選出數字的數量
             filteredNumbersCountDiv.textContent = `（共 ${filteredNumbers.length} 個）`;
 
-            currentFilterContext = {startPeriod,endPeriod,maxFrequency,threshold,filterMode};
+            currentFilterContext = {startPeriod,endPeriod,maxFrequency,threshold,filterMode,selectionSettings:{version:1,mode:filterMode,count:filteredNumbers.length,train:endPeriod-startPeriod+1,short:filterMode==='blend'?Number(document.getElementById('filter-short-periods').value):1,cold:rankShowColdComplement},dataAsOf:lotteryData[0].draw_date};
+            document.getElementById('pool-train').value=endPeriod-startPeriod+1;
+            document.getElementById('pool-size').value=filteredNumbers.length;
+            document.getElementById('pool-short').value=filterMode==='blend'?Number(document.getElementById('filter-short-periods').value):Math.min(10,endPeriod-startPeriod+1);
             updateHistoricalCoverage(startPeriod,filteredNumbers);
 
             // 顯示符合條件的號碼
@@ -1078,6 +1058,7 @@
             const historyItem = {
                 timestamp,
                 filterMode,
+                selectionSettings: currentFilterContext?.selectionSettings || null,
                 rankCold: rankShowColdComplement,
                 dataVersion: lotteryData[0].draw_date,
                 startDraw: lotteryData[startPeriod-1].draw_date,
@@ -1368,7 +1349,7 @@
                             </div>
                         </div>
                         <div class="hf-history-meta">
-                            期數：第 ${item.startPeriod} ~ ${item.endPeriod} 期 | 門檻：${item.threshold} 次
+                            期數：第 ${item.startPeriod} ~ ${item.endPeriod} 期 | ${item.selectionSettings?'固定 '+item.filteredNumbers.length+' 碼':'舊版保存記錄'}
                         </div>
                         <div class="hf-history-random">
                             <strong class="hf-history-random-label">${modeLabel}</strong>
@@ -1533,13 +1514,14 @@
             // 更新篩選條件（包含篩選出數字的數量）
             const thresholdInfo = document.getElementById('filter-threshold-info');
             thresholdInfo.textContent = `期數範圍：第 ${item.startPeriod} 期 ~ 第 ${item.endPeriod} 期（共 ${item.endPeriod - item.startPeriod + 1} 期）｜最高出現次數：${item.maxFrequency} 次｜門檻值：${item.threshold} 次｜篩選出 ${item.filteredNumbers.length} 個號碼`;
+            if(item.selectionSettings)thresholdInfo.textContent=`期數範圍：第 ${item.startPeriod} ~ ${item.endPeriod} 期｜${Selection.labels[item.filterMode]||'保存選號'}｜固定 ${item.filteredNumbers.length} 碼（原有保存號碼）`;
             if(item.pairing) thresholdInfo.textContent = `期數範圍：第 ${item.startPeriod} 期 ~ 第 ${item.endPeriod} 期｜排名＋搭配｜最終 ${item.filteredNumbers.length} 碼`;
             
             // 更新篩選出數字的數量
             const filteredNumbersCountDiv = document.getElementById('filtered-numbers-count');
             filteredNumbersCountDiv.textContent = `（共 ${item.filteredNumbers.length} 個）`;
             
-            currentFilterContext = {startPeriod:item.startPeriod,endPeriod:item.endPeriod,maxFrequency:item.maxFrequency,threshold:item.threshold,filterMode:item.filterMode};
+            currentFilterContext = {startPeriod:item.startPeriod,endPeriod:item.endPeriod,maxFrequency:item.maxFrequency,threshold:item.threshold,filterMode:item.filterMode,selectionSettings:item.selectionSettings||null,dataAsOf:item.dataVersion};
             updateHistoricalCoverage(item.startPeriod,item.filteredNumbers,item.random6,item.drawModeInfo);
 
             const filteredNumbersDiv = document.getElementById('filtered-numbers');
