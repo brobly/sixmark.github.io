@@ -3,7 +3,7 @@ const Store={
  set(key,value){try{localStorage.setItem('sixmark.v2.'+key,JSON.stringify(value));return true;}catch{const el=document.getElementById('save-status');if(el)el.textContent='瀏覽器未能儲存，請匯出備份。';return false;}}
 };
 function safeNumbersParse(raw){try{const v=JSON.parse(raw);if(Engine.validNumbers(v,0,20))return v;if(v&&Engine.validNumbers(v.bankerNumbers,0,5)&&Engine.validNumbers(v.runnerNumbers)&&!v.bankerNumbers.some(n=>v.runnerNumbers.includes(n)))return v;}catch{}return [];}
-function restorableControl(el){return el&&el.matches('input[id],select[id]')&&!['file','button','submit','reset','hidden'].includes(el.type)&&!['draw-search','stats-view-mode-switch'].includes(el.id);}
+function restorableControl(el){return el&&el.matches('input[id],select[id]')&&!['file','button','submit','reset','hidden'].includes(el.type)&&!el.id.startsWith('research-')&&!['draw-search','stats-view-mode-switch'].includes(el.id);}
 function captureControls(){return Object.fromEntries([...document.querySelectorAll('input[id],select[id]')].filter(restorableControl).map(el=>[el.id,el.type==='checkbox'?el.checked:el.value]));}
 function restoreControls(values,scope=null){
  if(!values||typeof values!=='object'||Array.isArray(values))return;
@@ -37,9 +37,17 @@ function validMandelRecord(pool,bets,info){
 }
 function validSavedSet(s){
  if(!s||typeof s!=='object'||typeof s.name!=='string')return false;
+ if(s.mode==='groups')return validGroupedBet(s);
  if(s.mode==='complex')return Engine.validNumbers(s.numbers,6,20);
  if(s.mode==='banker')return Engine.validNumbers(s.bankers,1,5)&&Engine.validNumbers(s.numbers,6-s.bankers.length)&&!s.bankers.some(n=>s.numbers.includes(n));
  return s.mode==='mandel'&&validMandelRecord(s.numbers,s.bets,s.filterInfo);
+}
+function validGroupedBet(b){
+ if(!b||b.mode!=='groups'||!['single','complex','banker','smart','smartComplex','paired','mandel','fiveBankerFullMeal'].includes(b.sourceMode)||!Engine.validNumbers(b.numbers)||!Array.isArray(b.groups)||!b.groups.length||b.groups.length>2000)return false;
+ if(b.hasRandomBet!==undefined&&typeof b.hasRandomBet!=='boolean')return false;
+ if(!b.groups.every(g=>g&&(g.mode==='complex'?Engine.validNumbers(g.numbers,6,49):g.mode==='banker'?Engine.validNumbers(g.bankers,1,5)&&Engine.validNumbers(g.numbers,6-g.bankers.length)&&!g.bankers.some(n=>g.numbers.includes(n)):g.mode==='mandel'&&validMandelRecord(g.numbers,g.bets,g.filterInfo))))return false;
+ const all=[...new Set(b.groups.flatMap(g=>[...g.numbers,...(g.bankers||[])]))];
+ return all.length===b.numbers.length&&all.every(n=>b.numbers.includes(n));
 }
 function validPairEvidence(p){
  return p&&['numbers','cores','added','fallback'].every(k=>Engine.validNumbers(p[k]))&&Number.isFinite(p.sample)&&Array.isArray(p.pairs)&&p.pairs.every(q=>q&&Engine.validNumbers([q.a,q.b],2,2)&&['observed','freqA','freqB','expected','score'].every(k=>Number.isFinite(q[k])));
@@ -49,7 +57,8 @@ function validHistoryItem(h){
  if(h.selectionSettings){const s=h.selectionSettings;if(s.version!==1||!Object.hasOwn(Selection.labels,s.mode)||s.mode!==h.filterMode||s.count!==h.filteredNumbers.length||!Number.isInteger(s.train)||s.train!==h.endPeriod-h.startPeriod+1||!Number.isInteger(s.short)||s.short<1||s.short>s.train||typeof s.cold!=='boolean')return false;}
  if(h.pairing&&!validPairEvidence(h.pairing))return false;
  const d=h.drawModeInfo;if(!d)return true;
- if(!['single','complex','smart','smartComplex','paired','mandel','fiveBankerFullMeal','unavailable'].includes(d.mode))return false;
+ if(!['single','complex','banker','smart','smartComplex','paired','mandel','fiveBankerFullMeal','unavailable'].includes(d.mode))return false;
+ if(d.mode==='banker'&&(!Engine.validNumbers(d.bankers,1,5)||!Engine.validNumbers(d.runners,6-d.bankers.length)||d.bankers.some(n=>d.runners.includes(n))))return false;
  if(d.bets!==undefined&&(!Array.isArray(d.bets)||!d.bets.every(b=>b&&Engine.validNumbers(b.numbers,6,d.mode==='smartComplex'?49:6))))return false;
  if(d.filterInfo?.advanced&&!validMandelRecord(d.selectedNumbers,d.bets?.map(b=>b.numbers),d.filterInfo))return false;
  if(d.randomBet!==undefined&&!Engine.validNumbers(d.randomBet,6,6))return false;

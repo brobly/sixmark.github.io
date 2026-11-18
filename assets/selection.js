@@ -17,6 +17,7 @@ const Selection = ((engine,pairing)=>{
  function hits(numbers,draw){return {hits:draw.numbers.filter(n=>numbers.includes(n)).length,extra:numbers.includes(draw.extra_number)?1:0};}
  function summary(rows){return {draws:rows.length,mean:rows.length?rows.reduce((s,r)=>s+r.hits,0)/rows.length:0,hit3:rows.filter(r=>r.hits>=3).length,hit4:rows.filter(r=>r.hits>=4).length,extra:rows.reduce((s,r)=>s+r.extra,0)};}
  function baseline(count){return {mean:6*count/49,hit3:[3,4,5,6].reduce((s,k)=>s+engine.choose(count,k)*engine.choose(49-count,6-k)/engine.choose(49,6),0),hit4:[4,5,6].reduce((s,k)=>s+engine.choose(count,k)*engine.choose(49-count,6-k)/engine.choose(49,6),0)};}
+ function blendWeightText(train,short){return `最近 ${short} 期合計權重 ${((.5+.5*short/train)*100).toFixed(1)}%，其餘 ${train-short} 期 ${((.5-.5*short/train)*100).toFixed(1)}%`;}
  function compare(data,{train,short,count,periods}){
   if(!Number.isInteger(train)||train<1||!Number.isInteger(periods)||periods<1||train+periods>data.length||!Number.isInteger(short)||short<1||short>train)throw Error('請輸入有效整數期數；短期不可超過訓練期數，訓練與核對期數合共不可超過資料筆數。');
   const rows=[];
@@ -26,6 +27,6 @@ const Selection = ((engine,pairing)=>{
   }
   return rows;
  }
- return {labels,frequencies,select,hits,summary,baseline,compare};
+ return {labels,frequencies,select,hits,summary,baseline,compare,blendWeightText};
 })(typeof module!=='undefined'?require('./core.js'):Engine,typeof module!=='undefined'?require('./pairing.js'):Pairing);
 if(typeof module!=='undefined')module.exports=Selection;

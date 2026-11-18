@@ -501,18 +501,20 @@
 
         // 投注模式切換
         function switchBettingMode(mode) {
+            if (!['complex','banker','mandel','groups'].includes(mode)) return;
             currentBettingMode = mode;
 
             // 更新標籤頁樣式
             document.querySelectorAll('.mode-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            document.querySelectorAll('.mode-tab').forEach((b,i)=>b.classList.toggle('active',['complex','banker','mandel'][i]===mode));
+            document.querySelectorAll('.mode-tab').forEach((b,i)=>b.classList.toggle('active',['complex','banker','mandel','groups'][i]===mode));
 
             // 隱藏所有模式
             document.getElementById('complex-betting-mode').classList.add('hidden');
             document.getElementById('banker-betting-mode').classList.add('hidden');
             document.getElementById('mandel-betting-mode').classList.add('hidden');
+            document.getElementById('groups-betting-mode').classList.add('hidden');
 
             // 顯示對應模式
             if (mode === 'complex') {
@@ -523,6 +525,8 @@
             } else if (mode === 'mandel') {
                 document.getElementById('mandel-betting-mode').classList.remove('hidden');
                 initializeMandel();
+            } else if (mode === 'groups') {
+                document.getElementById('groups-betting-mode').classList.remove('hidden');
             }
 
             // 更新統計分析
@@ -735,7 +739,8 @@
             const selectEl = document.getElementById('runner-count-select');
             if (!selectEl) { console.error('runner-count-select not found'); return; }
             const raw = parseInt(selectEl.value, 10);
-            const count = Math.max(1, Math.min(14, isNaN(raw) ? 8 : raw));
+            const count = Math.max(1, Math.min(48, isNaN(raw) ? 8 : raw));
+            if (count > 49-bankerNumbers.length) { alert(`已選 ${bankerNumbers.length} 個膽碼，腳碼最多可選 ${49-bankerNumbers.length} 個。`); return; }
 
             const pool = [];
             for (let i = 1; i <= 49; i++) {

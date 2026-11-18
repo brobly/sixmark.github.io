@@ -55,9 +55,9 @@
             syncMandelTarget();updateMandelUI();
             if(mandelSelected.length===mandelTargetV)return mandelGenerate();
         }
-        function mandelFilterSummary(info){
+        function mandelFilterSummary(info, compact=false){
             if(!info?.advanced)return '';
-            return `<div class="mandel-filter-summary"><strong>進階版：同區段最多3碼</strong><p>濃縮原有 ${info.originalCount} 注 → 剔除 ${info.removedCount} 注 → 保留 ${info.retainedCount} 注；成本 $${(info.retainedCount*10).toLocaleString()}。</p><p>區段：1–9、10–19、20–29、30–39、40–49。過濾後不再提供原本的五元組覆蓋／至少三獎保證。</p>${info.retainedCount===0?'<p>所有濃縮注碼均被剔除，沒有可投注的組合。可更改選號或關閉進階過濾。</p>':''}</div>`;
+            return `<div class="mandel-filter-summary"><strong>進階版：同區段最多3碼</strong><p>濃縮原有 ${info.originalCount} 注 → 剔除 ${info.removedCount} 注 → 保留 ${info.retainedCount} 注；成本 $${(info.retainedCount*10).toLocaleString()}。</p>${compact?'':'<p>區段：1–9、10–19、20–29、30–39、40–49。過濾後不再提供原本的五元組覆蓋／至少三獎保證。</p>'}${info.retainedCount===0?'<p>所有濃縮注碼均被剔除，沒有可投注的組合。可更改選號或關閉進階過濾。</p>':''}</div>`;
         }
 
         function updateMandelEstimate() {
@@ -216,7 +216,7 @@
             const probInv = Math.round(1 / prob);
             const probNote = document.getElementById('mandel-prob-note');
             if (probNote) {
-                probNote.textContent = `6 個開獎號碼全落在 ${v} 個之中的機率：≈ ${probPct}%（約 1/${probInv.toLocaleString()}）`;
+                probNote.textContent = `另作參考：6 個正選全落在 ${v} 碼池內的機率約 ${probPct}%（1/${probInv.toLocaleString()}）；這是號碼池覆蓋率，不是濃縮注碼的頭獎機率。`;
             }
 
             // 組合列表標籤

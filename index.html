@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>六合彩數據工作台</title>
-    <link rel="stylesheet" href="assets/base.css?v=20261116-fixed-pool"><link rel="stylesheet" href="assets/ui.css?v=20261116-fixed-pool">
+    <link rel="stylesheet" href="assets/base.css?v=20261117-prospective"><link rel="stylesheet" href="assets/ui.css?v=20261117-prospective">
 </head>
 <body>
     <div class="container">
@@ -113,7 +113,7 @@
                                             <button type="button" id="rank-cold-toggle-btn" class="rank-cold-toggle-btn" style="display:none;" onclick="toggleRankColdComplement()" title="在頻率最高 N 碼與最低 N 碼間切換">切換冷門</button>
                                         </div>
                                     </div>
-                                    <div id="blend-controls" hidden><label for="filter-short-periods">混合短期期數</label> <input id="filter-short-periods" type="number" min="1" value="10" onchange="updateFilterModeDescription()"><p class="muted">短期使用所選範圍中最新的幾期；長期使用整個所選範圍。兩邊先按期數換算頻率，再各佔50%。</p></div>
+                                    <div id="blend-controls" hidden><label for="filter-short-periods">混合短期期數</label> <input id="filter-short-periods" type="number" min="1" value="10" onchange="updateFilterModeDescription()"><p class="muted">短期使用所選範圍中最新的幾期；長期使用整個所選範圍。兩邊先按期數換算頻率，再各佔50%；短期亦包含在長期內。例如長期20／短期10，最近10期合計佔75%權重，其餘10期佔25%。</p></div>
                                     <p class="muted">所有模式固定最終碼數，同頻以號碼排序。正選命中數及特別號分開核對；舊歷史注碼保留原樣。</p>
                                     <div class="hf-filter-info">
                                         <strong>篩選條件：</strong>
@@ -144,7 +144,7 @@
                                                 <option value="complex">復式（7-15個號碼）</option>
                                                 <option value="smart">聰明組合</option>
                                                 <option value="smartComplex">聰明組合+復式</option>
-                                                <option value="fiveBankerFullMeal">5膽拖全餐</option>
+                                                <option value="banker">膽拖（手動揀膽／腳）</option>
                                                 <option value="mandel">Mandel 濃縮法</option>
                                             </select>
 
@@ -165,6 +165,8 @@
                                                 </select>
                                                 <label class="mandel-advanced-option"><input type="checkbox" id="mandel-draw-advanced" onchange="onStatsMandelAdvancedChange()">進階版：剔除同區段4碼或以上的注碼</label>
                                                 <small>1–9、10–19、20–29、30–39、40–49；只過濾濃縮注碼。過濾後不保證五元組覆蓋。</small>
+                                                <details class="mandel-help"><summary>Mandel 係咩？用10碼做例子</summary><p>這個功能把已選號碼組成較少的六碼注數。所選的10碼全買複式是210注；本程式標準濃縮版生成56注。</p><p>標準版讓池內<strong>每一組5個號碼</strong>至少出現在一注內。所以選號池有至少5個正選時，至少一注會中5個正選或更多；不保證中6個，也不會令號碼池更容易選中開獎號碼。</p><p>進階版會再刪去含4個或以上同區段號碼的整注，因此注數更少，但原有五碼覆蓋保證不再適用。節省注數不等於提高中獎率或保證回本。</p></details>
+                                                <small>統計頁從篩選結果抽取指定碼數；「核對中獎」的Mandel模式亦可手動揀號。</small>
                                             </div>
 
                                             <!-- 復式模式：數量選擇器 -->
@@ -214,11 +216,34 @@
                                             </div>
                                         </div>
                                         
+                                        <div id="banker-draw-container" class="banker-picker" style="display:none">
+                                            <h4>點選號碼做膽／腳</h4>
+                                            <div class="banker-targets">
+                                                <label for="banker-draw-count">想揀幾個膽 <select id="banker-draw-count" onchange="onStatsBankerTargetsChange()"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select></label>
+                                                <label for="runner-draw-count">想揀幾個腳 <input id="runner-draw-count" type="number" min="1" max="48" value="8" step="1" onchange="onStatsBankerTargetsChange()"></label>
+                                            </div>
+                                            <div class="banker-role-controls" role="group" aria-label="點選號碼的用途">
+                                                <button type="button" id="stats-pick-banker" aria-pressed="true" onclick="setStatsBankerRole('bankers')">揀膽 <span id="stats-banker-progress">0 / 2</span></button>
+                                                <button type="button" id="stats-pick-runner" aria-pressed="false" onclick="setStatsBankerRole('runners')">揀腳 <span id="stats-runner-progress">0 / 8</span></button>
+                                            </div>
+                                            <p id="stats-banker-hint" class="banker-picker-hint"></p>
+                                            <div id="stats-banker-grid" class="banker-picker-grid" role="group" aria-label="篩選號碼池，選取膽碼或腳碼"></div>
+                                            <div id="stats-banker-selected" class="banker-selected-summary"></div>
+                                            <div class="banker-picker-shortcuts">
+                                                <button type="button" onclick="fillStatsBankerRandom()">隨機補齊</button>
+                                                <button type="button" onclick="useRemainingStatsRunners()">其餘全做腳</button>
+                                                <button type="button" onclick="clearStatsBankerDraft()">清除全部</button>
+                                            </div>
+                                            <p id="stats-banker-status" role="status" aria-live="polite"></p>
+                                            <button type="button" id="stats-banker-generate" class="banker-generate" onclick="generateStatsBanker()" disabled>生成膽拖並保存</button>
+                                            <small>每注固定所有膽碼，再從腳碼選滿6碼。紫色「膽」、綠色「腳」；未選號碼不會加入。</small>
+                                        </div>
+
                                         <div class="hf-draw-result-label">
                                             <strong id="draw-result-title">隨機抽取 6 個號碼：</strong>
                                         </div>
                                         <div id="random-6-numbers" class="hf-random-numbers"></div>
-                                        <button onclick="refreshRandom6()" class="hf-refresh-btn">🔄 重新隨機抽取</button>
+                                        <button id="refresh-draw-btn" onclick="refreshRandom6()" class="hf-refresh-btn">🔄 重新隨機抽取</button>
                                     </div>
                                 </div>
                                 
@@ -263,8 +288,33 @@
                         </div>
                         <div id="pool-comparison-results" role="status" aria-live="polite"></div>
                     </section>
+                    <section id="research-panel" class="backtest">
+                        <h3>前瞻研究：固定規則，逐期比較</h3>
+                        <p>每期同時保存「純排名、只計正選、長短期混合」三組 10 碼。主要目標固定為<strong>號碼池中至少 3 個正選</strong>；完整注碼、注數及規則一併鎖定。</p>
+                        <label for="research-plan">研究方案</label>
+                        <select id="research-plan" onchange="renderResearch(this.value)"><option value="new">建立新方案</option></select>
+                        <div class="search-row research-settings">
+                            <label>每期選號用前幾期 <input id="research-train" type="number" min="1" max="500" value="20" onchange="updateResearchDraft()"></label>
+                            <label>混合短期 <input id="research-short" type="number" min="1" max="500" value="10" onchange="updateResearchDraft()"></label>
+                            <label>評估其後連續幾期 <input id="research-horizon" type="number" min="20" max="500" value="100" onchange="updateResearchDraft()"></label>
+                            <label>三組共用注碼方式 <select id="research-bet-mode" onchange="updateResearchDraft()"><option value="sample">固定注數（同預算）</option><option value="mandel">Mandel 標準濃縮</option></select></label>
+                            <label>每方法每期注數 <input id="research-tickets" type="number" min="1" max="210" value="10" onchange="updateResearchDraft()"></label>
+                        </div>
+                        <p id="research-draft-summary"></p>
+                        <div class="research-actions">
+                            <button id="research-create" onclick="saveResearch(true)">鎖定方案及首期選號</button>
+                            <button id="research-lock" onclick="saveResearch(false)" hidden>保存下一期三組選號及注碼</button>
+                            <button onclick="renderResearch()">更新核對顯示</button>
+                            <button id="research-csv" onclick="exportResearchCSV()">匯出逐期 CSV</button>
+                            <button id="research-export" onclick="exportResearch()">匯出研究備份</button>
+                            <label class="research-import">匯入研究備份 <input id="research-import" type="file" accept=".json,application/json" onchange="importResearchFile(this)"></label>
+                        </div>
+                        <p id="research-status" role="status" aria-live="polite"></p>
+                        <details class="research-help"><summary>每期怎樣用？</summary><ol><li>首次設定期數及注數，鎖定方案；開始後不能改規則或重抽。</li><li>每次手動更新開獎資料後，按「更新核對顯示」，再保存下一期的三組選號。</li><li>必須在開獎日前保存；同日保存因欠缺精確開獎時間而保守排除。漏存不補選，亦不延長原定評估期數。</li><li>完成預定期數後一起評估三種方法。次要指標不取代原先主要目標，100 期亦不代表足以證明有效。</li></ol><p>全部為研究模擬，沒有代為下注。記錄只存於此瀏覽器，請定期匯出備份；本機時間沒有第三方驗證。網站不會自動下載開獎資料。研究備份亦包含於「核對中獎 → 匯出備份」。</p></details>
+                        <div id="research-results"></div>
+                    </section>
                     <section id="forecast-panel" class="backtest">
-                        <h3>預先保存選號，等待下一期核對</h3>
+                        <h3>個別預存記錄（只比較號碼池）</h3>
                         <p>先以最新一期為起點篩選，再保存目前號碼池。同一基準期只保存第一筆，並一併保存同碼數的純排名作比較。新增開獎資料後，會核對基準期緊接的下一期。</p>
                         <button onclick="saveForecast()">鎖定目前篩選，等待下一期</button>
                         <button onclick="renderForecasts()">更新核對顯示</button>
@@ -287,9 +337,16 @@
 
                             <!-- 投注模式切換 -->
                             <div class="betting-mode-tabs">
-                                <button class="mode-tab active" onclick="switchBettingMode('complex')">複式投注</button>
-                                <button class="mode-tab" onclick="switchBettingMode('banker')">膽腳投注</button>
+                                <button class="mode-tab active" onclick="switchBettingMode('complex')">單式／複式投注</button>
+                                <button class="mode-tab" onclick="switchBettingMode('banker')">膽拖投注</button>
                                 <button class="mode-tab" onclick="switchBettingMode('mandel')">Mandel 濃縮法</button>
+                                <button id="history-mode-tab" class="mode-tab hidden" onclick="switchBettingMode('groups')">歷史注碼</button>
+                            </div>
+                            <div id="groups-betting-mode" class="betting-mode-content hidden">
+                                <h4 id="history-bet-title"></h4>
+                                <p>已載入歷史保存的逐組注碼，使用號碼詳列於下方核對結果。更改期數範圍即可再次核對。</p>
+                                <p id="history-bet-count"></p>
+                                <button onclick="clearHistoryBet()">清除已載入注碼</button>
                             </div>
 
                             <!-- 複式投注模式 -->
@@ -315,6 +372,7 @@
                                             <option value="20">20 個</option>
                                         </select>
                                         <button onclick="complexRandomSelect()" class="random-btn">隨機號碼</button>
+                                        <button id="clear-complex-selection" onclick="clearComplexSelection()">清除全部</button>
                                     </div>
                                     <span id="selected-count">已選擇：0個號碼</span>
                                     <span id="combination-count">可組合：0注</span>
@@ -333,6 +391,7 @@
                                     <span id="banker-count">膽碼：0個</span>
                                     <span id="runner-count">腳碼：0個</span>
                                     <span id="banker-combination-count">總組合：0注</span>
+                                    <button id="clear-banker-selection" onclick="clearBankerSelection()">清除全部膽／腳</button>
                                 </div>
 
                                 <!-- 膽碼選擇區 -->
@@ -376,7 +435,41 @@
                                                 <option value="12">12 個</option>
                                                 <option value="13">13 個</option>
                                                 <option value="14">14 個</option>
-                                            </select>
+                                                                                            <option value="15">15 個</option>
+                                                <option value="16">16 個</option>
+                                                <option value="17">17 個</option>
+                                                <option value="18">18 個</option>
+                                                <option value="19">19 個</option>
+                                                <option value="20">20 個</option>
+                                                <option value="21">21 個</option>
+                                                <option value="22">22 個</option>
+                                                <option value="23">23 個</option>
+                                                <option value="24">24 個</option>
+                                                <option value="25">25 個</option>
+                                                <option value="26">26 個</option>
+                                                <option value="27">27 個</option>
+                                                <option value="28">28 個</option>
+                                                <option value="29">29 個</option>
+                                                <option value="30">30 個</option>
+                                                <option value="31">31 個</option>
+                                                <option value="32">32 個</option>
+                                                <option value="33">33 個</option>
+                                                <option value="34">34 個</option>
+                                                <option value="35">35 個</option>
+                                                <option value="36">36 個</option>
+                                                <option value="37">37 個</option>
+                                                <option value="38">38 個</option>
+                                                <option value="39">39 個</option>
+                                                <option value="40">40 個</option>
+                                                <option value="41">41 個</option>
+                                                <option value="42">42 個</option>
+                                                <option value="43">43 個</option>
+                                                <option value="44">44 個</option>
+                                                <option value="45">45 個</option>
+                                                <option value="46">46 個</option>
+                                                <option value="47">47 個</option>
+                                                <option value="48">48 個</option>
+</select>
                                             <button onclick="runnerRandomSelect()" class="random-btn">隨機號碼</button>
                                         </div>
                                     </div>
@@ -391,6 +484,8 @@
                                 <p class="mandel-description">
                                     Mandel 覆蓋設計法：標準版覆蓋所有五元組；進階版再按同區段規則剔除注碼，不再保證完整覆蓋。
                                 </p>
+
+                                <details class="mandel-help"><summary>Mandel 係咩？用10碼做例子</summary><p>這個功能把已選號碼組成較少的六碼注數。所選的10碼全買複式是210注；本程式標準濃縮版生成56注。</p><p>標準版讓池內<strong>每一組5個號碼</strong>至少出現在一注內。所以選號池有至少5個正選時，至少一注會中5個正選或更多；不保證中6個，也不會令號碼池更容易選中開獎號碼。</p><p>進階版會再刪去含4個或以上同區段號碼的整注，因此注數更少，但原有五碼覆蓋保證不再適用。節省注數不等於提高中獎率或保證回本。</p></details>
 
                                 <!-- v 值選擇器 -->
                                 <div class="mandel-v-selector">
@@ -463,7 +558,7 @@
                                     <div id="mandel-filter-summary" aria-live="polite"></div>
                                     <div id="mandel-guarantee" class="mandel-guarantee-box">
                                         <h3>覆蓋保證</h3>
-                                        <p>如果開獎 6 個號碼<strong>全部</strong>在你選的號碼之中：</p>
+                                        <p>如果你選的號碼池包含<strong>至少5個開獎正選號碼</strong>：</p>
                                         <ul>
                                             <li>至少 <strong>1 注</strong> 中 5 個或以上正選號碼（三獎或更高獎項）</li>
                                             <li>其他獎項及注數按實際組合核對，沒有固定保證</li>
@@ -589,19 +684,22 @@
         </div>
     </div>
 
-    <script src="assets/draws.js?v=20261116-fixed-pool"></script>
-<script src="assets/core.js?v=20261116-fixed-pool"></script>
-<script src="assets/coverage.js?v=20261116-fixed-pool"></script>
-<script src="assets/pairing.js?v=20261116-fixed-pool"></script>
-<script src="assets/selection.js?v=20261116-fixed-pool"></script>
-<script src="assets/forecast.js?v=20261116-fixed-pool"></script>
-<script src="assets/storage.js?v=20261116-fixed-pool"></script>
-<script src="assets/app.js?v=20261116-fixed-pool"></script>
-<script src="assets/statistics.js?v=20261116-fixed-pool"></script>
-<script src="assets/mandel-engine.js?v=20261116-fixed-pool"></script>
-<script src="assets/mandel.js?v=20261116-fixed-pool"></script>
-<script src="assets/ui.js?v=20261116-fixed-pool"></script>
-<script src="assets/pairing-ui.js?v=20261116-fixed-pool"></script>
-<script src="assets/selection-ui.js?v=20261116-fixed-pool"></script>
+    <script src="assets/draws.js?v=20261118-draw-26-122"></script>
+<script src="assets/core.js?v=20261117-prospective"></script>
+<script src="assets/coverage.js?v=20261117-prospective"></script>
+<script src="assets/pairing.js?v=20261117-prospective"></script>
+<script src="assets/selection.js?v=20261117-prospective"></script>
+<script src="assets/forecast.js?v=20261117-prospective"></script>
+<script src="assets/storage.js?v=20261117-prospective"></script>
+<script src="assets/app.js?v=20261117-prospective"></script>
+<script src="assets/statistics.js?v=20261117-prospective"></script>
+<script src="assets/mandel-engine.js?v=20261117-prospective"></script>
+<script src="assets/mandel.js?v=20261117-prospective"></script>
+<script src="assets/ui.js?v=20261117-prospective"></script>
+<script src="assets/pairing-ui.js?v=20261117-prospective"></script>
+<script src="assets/selection-ui.js?v=20261117-prospective"></script>
+<script src="assets/research-build.js?v=20261117-prospective"></script>
+<script src="assets/research.js?v=20261117-prospective"></script>
+<script src="assets/research-ui.js?v=20261117-prospective"></script>
 </body>
 </html> 

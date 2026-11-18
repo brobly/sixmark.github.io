@@ -12,8 +12,8 @@ const Engine = (() => {
   for(let a=0;a<=6;a++)for(let b=0;b<=1;b++){const p=prize(a+bm,b+be);if(p>=0)out[p]+=choose(m,a)*choose(e,b)*choose(o,need-a-b);}
   return out;
  }
- function evaluate(bet,draw){if(bet.mode==='mandel'){const out=Array(7).fill(0);for(const nums of bet.bets){const p=prize(nums.filter(n=>draw.numbers.includes(n)).length,nums.includes(draw.extra_number));if(p>=0)out[p]++;}return out;}return count(bet.numbers,bet.bankers||[],draw);}
- function total(bet){return bet.mode==='mandel'?bet.bets.length:choose(bet.numbers.length,6-(bet.bankers||[]).length);}
+ function evaluate(bet,draw){if(bet.mode==='groups')return bet.groups.reduce((out,g)=>{evaluate(g,draw).forEach((n,i)=>out[i]+=n);return out;},Array(7).fill(0));if(bet.mode==='mandel'){const out=Array(7).fill(0);for(const nums of bet.bets){const p=prize(nums.filter(n=>draw.numbers.includes(n)).length,nums.includes(draw.extra_number));if(p>=0)out[p]++;}return out;}return count(bet.numbers,bet.bankers||[],draw);}
+ function total(bet){return bet.mode==='groups'?bet.groups.reduce((n,g)=>n+total(g),0):bet.mode==='mandel'?bet.bets.length:choose(bet.numbers.length,6-(bet.bankers||[]).length);}
  function audit(rows){
   if(!Array.isArray(rows)||!rows.length)return ['沒有有效開獎資料'];
   const issues=[],seen=new Set();

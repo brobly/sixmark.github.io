@@ -2,6 +2,36 @@
 const Coverage = ((engine) => {
  const prizeNames=['頭獎','二獎','三獎','四獎','五獎','六獎','七獎'];
  const multiModes=['paired','smart','smartComplex','mandel','fiveBankerFullMeal'];
+ function legacyBankerMatches(info){
+  if(info.mode!=='fiveBankerFullMeal'||!engine.validNumbers(info.bankers,5,5)||!engine.validNumbers(info.runners,1)||info.bankers.some(n=>info.runners.includes(n))||!Array.isArray(info.bets)||info.bets.length!==info.runners.length)return false;
+  const keys=new Set(info.bets.map(b=>engine.validNumbers(b?.numbers,6,6)?[...b.numbers].sort((a,b)=>a-b).join(','):''));
+  return info.runners.every(n=>keys.has([...info.bankers,n].sort((a,b)=>a-b).join(',')));
+ }
+ // Preserve individual groups and fixed bankers; a union of pools is not the original bet.
+ function toBet(drawn,info){
+  if(!info){if(engine.validNumbers(drawn,6,6))return {mode:'complex',numbers:[...drawn]};throw Error('這筆記錄沒有完整的下注模式及注碼。');}
+  if(info.error||info.mode==='unavailable')throw Error('這筆記錄尚未生成可核對的注碼。');
+  let bet;
+  if(info.mode==='single'||info.mode==='complex'){
+   if(!engine.validNumbers(drawn,6,info.mode==='single'?6:49))throw Error('保存的抽號結果不完整。');
+   bet={mode:'complex',numbers:[...drawn]};
+  }else if(info.mode==='banker'||legacyBankerMatches(info)){
+   if(!engine.validNumbers(info.bankers,1,5)||!engine.validNumbers(info.runners,6-info.bankers.length)||info.bankers.some(n=>info.runners.includes(n)))throw Error('保存的膽碼或腳碼無效。');
+   bet={mode:'banker',bankers:[...info.bankers],numbers:[...info.runners]};
+  }else if(multiModes.includes(info.mode)){
+   const emptyMandel=info.mode==='mandel'&&info.filterInfo?.advanced&&info.filterInfo.retainedCount===0;
+   if(!Array.isArray(info.bets)||(!info.bets.length&&!emptyMandel)||!info.bets.every(b=>engine.validNumbers(b?.numbers,6,info.mode==='smartComplex'?49:6)))throw Error('保存的逐組注碼不完整。');
+   if(info.mode==='mandel')bet={mode:'mandel',numbers:[...(info.selectedNumbers||drawn)],bets:info.bets.map(b=>[...b.numbers]),filterInfo:info.filterInfo||null};
+   else bet={mode:'groups',sourceMode:info.mode,groups:info.bets.map(b=>({mode:'complex',numbers:[...b.numbers]}))};
+  }else throw Error('無法識別這筆記錄的下注模式。');
+  if(info.randomBet){
+   if(!engine.validNumbers(info.randomBet,6,6))throw Error('保存的額外隨機注無效。');
+   if(bet.mode!=='groups')bet={mode:'groups',sourceMode:info.mode,groups:[bet]};
+   bet.hasRandomBet=true;bet.groups.push({mode:'complex',numbers:[...info.randomBet]});
+  }
+  if(bet.mode==='groups')bet.numbers=[...new Set(bet.groups.flatMap(g=>[...g.numbers,...(g.bankers||[])]))].sort((a,b)=>a-b);
+  return bet;
+ }
  function analyze(draw,pool,drawn,info){
   if(!engine.validNumbers(pool))throw Error('號碼池無效');
   const matched=draw.numbers.filter(n=>pool.includes(n));
@@ -13,7 +43,9 @@ const Coverage = ((engine) => {
    groups.push({label,numbers:[...numbers],matched:numbers.filter(n=>draw.numbers.includes(n)),extra:numbers.includes(draw.extra_number),counts,total});
   };
   if(info&&!info.error){
-   if(multiModes.includes(info.mode)){
+   if(info.mode==='banker'){
+    try{const b=toBet(drawn,{...info,randomBet:undefined}),all=[...b.bankers,...b.numbers];groups.push({label:'膽拖',numbers:[...b.numbers],bankers:[...b.bankers],matched:all.filter(n=>draw.numbers.includes(n)),extra:all.includes(draw.extra_number),counts:engine.evaluate(b,draw),total:engine.total(b)});}catch{unavailable=true;}
+   }else if(multiModes.includes(info.mode)){
     if(!Array.isArray(info.bets)||(!info.bets.length&&!(info.mode==='mandel'&&info.filterInfo?.advanced&&info.filterInfo.retainedCount===0)))unavailable=true;
     else info.bets.forEach((b,i)=>add(b?.numbers,`第 ${i+1} 組`,6,info.mode==='smartComplex'?49:6));
    }else if(info.mode==='single'||info.mode==='complex')add(drawn,'抽號結果',6,info.mode==='complex'?49:6);
@@ -37,11 +69,11 @@ const Coverage = ((engine) => {
    ${r.unavailable?'<p class="hf-text--muted">部分或全部注碼未生成、資料不足或格式無效；只核對以下可確認的注碼，不能視為完整結果。</p>':''}
    ${r.groups.length?`<p>已核對 <strong>${r.total.toLocaleString()} 注</strong>（六碼單式等值），中獎 <strong>${r.wins.toLocaleString()} 注</strong>；按每注 $10 計算成本 <strong>$${r.cost.toLocaleString()}</strong>。</p>
    <p><strong>各獎項：</strong>${awards(r.counts)}。</p>
-   <details open><summary>逐組號碼及核對結果（${r.groups.length} 組）</summary><div class="table-scroll"><table class="results-table"><thead><tr><th>組別／號碼</th><th>命中正選</th><th>特別號</th><th>等值注數</th><th>獎項注數</th></tr></thead><tbody>${r.groups.map(g=>`<tr><td>${g.label}<br>${g.numbers.join('、')}${g.numbers.length>6?`<br>複式 ${g.numbers.length} 碼`:''}</td><td>${g.matched.length} 個<br>${g.matched.join('、')||'無'}</td><td>${g.extra?'有':'無'}</td><td>${g.total.toLocaleString()}</td><td>${awards(g.counts)}</td></tr>`).join('')}</tbody></table></div></details>
+   <details open><summary>逐組號碼及核對結果（${r.groups.length} 組）</summary><div class="table-scroll"><table class="results-table"><thead><tr><th>組別／號碼</th><th>命中正選</th><th>特別號</th><th>等值注數</th><th>獎項注數</th></tr></thead><tbody>${r.groups.map(g=>`<tr><td>${g.label}<br>${g.bankers?'膽：'+g.bankers.join('、')+'<br>腳：':''}${g.numbers.join('、')}${!g.bankers&&g.numbers.length>6?`<br>複式 ${g.numbers.length} 碼`:''}</td><td>${g.matched.length} 個<br>${g.matched.join('、')||'無'}</td><td>${g.extra?'有':'無'}</td><td>${g.total.toLocaleString()}</td><td>${awards(g.counts)}</td></tr>`).join('')}</tbody></table></div></details>
    <p class="muted">複式按全部六碼組合計算；各組重複注碼按重複投注計。成本以全注模擬，沒有估算派彩金額。複式的「命中正選」是該組號碼覆蓋數，獎項另按每注六碼核對。</p>`:info?.mode==='mandel'&&info.filterInfo?.advanced&&info.filterInfo.retainedCount===0?'<p>濃縮注碼已全部剔除：0 注，成本 $0。</p>':'<p>尚無可核對的實際注碼。</p>'}
    <details><summary>條件覆蓋公式的適用範圍</summary><p>從 N 碼均勻隨機選六碼，包含指定 k 碼的機率為 C(N−k, 6−k) ÷ C(N, 6)，前提是 N ≥ 6、0 ≤ k ≤ 6。這只描述指定號碼的抽取事件，不是中獎率，也不適用於保留搭配等受限制的抽號方式。正選與特別號分開呈現，不要求一注六碼同時包含七個開獎號碼。</p></details></div>`;
  }
- return {analyze,render};
+ return {analyze,render,toBet};
 })(typeof module!=='undefined'?require('./core.js'):Engine);
 if(typeof module!=='undefined')module.exports=Coverage;
 

@@ -5,6 +5,9 @@
         let currentFilterContext = null;
         let currentMandelDrawPool = null;
         let currentFilteredNumbers = []; // 儲存當前篩選結果
+        let statsBankerDraft = {bankers:[],runners:[]};
+        let statsBankerRole = 'bankers';
+        let statsBankerNotice = '';
         let filterHistory = Store.get('history', []); // 儲存篩選歷史記錄
         /** 排名模式專用：false = 頻率前 N 名，true = 頻率最低 N 個（固定總數） */
         let rankShowColdComplement = false;
@@ -123,7 +126,7 @@
                 try{currentFilteredNumbers=Selection.select(selectedData,{mode:filterMode,count:filterCount,short:Number(document.getElementById('filter-short-periods').value),cold:rankShowColdComplement});}
                 catch(e){alert(e.message);return;}
                 modeDescription=Selection.labels[filterMode]+(filterMode==='rank'&&rankShowColdComplement?' · 最低頻率':'')+` · 固定 ${filterCount} 碼`;
-                if(filterMode==='blend')modeDescription+=` · 短期${document.getElementById('filter-short-periods').value}／長期${selectedData.length}期，各50%`;
+                if(filterMode==='blend')modeDescription+=` · 短期${document.getElementById('filter-short-periods').value}／長期${selectedData.length}期，各50%（視窗重疊：${Selection.blendWeightText(selectedData.length,Number(document.getElementById('filter-short-periods').value))}）`;
             } else if (filterMode === 'rank_with_pair') {
                 const result = Pairing.select(selectedData, filterCount);
                 currentFilteredNumbers = result.numbers;
@@ -279,10 +282,130 @@
          * 依「抽號模式」產生高頻區塊的抽號 HTML 與 drawModeInfo（含 Mandel、5膽拖等）。
          * 供 displayFilterResults 與 refreshRandom6 共用，避免 Mandel 等模式僅在重抽時才有畫面。
          */
+        function validStatsBankerDraft(d){
+            return d&&Engine.validNumbers(d.bankers,0,5)&&Engine.validNumbers(d.runners)&&!d.bankers.some(n=>d.runners.includes(n));
+        }
+        function statsBankerTargets(){return {bankers:Number(document.getElementById('banker-draw-count').value),runners:Number(document.getElementById('runner-draw-count').value)};}
+        function statsBankerTargetError(pool){
+            const t=statsBankerTargets();
+            if(!Number.isInteger(t.bankers)||t.bankers<1||t.bankers>5||!Number.isInteger(t.runners)||t.runners<1||t.runners>49-t.bankers||t.bankers+t.runners<6)return '膽碼須為1–5個，腳碼須為正整數，膽＋腳合共6–49個。';
+            if(t.bankers+t.runners>pool.length)return `想揀 ${t.bankers+t.runners} 碼，但篩選結果只有 ${pool.length} 碼；請減少膽／腳數量或增加篩選碼數。`;
+            return '';
+        }
+        function statsBankerDraftError(pool){
+            const error=statsBankerTargetError(pool);if(error)return error;
+            const t=statsBankerTargets(),b=statsBankerDraft;
+            if(!validStatsBankerDraft(b)||![...b.bankers,...b.runners].every(n=>pool.includes(n)))return '選號不在目前篩選結果內，請重新選取。';
+            if(b.bankers.length!==t.bankers||b.runners.length!==t.runners)return `請揀滿 ${t.bankers} 個膽及 ${t.runners} 個腳；目前 ${b.bankers.length} 膽、${b.runners.length} 腳。`;
+            return '';
+        }
+        function syncStatsBankerPool(pool){
+            const removed=[...statsBankerDraft.bankers,...statsBankerDraft.runners].filter(n=>!pool.includes(n));
+            statsBankerDraft={bankers:statsBankerDraft.bankers.filter(n=>pool.includes(n)),runners:statsBankerDraft.runners.filter(n=>pool.includes(n))};
+            if(removed.length)statsBankerNotice=`${removed.join('、')} 已不在篩選結果內，已取消選取。`;
+        }
+        function renderStatsBankerPicker(pool=currentFilteredNumbers){
+            const t=statsBankerTargets(),b=statsBankerDraft,error=statsBankerDraftError(pool);
+            document.getElementById('stats-banker-progress').textContent=`${b.bankers.length} / ${t.bankers}`;
+            document.getElementById('stats-runner-progress').textContent=`${b.runners.length} / ${t.runners}`;
+            document.getElementById('stats-pick-banker').setAttribute('aria-pressed',String(statsBankerRole==='bankers'));
+            document.getElementById('stats-pick-runner').setAttribute('aria-pressed',String(statsBankerRole==='runners'));
+            const role=statsBankerRole==='bankers'?'膽':'腳';
+            document.getElementById('stats-banker-hint').textContent=`現在揀${role}：點號碼選取，再點同一角色的號碼取消；其他角色可直接轉做${role}。`;
+            document.getElementById('stats-banker-grid').innerHTML=[...pool].sort((a,b)=>a-b).map(n=>{
+                const selected=b.bankers.includes(n)?'bankers':b.runners.includes(n)?'runners':'';
+                const label=selected==='bankers'?'膽':selected==='runners'?'腳':'未選';
+                return `<button type="button" id="stats-banker-num-${n}" class="banker-pick-number ${selected}" aria-pressed="${!!selected}" aria-label="${n}，${label}，點選${selected===statsBankerRole?'取消':'設為'+role}" onclick="toggleStatsBankerNumber(${n})"><strong>${n}</strong><small>${label}</small></button>`;
+            }).join('');
+            document.getElementById('stats-banker-selected').innerHTML=`<div><strong>已選膽：</strong>${b.bankers.join('、')||'未選'}</div><div><strong>已選腳：</strong>${b.runners.join('、')||'未選'}</div>`;
+            const ready=!error,total=ready?Engine.choose(b.runners.length,6-b.bankers.length):0,extra=document.getElementById('random-bet-checkbox').checked?1:0;
+            document.getElementById('stats-banker-status').textContent=[statsBankerNotice,error||`膽拖 ${total.toLocaleString()} 注${extra?'＋額外隨機1注':''} · 共 ${(total+extra).toLocaleString()} 注，按每注 $10，成本 $${((total+extra)*10).toLocaleString()}。`].filter(Boolean).join(' ');
+            document.getElementById('stats-banker-generate').disabled=!ready;
+        }
+        function showStatsBankerDraft(pool=currentFilteredNumbers){
+            if(document.getElementById('draw-mode-select').value==='banker'){
+                document.getElementById('banker-draw-container').style.display='block';
+                document.getElementById('refresh-draw-btn').style.display='none';
+            }
+            syncStatsBankerPool(pool);renderStatsBankerPicker(pool);
+            document.getElementById('draw-result-title').textContent='膽拖選號草稿：';
+            const b=statsBankerDraft;
+            document.getElementById('random-6-numbers').innerHTML='<p class="muted">選好號碼後按「生成膽拖並保存」，才會加入歷史及核對實際注碼。</p>'+(!statsBankerDraftError(pool)?renderBankerDraw(b.bankers,b.runners):'');
+            if(currentFilterContext)updateHistoricalCoverage(currentFilterContext.startPeriod,pool);
+            saveWorkspace();
+        }
+        function setStatsBankerRole(role){if(!['bankers','runners'].includes(role))return;statsBankerRole=role;renderStatsBankerPicker();}
+        function toggleStatsBankerNumber(n){
+            if(!currentFilteredNumbers.includes(n))return;
+            const role=statsBankerRole,other=role==='bankers'?'runners':'bankers',t=statsBankerTargets();
+            statsBankerNotice='';
+            if(statsBankerDraft[role].includes(n))statsBankerDraft[role]=statsBankerDraft[role].filter(x=>x!==n);
+            else if(!Number.isInteger(t[role])||t[role]<1||statsBankerDraft[role].length>=t[role]){
+                statsBankerNotice=`${role==='bankers'?'膽碼':'腳碼'}已揀滿或數量無效，請先取消一個號碼或調整數量。`;renderStatsBankerPicker();return;
+            }else{
+                statsBankerDraft[other]=statsBankerDraft[other].filter(x=>x!==n);
+                statsBankerDraft[role].push(n);statsBankerDraft[role].sort((a,b)=>a-b);
+            }
+            showStatsBankerDraft();document.getElementById(`stats-banker-num-${n}`)?.focus?.({preventScroll:true});
+        }
+        function onStatsBankerTargetsChange(){statsBankerNotice='';showStatsBankerDraft();}
+        function clearStatsBankerDraft(){statsBankerDraft={bankers:[],runners:[]};statsBankerNotice='已清除膽及腳。';showStatsBankerDraft();}
+        function fillStatsBankerRandom(){
+            syncStatsBankerPool(currentFilteredNumbers);
+            const t=statsBankerTargets(),error=statsBankerTargetError(currentFilteredNumbers);
+            if(error||statsBankerDraft.bankers.length>t.bankers||statsBankerDraft.runners.length>t.runners){statsBankerNotice=error||'已選碼數超過目標，請先取消多出的號碼。';renderStatsBankerPicker();return;}
+            for(const role of ['bankers','runners']){
+                const free=currentFilteredNumbers.filter(n=>!statsBankerDraft.bankers.includes(n)&&!statsBankerDraft.runners.includes(n));
+                statsBankerDraft[role].push(...getRandomNumbers(free,t[role]-statsBankerDraft[role].length));statsBankerDraft[role].sort((a,b)=>a-b);
+            }
+            statsBankerNotice='已保留手選號碼並隨機補齊；可再點選修改。';showStatsBankerDraft();
+        }
+        function useRemainingStatsRunners(){
+            syncStatsBankerPool(currentFilteredNumbers);
+            if(statsBankerDraft.bankers.length!==statsBankerTargets().bankers||!Engine.validNumbers(statsBankerDraft.bankers,1,5)||currentFilteredNumbers.length<6){statsBankerNotice='請先揀滿目標膽碼；篩選結果至少需要6碼。';renderStatsBankerPicker();return;}
+            statsBankerDraft.runners=currentFilteredNumbers.filter(n=>!statsBankerDraft.bankers.includes(n)).sort((a,b)=>a-b);
+            document.getElementById('runner-draw-count').value=String(statsBankerDraft.runners.length);
+            statsBankerNotice='其餘篩選號碼已全部設為腳。';showStatsBankerDraft();
+        }
+        function buildStatsBankerDisplay(pool){
+            syncStatsBankerPool(pool);renderStatsBankerPicker(pool);
+            const error=statsBankerDraftError(pool);
+            if(error)return {drawnNumbers:[],displayHtml:`<p class="error">${escapeText(error)}</p>`,drawModeInfo:null};
+            const bankers=[...statsBankerDraft.bankers],runners=[...statsBankerDraft.runners];
+            document.getElementById('draw-result-title').textContent=`膽拖（${bankers.length} 膽＋${runners.length} 腳）：`;
+            return {drawnNumbers:[...bankers,...runners].sort((a,b)=>a-b),displayHtml:renderBankerDraw(bankers,runners),drawModeInfo:{mode:'banker',bankers,runners}};
+        }
+        function generateStatsBanker(){
+            if(document.getElementById('draw-mode-select').value!=='banker'||!currentFilterContext)return;
+            syncStatsBankerPool(currentFilteredNumbers);
+            const error=statsBankerDraftError(currentFilteredNumbers);
+            if(error){statsBankerNotice=error;renderStatsBankerPicker();return;}
+            refreshRandom6(null,true);statsBankerNotice='已生成並保存到歷史；可按歷史的「載入並核對」。';renderStatsBankerPicker();
+        }
+        function renderBankerDraw(bankers,runners,draw=null){
+            const render=nums=>nums.map(n=>`<span class="hf-ball hf-ball--sm ${draw?.extra_number===n?'hf-ball--orange hf-ball--highlight':draw?.numbers.includes(n)?'hf-ball--primary hf-ball--highlight':'hf-ball--secondary'}">${n}</span>`).join('');
+            const total=Engine.choose(runners.length,6-bankers.length);
+            return `<div class="banker-draw-result"><div><strong>膽碼（${bankers.length}個，全部固定）：</strong>${render(bankers)}</div><div><strong>腳碼（${runners.length}個，每注選${6-bankers.length}個）：</strong>${render(runners)}</div><p>共 ${total.toLocaleString()} 注 · 每注 $10，全注成本 $${(total*10).toLocaleString()}</p></div>`;
+        }
+
+        function buildHistoryPrizeSummary(item){
+            const wrap=content=>`<div class="hf-mandel-prize-line hf-mandel-prize-line--history">${content}</div>`;
+            if(!resolveHistoryRange(item))return wrap('各獎中獎：選號日期不在目前資料集，無法取得驗證期。');
+            if(item.startPeriod<=1)return wrap('各獎中獎：尚無較新一期可核對。');
+            const draw=lotteryData[item.startPeriod-2];
+            if(!draw)return wrap('各獎中獎：無法取得驗證期。');
+            const info=item.drawModeInfo|| (Engine.validNumbers(item.random6,6,6)?{mode:'single'}:null);
+            const r=Coverage.analyze(draw,item.filteredNumbers,item.random6,info);
+            if(r.unavailable)return wrap('各獎中獎：原有注碼未生成或不完整，無法完整核對。');
+            const prize=r.counts.reduce((sum,n,i)=>sum+n*amounts()[i],0);
+            return wrap(`<div class="hf-mandel-prize-period">驗證期 ${escapeText(draw.draw_number)} · ${escapeText(draw.draw_date)} · 共 ${r.total.toLocaleString()} 注${info?.randomBet?'（包含額外隨機注）':''}</div><div><strong>各獎中獎：</strong>${r.counts.map((n,i)=>`${names[i]}×${n.toLocaleString()}`).join('　')}</div><div>估算獎金 $${prize.toLocaleString()}（按設定金額，非當期實際派彩）</div>`);
+        }
+
         function buildHighFrequencyDrawDisplay(pool, retainedMandelPool=null) {
             const drawResultTitle = document.getElementById('draw-result-title');
             const drawMode = document.getElementById('draw-mode-select').value;
             if(drawMode!=='mandel')currentMandelDrawPool=null;
+            if(drawMode==='banker')return buildStatsBankerDisplay(pool);
             let drawnNumbers = [];
             let displayHtml = '';
             let drawModeInfo = null;
@@ -446,59 +569,6 @@
                     drawnNumbers = mandelNums;
                     drawModeInfo = { mode: 'mandel', bets: mandelBetsForInfo, selectedNumbers: mandelNums, count: mandelCount, filterInfo:filtered.filterInfo };
                 }
-            } else if (drawMode === 'fiveBankerFullMeal') {
-                if (pool.length < 6) {
-                    drawResultTitle.textContent = '號碼不足（至少需要6個號碼）';
-                    displayHtml = '<span class="hf-text--muted">篩選號碼不足，無法使用5膽拖全餐</span>';
-                    drawModeInfo = { mode: 'fiveBankerFullMeal', error: 'insufficient' };
-                } else {
-                    const bankers = getRandomNumbers(pool, 5);
-                    const runners = pool.filter(num => !bankers.includes(num));
-
-                    const bets = runners.map(runner => ({
-                        numbers: [...bankers.sort((a, b) => a - b), runner],
-                        bankers: bankers,
-                        runner: runner
-                    }));
-
-                    drawResultTitle.textContent = `5膽拖全餐（共 ${bets.length} 注）：`;
-
-                    displayHtml = '<div class="five-banker-info">';
-                    displayHtml += '<div class="five-banker-title">🎯 膽碼（固定5個）：</div>';
-                    displayHtml += '<div class="five-banker-numbers">';
-                    bankers.forEach(num => {
-                        displayHtml += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
-                    });
-                    displayHtml += '</div>';
-                    displayHtml += `<div class="five-banker-stats">`;
-                    displayHtml += `📊 篩選號碼: ${pool.length}個 | 膽: ${bankers.length}個 | 腳: ${runners.length}個 | 共 ${bets.length} 注<br>`;
-                    displayHtml += `💰 每注成本：$10（全注）或 $5（半注） | 全注總成本：$${bets.length * 10} | 半注總成本：$${bets.length * 5}`;
-                    displayHtml += `</div>`;
-                    displayHtml += '</div>';
-
-                    displayHtml += '<div class="five-banker-bets-container">';
-                    bets.forEach((bet, index) => {
-                        displayHtml += `<div class="five-banker-bet-row">`;
-                        displayHtml += `<span class="five-banker-bet-label">第${index + 1}注</span>`;
-                        displayHtml += '<div class="five-banker-bet-numbers">';
-
-                        bet.numbers.forEach(num => {
-                            displayHtml += `<span class="hf-ball hf-ball--md hf-ball--secondary">${num}</span>`;
-                        });
-
-                        displayHtml += '</div>';
-                        displayHtml += '</div>';
-                    });
-                    displayHtml += '</div>';
-
-                    drawnNumbers = pool;
-                    drawModeInfo = {
-                        mode: 'fiveBankerFullMeal',
-                        bets: bets,
-                        bankers: bankers,
-                        runners: runners
-                    };
-                }
             }
 
             return { displayHtml, drawnNumbers, drawModeInfo };
@@ -545,6 +615,7 @@
                 // 更新核心號碼選項
                 updateSmartCoreOptions();
                 
+                if(document.getElementById('draw-mode-select').value==='banker'){showStatsBankerDraft(filteredNumbers);return;}
                 const built = buildHighFrequencyDrawDisplay(filteredNumbers);
                 let displayHtml = built.displayHtml;
                 let drawnNumbers = built.drawnNumbers;
@@ -596,6 +667,9 @@
             const mandelDrawContainer = document.getElementById('mandel-draw-count-container');
             const drawResultTitle = document.getElementById('draw-result-title');
 
+            document.getElementById('banker-draw-container').style.display = drawMode === 'banker' ? 'block' : 'none';
+            document.getElementById('refresh-draw-btn').style.display = drawMode === 'banker' ? 'none' : '';
+            if(drawMode==='banker')renderStatsBankerPicker();
             document.getElementById('paired-count-container').style.display = drawMode === 'paired' ? 'flex' : 'none';
             document.getElementById('random-bet-container').style.display = drawMode === 'paired' ? 'none' : '';
             if(drawMode === 'paired') document.getElementById('random-bet-checkbox').checked = false;
@@ -628,8 +702,8 @@
                 drawResultTitle.textContent = `聰明組合+復式（每注${count}個）：`;
                 // 更新核心號碼選項
                 updateSmartCoreOptions();
-            } else if (drawMode === 'fiveBankerFullMeal') {
-                drawResultTitle.textContent = '5膽拖全餐：';
+            } else if (drawMode === 'banker') {
+                drawResultTitle.textContent = '膽拖：';
             }
 
             // 如果有篩選結果，立即刷新顯示
@@ -985,7 +1059,8 @@
         }
 
         // 重新隨機抽取號碼
-        function refreshRandom6(retainedMandelPool=null) {
+        function refreshRandom6(retainedMandelPool=null,commitBanker=false) {
+            if(document.getElementById('draw-mode-select').value==='banker'&&!commitBanker){showStatsBankerDraft();return;}
             if (currentFilteredNumbers.length === 0) {
                 alert('請先執行「篩選高頻號碼」！');
                 return;
@@ -1116,7 +1191,11 @@
                 let randomNumbersHtml = '';
                 let modeLabel = '隨機 6 碼：';
                 
-                if (item.drawModeInfo && item.drawModeInfo.mode === 'paired' && item.drawModeInfo.bets) {
+                if (item.drawModeInfo?.mode === 'banker') {
+                    const {bankers,runners}=item.drawModeInfo;
+                    modeLabel=`膽拖（${bankers.length} 膽＋${runners.length} 腳）：`;
+                    randomNumbersHtml=renderBankerDraw(bankers,runners,lotteryData[item.startPeriod-2]);
+                } else if (item.drawModeInfo && item.drawModeInfo.mode === 'paired' && item.drawModeInfo.bets) {
                     modeLabel = `保留搭配（${item.drawModeInfo.bets.length} 注）：`;
                     randomNumbersHtml = renderPairedBets(item.drawModeInfo);
                 } else if (item.drawModeInfo && item.drawModeInfo.mode === 'smart' && item.drawModeInfo.bets) {
@@ -1256,8 +1335,8 @@
                         randomNumbersHtml += `<span class="${ballClass}">${num}</span>`;
                     });
                     randomNumbersHtml += '</div>';
-                    randomNumbersHtml += mandelFilterSummary(item.drawModeInfo.filterInfo);
-                    randomNumbersHtml += buildMandelPrizeSummaryHtml(item.drawModeInfo.bets, item.startPeriod, { history: true });
+                    randomNumbersHtml += buildHistoryPrizeSummary(item);
+                    randomNumbersHtml += mandelFilterSummary(item.drawModeInfo.filterInfo, true);
 
                     // 顯示所有注數
                     randomNumbersHtml += '<div class="hf-history-smart-bets">';
@@ -1344,13 +1423,14 @@
                         <div class="hf-history-header">
                             <span class="hf-history-time">🕐 ${escapeText(item.timestamp)}</span>
                             <div class="hf-history-actions">
-                                <button onclick="loadHistoryItem(${index})" class="hf-history-btn hf-history-btn--load">載入</button>
+                                <button onclick="verifyHistoryItem(${index})" class="hf-history-btn hf-history-btn--load">載入並核對</button>
                                 <button onclick="removeHistoryItem(${index})" class="hf-history-btn hf-history-btn--remove">移除</button>
                             </div>
                         </div>
                         <div class="hf-history-meta">
                             期數：第 ${item.startPeriod} ~ ${item.endPeriod} 期 | ${item.selectionSettings?'固定 '+item.filteredNumbers.length+' 碼':'舊版保存記錄'}
                         </div>
+                        ${item.drawModeInfo?.mode==='mandel'&&item.drawModeInfo.bets?'':buildHistoryPrizeSummary(item)}
                         <div class="hf-history-random">
                             <strong class="hf-history-random-label">${modeLabel}</strong>
                             ${randomNumbersHtml}
@@ -1488,7 +1568,9 @@
             updateSmartCoreOptions();
             restoreControls(item.controls,document.getElementById('statistics'));
             if(item.filterMode) document.getElementById('filter-mode-select').value = item.filterMode;
-            if(item.drawModeInfo?.mode&&item.drawModeInfo.mode!=='unavailable') document.getElementById('draw-mode-select').value = item.drawModeInfo.mode;
+            if(item.drawModeInfo?.mode&&item.drawModeInfo.mode!=='unavailable') document.getElementById('draw-mode-select').value = item.drawModeInfo.mode==='fiveBankerFullMeal'?'banker':item.drawModeInfo.mode;
+            if(['banker','fiveBankerFullMeal'].includes(item.drawModeInfo?.mode)){document.getElementById('banker-draw-count').value=String(item.drawModeInfo.bankers?.length||5);document.getElementById('runner-draw-count').value=String(item.drawModeInfo.runners?.length||1);}
+            if(['banker','fiveBankerFullMeal'].includes(item.drawModeInfo?.mode)&&validStatsBankerDraft(item.drawModeInfo)){statsBankerDraft={bankers:[...item.drawModeInfo.bankers],runners:[...item.drawModeInfo.runners]};statsBankerNotice='已還原歷史膽／腳，可修改後重新生成。';}
             document.getElementById('mandel-draw-advanced').checked=!!item.drawModeInfo?.filterInfo?.advanced;
             currentMandelDrawPool=item.drawModeInfo?.mode==='mandel'?[...(item.drawModeInfo.selectedNumbers||[])]:null;
             updateDrawModeUI(false);
@@ -1561,7 +1643,8 @@
                 random6Div.innerHTML = renderPairedBets(item.drawModeInfo);
                 document.getElementById('draw-result-title').textContent = `保留搭配 · ${item.drawModeInfo.bets.length} 注`;
             }
-            const modeLabels={single:'單式',complex:'複式',smart:'聰明組合',smartComplex:'聰明組合＋複式',mandel:'Mandel 濃縮法',fiveBankerFullMeal:'5膽拖全餐',paired:'保留搭配',unavailable:'尚未生成'};
+            if(item.drawModeInfo?.mode==='banker')random6Div.innerHTML=renderBankerDraw(item.drawModeInfo.bankers,item.drawModeInfo.runners);
+            const modeLabels={single:'單式',complex:'複式',banker:'膽拖',smart:'聰明組合',smartComplex:'聰明組合＋複式',mandel:'Mandel 濃縮法',fiveBankerFullMeal:'5膽拖全餐',paired:'保留搭配',unavailable:'尚未生成'};
             document.getElementById('draw-result-title').textContent=(item.drawModeInfo?.filterInfo?.advanced?'Mandel 進階濃縮':modeLabels[item.drawModeInfo?.mode]||'保存號碼')+'（歷史原有注碼）';
             if(item.drawModeInfo?.randomBet)random6Div.innerHTML+='<div class="random-bet-section"><strong>額外隨機注：</strong>'+balls(item.drawModeInfo.randomBet)+'</div>';
             // 滾動到結果區域
