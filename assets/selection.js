@@ -9,7 +9,10 @@ const Selection = ((engine,pairing)=>{
   const f=frequencies(rows,mode!=='rank_regular');let scores=f;
   if(mode==='blend'){
    if(!Number.isInteger(short)||short<1||short>rows.length)throw Error('短期期數必須為正整數，且不可超過所選範圍期數。');
-   const recent=frequencies(rows.slice(0,short));scores=f.map((x,i)=>.5*x/rows.length+.5*recent[i]/short);
+   const recent=frequencies(rows.slice(0,short));
+   // Multiply both 50% window scores by the same positive denominator.
+   // Integer numerators keep equal scores exactly tied, so number order wins.
+   scores=f.map((x,i)=>x*short+recent[i]*rows.length);
   }
   const ranked=Array.from({length:49},(_,i)=>i+1).sort((a,b)=>(cold&&mode==='rank'?scores[a]-scores[b]:scores[b]-scores[a])||a-b);
   return ranked.slice(0,count).sort((a,b)=>a-b);

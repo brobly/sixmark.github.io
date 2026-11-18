@@ -57,7 +57,12 @@
         }
         function mandelFilterSummary(info, compact=false){
             if(!info?.advanced)return '';
-            return `<div class="mandel-filter-summary"><strong>進階版：同區段最多3碼</strong><p>濃縮原有 ${info.originalCount} 注 → 剔除 ${info.removedCount} 注 → 保留 ${info.retainedCount} 注；成本 $${(info.retainedCount*10).toLocaleString()}。</p>${compact?'':'<p>區段：1–9、10–19、20–29、30–39、40–49。過濾後不再提供原本的五元組覆蓋／至少三獎保證。</p>'}${info.retainedCount===0?'<p>所有濃縮注碼均被剔除，沒有可投注的組合。可更改選號或關閉進階過濾。</p>':''}</div>`;
+            let lost='';
+            if(!compact&&Array.isArray(mandelCombinations)&&typeof Budget!=='undefined'){
+                const c=Budget.coverage(mandelSelected,mandelCombinations,5);
+                lost=`<p>過濾後池內五碼覆蓋：${c.covered} / ${c.total}；未覆蓋 ${c.total-c.covered} 組。</p>`;
+            }
+            return `<div class="mandel-filter-summary"><strong>進階版：同區段最多3碼</strong><p>濃縮原有 ${info.originalCount} 注 → 剔除 ${info.removedCount} 注 → 保留 ${info.retainedCount} 注；成本 $${(info.retainedCount*10).toLocaleString()}。</p>${lost}${compact?'':'<p>區段：1–9、10–19、20–29、30–39、40–49。過濾後不再提供原本的五元組覆蓋／至少三獎保證。</p>'}${info.retainedCount===0?'<p>所有濃縮注碼均被剔除，沒有可投注的組合。可更改選號或關閉進階過濾。</p>':''}</div>`;
         }
 
         function updateMandelEstimate() {

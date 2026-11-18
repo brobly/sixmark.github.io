@@ -226,7 +226,11 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
-
+        .apply-buttons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
         .apply-btn {
             padding: 12px 30px;
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);

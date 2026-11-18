@@ -1,0 +1,11 @@
+.tutorial-button{font:inherit;font-size:13px;border:1px solid #cbc4e6;border-radius:8px;padding:7px 11px;background:#fff;color:#6554c0;margin-left:12px;white-space:nowrap}.ux-purpose{color:#657187;margin:6px 0 14px}.ux-directory{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.ux-directory button{text-align:left;padding:12px}.ux-explanation{margin:10px 0;color:#657187}.ux-explanation summary{padding:5px 0}.tab-nav{flex-wrap:wrap}.tab-button{flex:1;min-width:64px}.ux-tools{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}@media(max-width:500px){.tutorial-button{margin:8px 0;display:inline-block}.tab-button{padding:12px 6px}}
+
+/* Mode selection and its tutorial have separate rows, including on narrow screens. */
+.betting-mode-tabs{max-width:none;width:100%;box-sizing:border-box;flex-wrap:wrap;gap:6px;align-items:stretch}
+.betting-mode-tabs .mode-tab{flex:1 1 auto;min-height:44px;padding:10px 12px;white-space:nowrap;line-height:1.5}
+.mode-tutorial{display:flex;justify-content:flex-end;margin:0 0 12px}
+.mode-tutorial .tutorial-button{margin:0;min-height:36px;max-width:100%;white-space:normal}
+.tutorial-control-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin:12px 0}
+.tutorial-control-row .mandel-advanced-option{flex:1 1 280px;min-width:0;margin:0;flex-wrap:nowrap;align-items:flex-start;line-height:1.7}
+.tutorial-control-row .mandel-advanced-option input{flex:0 0 auto;margin:6px 0 0}
+.tutorial-control-row>.tutorial-button{margin:0;min-height:36px;flex:0 0 auto}

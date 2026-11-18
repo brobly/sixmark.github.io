@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>六合彩數據工作台</title>
-    <link rel="stylesheet" href="assets/base.css?v=20261117-prospective"><link rel="stylesheet" href="assets/ui.css?v=20261117-prospective">
+    <link rel="stylesheet" href="assets/base.css?v=20261117-prospective"><link rel="stylesheet" href="assets/ui.css?v=20261118-history-readable">
+<link rel="stylesheet" href="assets/tutorials.css?v=20261118-mode-layout">
+<link rel="stylesheet" href="assets/screen-tutorials.css?v=20261118-screen2">
 </head>
 <body>
     <div class="container">
@@ -30,6 +32,34 @@
                 <!-- 統計標籤頁 -->
                 <div id="statistics" class="tab-pane">
                     <h2>號碼統計分析</h2>
+<section class="budget-panel" aria-labelledby="budget-title">
+<h3 id="budget-title">固定注數：比較實際中獎機會</h3>
+<p>先定注數及目標，再比較同一號碼池的排注方式。以下為研究及模擬，不會代你投注。</p>
+<div class="budget-grid">
+<label>每期注數<select id="budget-count"><option>5</option><option selected>10</option><option>15</option></select></label>
+<label>主要目標<select id="budget-target"><option value="3">至少一注中3個正選</option><option value="4">至少一注中4個正選</option></select></label>
+<label>探索用號碼池<select id="budget-scope"><option value="all">全49碼</option><option value="selected">按所選方法揀號</option><option value="custom">手動輸入心水池</option></select></label>
+<label id="budget-selection-field" hidden>選號方法<select id="budget-selection"><option value="rank">排名（含特別號）</option><option value="rank_regular">排名（只計正選）</option><option value="blend">長短期混合</option><option value="rank_with_pair">排名＋搭配</option></select></label>
+<label id="budget-size-field" hidden>自動號碼池大小<select id="budget-size"><option>10</option><option>11</option><option selected>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option></select></label>
+<label id="budget-train-field" hidden>選號資料期數<input id="budget-train" type="number" min="1" max="500" value="100"></label>
+<label id="budget-short-field" hidden>混合短期<input id="budget-short" type="number" min="1" max="500" value="10"></label>
+<label>探索重現編號<input id="budget-seed" type="number" min="0" max="4294967295" value="20261118"></label>
+</div>
+<p id="budget-scope-note" class="muted" aria-live="polite">從全49碼排注。</p>
+<label id="budget-custom-field" class="budget-custom" hidden>心水號碼（以空格或逗號分隔）<input id="budget-custom" value="1 5 8 12 16 20 24 28 32 36 40 45"></label>
+<div class="search-row"><button id="budget-generate" onclick="BudgetUI.generate()">產生並比較兩組注碼</button><button id="budget-export" onclick="BudgetUI.exportBets()" disabled>匯出完整注碼 JSON</button></div>
+<p id="budget-status" role="status" aria-live="polite"></p><div id="budget-output"></div>
+<div class="search-row"><label>核對歷史一期 <select id="budget-draw"></select></label><button id="budget-check" onclick="BudgetUI.check()" disabled>核對這兩組注碼</button></div><div id="budget-check-result"></div>
+<details><summary>覆蓋方案：保證條件與整體機會</summary><p>12碼15注完整三碼覆蓋：池內有至少3個正選，至少一注中3個。此模板已逐一核對220種三碼組合。公平攪珠下，固定12碼完整覆蓋的整體中獎機會約14.8%；全49碼隨機15張不同注碼的平均機會約24.6%。兩者條件不同。</p><p>現有Mandel標準版覆蓋池內五碼組合：池內至少5個正選，至少一注中5個。刪注過濾會損失原覆蓋保證。</p><p><a href="https://combinatorialpress.com/ars-articles/volume-040-ars-articles/minimum-12-6-3-covers/" target="_blank" rel="noopener">12碼15注研究</a> · <a href="https://groups.google.com/g/rec.gambling.lottery/c/h9mVQc_rY3c" target="_blank" rel="noopener">163注原始來源</a></p><button onclick="BudgetUI.example()">查看49碼163注研究示例</button><div id="budget-example"></div></details>
+<hr><h3>新版前瞻：同注數，逐期比較中獎</h3>
+<p>開獎前鎖定五組注碼，資料更新後再核對。</p>
+<p id="ticket-config-summary"></p>
+<button type="button" onclick="BudgetUI.configureStudy()">設定研究選號及注數</button>
+<div class="search-row"><label>預定評估期數 <input id="budget-horizon" type="number" min="20" max="500" value="120"></label><label>新版研究方案 <select id="ticket-plan" onchange="BudgetUI.renderStudy()"><option value="new">建立新版研究</option></select></label><button id="ticket-create" onclick="BudgetUI.save(true)">鎖定新方案及首期五組注碼</button><button id="ticket-next" onclick="BudgetUI.save(false)" disabled>保存下一期五組注碼</button><button onclick="BudgetUI.renderStudy()">更新結果</button></div>
+<p id="ticket-status" role="status" aria-live="polite"></p><div id="ticket-results"></div>
+<div class="search-row"><button id="ticket-export" onclick="BudgetUI.exportStudy()" disabled>匯出新版研究 JSON</button><button id="ticket-csv" onclick="BudgetUI.csv()" disabled>匯出逐期 CSV</button><label>匯入新版備份 <input type="file" accept=".json,application/json" onchange="BudgetUI.importStudy(this)"></label></div>
+</section>
+
                     <div class="stats-controls">
                         <div class="range-selection">
                             <div class="range-title">📊 期數範圍選擇</div>
@@ -63,9 +93,10 @@
                                 <button class="quick-btn" onclick="setQuickRange(1, 75)">近75期</button>
                                 <button class="quick-btn" onclick="setQuickRange(1, 100)">近100期</button>
                             </div>
-
-                            <button class="apply-btn" onclick="applyRangeSelection()">🔍 應用範圍統計</button>
-                            <button class="apply-btn filter-btn" onclick="filterHighFrequencyNumbers()">🎲 篩選高頻號碼</button>
+                            <div class="apply-buttons">
+                                <button class="apply-btn" onclick="applyRangeSelection()">🔍 應用範圍統計</button>
+                                <button class="apply-btn filter-btn" onclick="filterHighFrequencyNumbers()">🎲 篩選高頻號碼</button>
+                            </div>
                         </div>
                         
                         <!-- 高頻號碼篩選結果顯示區域 -->
@@ -253,7 +284,7 @@
                                         <h4 class="hf-history-title">📜 篩選歷史記錄</h4>
                                         <button onclick="clearFilterHistory()" class="hf-clear-btn">清除歷史</button>
                                     </div>
-                                    <div id="filter-history" class="hf-history-list">
+                                    <div id="filter-history" class="hf-history-list" tabindex="-1" aria-label="篩選歷史記錄">
                                         <p class="hf-empty-message">尚無篩選記錄</p>
                                     </div>
                                     
@@ -266,9 +297,6 @@
                                         <div id="historical-high-frequency" class="hf-highlight-content">
                                             <p class="hf-empty-message">尚無歷史數據</p>
                                         </div>
-                                        <div class="hf-highlight-footer">
-                                            根據歷史篩選記錄統計，按頻率統計排名排序
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -276,17 +304,25 @@
                     </div>
                     <section id="pool-comparison" class="backtest">
                         <h3>固定碼數：較新一期命中比較</h3>
-                        <p>比較純排名、只計正選、長短期混合及排名＋搭配。每個核對期只用更早資料選同樣數量的號碼；統計的是號碼池覆蓋，並非投注中獎或盈利。</p>
+                        <p class="ux-purpose">四種揀號方法＋全49碼，同注數比較隨機排注及覆蓋搜尋。</p>
                         <div class="search-row">
                             <label>每期選號用前幾期 <input id="pool-train" type="number" min="1" value="100"></label>
                             <label>混合短期 <input id="pool-short" type="number" min="1" value="10"></label>
                             <label>每次選幾碼 <input id="pool-size" type="number" min="6" max="49" value="10"></label>
                             <label>核對最近幾期 <input id="pool-periods" type="number" min="1" value="100"></label>
-                            <button onclick="comparePoolSelections()">比較四種篩選</button>
-                            <label>表格排序 <select id="pool-goal" onchange="renderPoolComparison()"><option value="mean">平均命中正選</option><option value="hit3">中3碼或以上期數</option><option value="hit4">中4碼或以上期數</option></select></label>
-                            <button id="export-pool-comparison" onclick="exportPoolComparison()" disabled>匯出逐期選號</button>
+                            <label>每法每期注數 <select id="pool-tickets"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option selected>10</option></select></label>
+                            <button id="compare-pool-selections" onclick="comparePoolSelections()">逐期比較</button>
+                            <button id="cancel-pool-comparison" onclick="cancelPoolComparison()" hidden>取消</button>
+                            <button id="export-pool-comparison" onclick="exportPoolComparison()" disabled>匯出逐期注碼 CSV</button>
                         </div>
-                        <div id="pool-comparison-results" role="status" aria-live="polite"></div>
+                        <p class="muted">每期重新揀號、重新排注，只用開獎前資料；全49碼兩組亦每期重排。每注6碼，同組不重複。</p>
+                        <label>比較指標 <select id="pool-ticket-goal" onchange="renderPoolComparison()"><option value="hit3">至少一注中3個或以上：期數</option><option value="hit4">至少一注中4個或以上：期數</option><option value="winningTickets">中3個或以上：總注數</option></select></label>
+                        <p id="pool-comparison-status" role="status" aria-live="polite"></p>
+                        <div id="pool-comparison-results"></div>
+                        <details><summary>只看號碼池命中（未計排注）</summary>
+                            <label>號碼池排序 <select id="pool-goal" onchange="renderPoolComparison()"><option value="mean">平均命中正選</option><option value="hit3">中3碼或以上期數</option><option value="hit4">中4碼或以上期數</option></select></label>
+                            <div id="pool-only-results"></div>
+                        </details>
                     </section>
                     <section id="research-panel" class="backtest">
                         <h3>前瞻研究：固定規則，逐期比較</h3>
@@ -688,18 +724,27 @@
 <script src="assets/core.js?v=20261117-prospective"></script>
 <script src="assets/coverage.js?v=20261117-prospective"></script>
 <script src="assets/pairing.js?v=20261117-prospective"></script>
-<script src="assets/selection.js?v=20261117-prospective"></script>
+<script src="assets/selection.js?v=20261118-blend-tie-fix"></script>
 <script src="assets/forecast.js?v=20261117-prospective"></script>
 <script src="assets/storage.js?v=20261117-prospective"></script>
 <script src="assets/app.js?v=20261117-prospective"></script>
 <script src="assets/statistics.js?v=20261117-prospective"></script>
 <script src="assets/mandel-engine.js?v=20261117-prospective"></script>
-<script src="assets/mandel.js?v=20261117-prospective"></script>
+<script src="assets/mandel.js?v=20261118-budget"></script>
 <script src="assets/ui.js?v=20261117-prospective"></script>
-<script src="assets/pairing-ui.js?v=20261117-prospective"></script>
-<script src="assets/selection-ui.js?v=20261117-prospective"></script>
-<script src="assets/research-build.js?v=20261117-prospective"></script>
+<script src="assets/pairing-ui.js?v=20261118-budget"></script>
+<script src="assets/selection-ui.js?v=20261118-rolling49"></script>
+<script src="assets/research-build.js?v=20261118-blend-tie-fix"></script>
 <script src="assets/research.js?v=20261117-prospective"></script>
 <script src="assets/research-ui.js?v=20261117-prospective"></script>
+<script src="assets/cover-templates.js?v=20261118-budget"></script>
+<script src="assets/budget.js?v=20261118-rolling49"></script>
+<script src="assets/pool-comparison.js?v=20261118-rolling49"></script>
+<script src="assets/ticket-research.js?v=20261118-pool20"></script>
+<script src="assets/ticket-build.js?v=20261118-rolling49"></script>
+<script src="assets/budget-ui.js?v=20261118-pool20"></script>
+<script src="assets/tutorials.js?v=20261118-rolling49"></script>
+<script src="assets/ux-navigation.js?v=20261118-mode-layout"></script>
+<script src="assets/screen-tutorials.js?v=20261118-rolling49"></script>
 </body>
 </html> 
