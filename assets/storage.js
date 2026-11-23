@@ -59,7 +59,7 @@ function validHistoryItem(h){
  const d=h.drawModeInfo;if(!d)return true;
  if(!['single','complex','banker','smart','smartComplex','paired','mandel','fiveBankerFullMeal','unavailable'].includes(d.mode))return false;
  if(d.mode==='banker'&&(!Engine.validNumbers(d.bankers,1,5)||!Engine.validNumbers(d.runners,6-d.bankers.length)||d.bankers.some(n=>d.runners.includes(n))))return false;
- if(d.bets!==undefined&&(!Array.isArray(d.bets)||!d.bets.every(b=>b&&Engine.validNumbers(b.numbers,6,d.mode==='smartComplex'?49:6))))return false;
+ if(d.bets!==undefined&&(!Array.isArray(d.bets)||!d.bets.every(b=>b&&Engine.validNumbers(b.numbers,6,['smartComplex','complex'].includes(d.mode)?49:6))))return false;
  if(d.filterInfo?.advanced&&!validMandelRecord(d.selectedNumbers,d.bets?.map(b=>b.numbers),d.filterInfo))return false;
  if(d.randomBet!==undefined&&!Engine.validNumbers(d.randomBet,6,6))return false;
  if(['selectedNumbers','bankers','runners'].some(k=>d[k]!==undefined&&!Engine.validNumbers(d[k])))return false;

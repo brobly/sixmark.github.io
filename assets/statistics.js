@@ -8,6 +8,7 @@
         let statsBankerDraft = {bankers:[],runners:[]};
         let statsBankerRole = 'bankers';
         let statsBankerNotice = '';
+        Selection.labels.random='純隨機';
         let filterHistory = Store.get('history', []); // 儲存篩選歷史記錄
         /** 排名模式專用：false = 頻率前 N 名，true = 頻率最低 N 個（固定總數） */
         let rankShowColdComplement = false;
@@ -122,7 +123,10 @@
             window.currentPairResult = null;
             let modeDescription = '';
 
-            if (['default','rank','rank_regular','blend'].includes(filterMode)) {
+            if(filterMode==='random'){
+                currentFilteredNumbers=SelectionCover.randomPool(filterCount);
+                modeDescription=`純隨機 · ${filterCount} 碼`;
+            } else if (['default','rank','rank_regular','blend'].includes(filterMode)) {
                 try{currentFilteredNumbers=Selection.select(selectedData,{mode:filterMode,count:filterCount,short:Number(document.getElementById('filter-short-periods').value),cold:rankShowColdComplement});}
                 catch(e){alert(e.message);return;}
                 modeDescription=Selection.labels[filterMode]+(filterMode==='rank'&&rankShowColdComplement?' · 最低頻率':'')+` · 固定 ${filterCount} 碼`;
@@ -190,7 +194,7 @@
 
             const scoringFreq=Selection.frequencies(selectedData,filterMode!=='rank_regular');
             const unseen=currentFilteredNumbers.filter(n=>scoringFreq[n]===0).length;
-            if(unseen)modeDescription+=` · ${unseen} 碼於此區間未出現，依同頻排序補滿固定總數`;
+            if(unseen&&filterMode!=='random')modeDescription+=` · ${unseen} 碼於此區間未出現，依同頻排序補滿固定總數`;
 
             // 保存頻率信息供其他功能使用
             window.currentNumberFreq = numberFreq;
@@ -414,21 +418,21 @@
 
             if (drawMode === 'paired') {
                 return buildPairedDisplay(pool);
-            } else if (drawMode === 'single') {
-                drawnNumbers = getRandom6(pool);
-                drawResultTitle.textContent = '隨機抽取 6 個號碼：';
-                displayHtml = drawnNumbers.map(num =>
-                    `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
-                ).join('');
-                drawModeInfo = { mode: 'single' };
-            } else if (drawMode === 'complex') {
-                const count = parseInt(document.getElementById('complex-count-select').value);
-                drawnNumbers = getRandomNumbers(pool, count);
-                drawResultTitle.textContent = `隨機抽取 ${count} 個號碼（復式）：`;
-                displayHtml = drawnNumbers.map(num =>
-                    `<span class="hf-ball hf-ball--lg hf-ball--secondary">${num}</span>`
-                ).join('');
-                drawModeInfo = { mode: 'complex', count: count };
+            } else if (drawMode === 'single' || drawMode === 'complex') {
+                const count=drawMode==='single'?6:Number(document.getElementById('complex-count-select').value);
+                const requested=Number(document.getElementById('draw-ticket-count').value);
+                try {
+                    const result=SelectionCover.generate(pool,count,requested);
+                    const bets=result.bets.map(numbers=>({numbers}));
+                    drawnNumbers=[...new Set(result.bets.flat())].sort((a,b)=>a-b);
+                    drawModeInfo={mode:drawMode,count,requested,bets,arrangement:'triple-cover-v1'};
+                    drawResultTitle.textContent=`${drawMode==='single'?'單式':'複式'} · ${requested}注 · 每注${count}碼（覆蓋式排法）`;
+                    displayHtml=renderSelectionCoverBets(drawModeInfo,lotteryData[currentFilterContext?.startPeriod-2])+`<p class="muted">已覆蓋候選池內 ${result.covered.toLocaleString()} / ${result.total.toLocaleString()} 組三碼；以增加三碼覆蓋為目標，未保證最優。${drawMode==='complex'?`共 ${requested*Engine.choose(count,6)} 注六碼單式等值。`:''}</p>`;
+                } catch(error) {
+                    drawResultTitle.textContent='未能生成注碼';
+                    drawModeInfo={mode:'unavailable',error:error.message};
+                    displayHtml=`<p class="error" role="alert">${escapeText(error.message)}</p>`;
+                }
             } else if (drawMode === 'smart') {
                 const hasCoreNumber = document.getElementById('smart-core-checkbox').checked;
                 const coreNumber = getCurrentCoreNumber();
@@ -580,14 +584,13 @@
             const thresholdInfo = document.getElementById('filter-threshold-info');
             const filteredNumbersDiv = document.getElementById('filtered-numbers');
             const filteredNumbersCountDiv = document.getElementById('filtered-numbers-count');
-            const previousPeriodNumbersDiv = document.getElementById('previous-period-numbers');
             const random6Div = document.getElementById('random-6-numbers');
 
             // 顯示結果區域
             resultDiv.style.display = 'block';
 
             // 根據模式顯示不同的篩選條件信息
-            let infoText = `期數範圍：第 ${startPeriod} 期 ~ 第 ${endPeriod} 期（共 ${endPeriod - startPeriod + 1} 期）`;
+            let infoText = filterMode==='random'?'從1–49均勻隨機選號':`期數範圍：第 ${startPeriod} 期 ~ 第 ${endPeriod} 期（共 ${endPeriod - startPeriod + 1} 期）`;
             
             infoText += `｜${modeDescription}｜最終 ${filteredNumbers.length} 個號碼`;
 
@@ -670,6 +673,7 @@
             document.getElementById('banker-draw-container').style.display = drawMode === 'banker' ? 'block' : 'none';
             document.getElementById('refresh-draw-btn').style.display = drawMode === 'banker' ? 'none' : '';
             if(drawMode==='banker')renderStatsBankerPicker();
+            document.getElementById('draw-ticket-count-container').style.display = ['single','complex'].includes(drawMode) ? 'flex' : 'none';
             document.getElementById('paired-count-container').style.display = drawMode === 'paired' ? 'flex' : 'none';
             document.getElementById('random-bet-container').style.display = drawMode === 'paired' ? 'none' : '';
             if(drawMode === 'paired') document.getElementById('random-bet-checkbox').checked = false;
@@ -1121,6 +1125,8 @@
 
         // 添加到歷史記錄
         function addToFilterHistory(startPeriod, endPeriod, maxFrequency, threshold, filteredNumbers, random6, filterMode = 'default', drawModeInfo = null) {
+            // Failed generation is not a ticket snapshot and must not displace saved bets.
+            if(drawModeInfo?.error||drawModeInfo?.mode==='unavailable'||(!drawModeInfo&&!Engine.validNumbers(random6,6,49)))return;
             const timestamp = new Date().toLocaleString('zh-TW', { 
                 year: 'numeric', 
                 month: '2-digit', 
@@ -1191,7 +1197,10 @@
                 let randomNumbersHtml = '';
                 let modeLabel = '隨機 6 碼：';
                 
-                if (item.drawModeInfo?.mode === 'banker') {
+                if (['single','complex'].includes(item.drawModeInfo?.mode) && item.drawModeInfo.bets) {
+                    modeLabel=`${item.drawModeInfo.mode==='single'?'單式':'複式'}（${item.drawModeInfo.bets.length}注）：`;
+                    randomNumbersHtml=renderSelectionCoverBets(item.drawModeInfo,lotteryData[item.startPeriod-2]);
+                } else if (item.drawModeInfo?.mode === 'banker') {
                     const {bankers,runners}=item.drawModeInfo;
                     modeLabel=`膽拖（${bankers.length} 膽＋${runners.length} 腳）：`;
                     randomNumbersHtml=renderBankerDraw(bankers,runners,lotteryData[item.startPeriod-2]);
@@ -1573,6 +1582,7 @@
             if(['banker','fiveBankerFullMeal'].includes(item.drawModeInfo?.mode)&&validStatsBankerDraft(item.drawModeInfo)){statsBankerDraft={bankers:[...item.drawModeInfo.bankers],runners:[...item.drawModeInfo.runners]};statsBankerNotice='已還原歷史膽／腳，可修改後重新生成。';}
             document.getElementById('mandel-draw-advanced').checked=!!item.drawModeInfo?.filterInfo?.advanced;
             currentMandelDrawPool=item.drawModeInfo?.mode==='mandel'?[...(item.drawModeInfo.selectedNumbers||[])]:null;
+            if(['single','complex'].includes(item.drawModeInfo?.mode))document.getElementById('draw-ticket-count').value=String(item.drawModeInfo.bets?.length||1);
             updateDrawModeUI(false);
             updateFilterModeDescription(false);
             document.getElementById('smart-core-number').style.display=document.getElementById('smart-core-checkbox').checked?'inline-block':'none';
@@ -1613,7 +1623,9 @@
             
             // 更新隨機 6 個號碼（Mandel 等多注模式需還原完整版面）
             const random6Div = document.getElementById('random-6-numbers');
-            if (item.drawModeInfo && item.drawModeInfo.bets && (item.drawModeInfo.bets.length || item.drawModeInfo.mode==='mandel')) {
+            if (['single','complex'].includes(item.drawModeInfo?.mode) && item.drawModeInfo.bets) {
+                random6Div.innerHTML=renderSelectionCoverBets(item.drawModeInfo,lotteryData[item.startPeriod-2]);
+            } else if (item.drawModeInfo && item.drawModeInfo.bets && (item.drawModeInfo.bets.length || item.drawModeInfo.mode==='mandel')) {
                 const sel = item.drawModeInfo.selectedNumbers || item.filteredNumbers;
                 const bets = item.drawModeInfo.bets;
                 let h = '<div class="five-banker-info"><div class="five-banker-title">已保存選取號碼：</div><div class="five-banker-numbers">';
@@ -1677,3 +1689,13 @@
             }
         }
 
+
+function renderSelectionCoverBets(info,draw=null){
+    const ball=n=>{
+        const regular=draw?.numbers.includes(n),extra=draw?.extra_number===n;
+        const colour=extra?'hf-ball--orange hf-ball--highlight':regular?'hf-ball--primary hf-ball--highlight':'hf-ball--secondary';
+        const status=extra?'命中特別號':regular?'命中正選':draw?'未命中':'尚未有驗證期';
+        return `<span class="hf-ball hf-ball--md ${colour}" title="${status}" aria-label="${n}，${status}">${n}</span>`;
+    };
+    return '<div class="five-banker-bets-container">'+info.bets.map((bet,i)=>`<div class="five-banker-bet-row"><span class="five-banker-bet-label">第${i+1}注</span><div class="five-banker-bet-numbers">${bet.numbers.map(ball).join('')}</div></div>`).join('')+'</div>';
+}

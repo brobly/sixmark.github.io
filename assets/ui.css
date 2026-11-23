@@ -63,3 +63,25 @@
 .hf-history-count,.hf-history-list .hf-text--muted{color:#5e566d}
 .hf-history-list:focus-visible{outline:2px solid #51429a;outline-offset:4px}
 #open-filter-history{margin:16px 0;padding:10px 16px;border:1px solid #51429a;border-radius:8px;background:#fff;color:#433580;font:inherit;cursor:pointer}
+/* Probability tables in the selection workflow. */
+.selection-odds { margin: 1rem 0; color: #203047; font-size: 1rem; line-height: 1.65; }
+.selection-odds + .selection-odds { border-top: 2px solid #c6dddc; padding-top: 1rem; }
+.selection-odds h4 { margin: .5rem 0; font-size: 1.1rem; }
+.selection-odds p { margin: .7rem 0; }
+.odds-table { width: 100%; background: white; font-size: .9rem; }
+.odds-table th, .odds-table td { padding: .75rem; vertical-align: top; }
+.odds-table tbody th { text-align: left; font-weight: 600; }
+.odds-table small, .odds-highlights small { display: block; font-size: .875rem; font-weight: 400; color: #4a5b6e; }
+.odds-table td strong { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.odds-ticket-table { min-width: 660px; }
+.odds-ticket-table .odds-verification-column { background: #edf6f2; }
+.odds-verification-note { padding: .75rem; border-left: 3px solid #23765d; background: #edf6f2; }
+.odds-highlights { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .75rem; margin: 1rem 0; }
+.odds-highlights > div { background: #fff; border: 1px solid #a3c8c3; border-radius: .6rem; padding: .85rem; font-weight: 600; }
+.odds-highlights strong { display: block; margin-top: .5rem; color: #14624e; font-size: 1.25rem; }
+#draw-ticket-count-container { align-items: center; gap: .4rem; }
+@media(max-width:600px) {
+ .odds-highlights { grid-template-columns: 1fr; }
+ .odds-table th, .odds-table td { padding: .6rem .45rem; }
+ .selection-odds .table-scroll { max-width: 100%; overflow-x: auto; }
+}

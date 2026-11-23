@@ -12,7 +12,10 @@ const Coverage = ((engine) => {
   if(!info){if(engine.validNumbers(drawn,6,6))return {mode:'complex',numbers:[...drawn]};throw Error('這筆記錄沒有完整的下注模式及注碼。');}
   if(info.error||info.mode==='unavailable')throw Error('這筆記錄尚未生成可核對的注碼。');
   let bet;
-  if(info.mode==='single'||info.mode==='complex'){
+  if((info.mode==='single'||info.mode==='complex')&&info.bets!==undefined){
+   if(!Array.isArray(info.bets)||!info.bets.length||!info.bets.every(b=>engine.validNumbers(b?.numbers,6,info.mode==='single'?6:49)))throw Error('保存的逐組注碼不完整。');
+   bet={mode:'groups',sourceMode:info.mode,groups:info.bets.map(b=>({mode:'complex',numbers:[...b.numbers]}))};
+  }else if(info.mode==='single'||info.mode==='complex'){
    if(!engine.validNumbers(drawn,6,info.mode==='single'?6:49))throw Error('保存的抽號結果不完整。');
    bet={mode:'complex',numbers:[...drawn]};
   }else if(info.mode==='banker'||legacyBankerMatches(info)){
@@ -20,7 +23,7 @@ const Coverage = ((engine) => {
    bet={mode:'banker',bankers:[...info.bankers],numbers:[...info.runners]};
   }else if(multiModes.includes(info.mode)){
    const emptyMandel=info.mode==='mandel'&&info.filterInfo?.advanced&&info.filterInfo.retainedCount===0;
-   if(!Array.isArray(info.bets)||(!info.bets.length&&!emptyMandel)||!info.bets.every(b=>engine.validNumbers(b?.numbers,6,info.mode==='smartComplex'?49:6)))throw Error('保存的逐組注碼不完整。');
+   if(!Array.isArray(info.bets)||(!info.bets.length&&!emptyMandel)||!info.bets.every(b=>engine.validNumbers(b?.numbers,6,['smartComplex','complex'].includes(info.mode)?49:6)))throw Error('保存的逐組注碼不完整。');
    if(info.mode==='mandel')bet={mode:'mandel',numbers:[...(info.selectedNumbers||drawn)],bets:info.bets.map(b=>[...b.numbers]),filterInfo:info.filterInfo||null};
    else bet={mode:'groups',sourceMode:info.mode,groups:info.bets.map(b=>({mode:'complex',numbers:[...b.numbers]}))};
   }else throw Error('無法識別這筆記錄的下注模式。');
@@ -45,9 +48,9 @@ const Coverage = ((engine) => {
   if(info&&!info.error){
    if(info.mode==='banker'){
     try{const b=toBet(drawn,{...info,randomBet:undefined}),all=[...b.bankers,...b.numbers];groups.push({label:'膽拖',numbers:[...b.numbers],bankers:[...b.bankers],matched:all.filter(n=>draw.numbers.includes(n)),extra:all.includes(draw.extra_number),counts:engine.evaluate(b,draw),total:engine.total(b)});}catch{unavailable=true;}
-   }else if(multiModes.includes(info.mode)){
+   }else if(multiModes.includes(info.mode)||(['single','complex'].includes(info.mode)&&info.bets!==undefined)){
     if(!Array.isArray(info.bets)||(!info.bets.length&&!(info.mode==='mandel'&&info.filterInfo?.advanced&&info.filterInfo.retainedCount===0)))unavailable=true;
-    else info.bets.forEach((b,i)=>add(b?.numbers,`第 ${i+1} 組`,6,info.mode==='smartComplex'?49:6));
+    else info.bets.forEach((b,i)=>add(b?.numbers,`第 ${i+1} 組`,6,['smartComplex','complex'].includes(info.mode)?49:6));
    }else if(info.mode==='single'||info.mode==='complex')add(drawn,'抽號結果',6,info.mode==='complex'?49:6);
    else unavailable=true;
    if(info.randomBet)add(info.randomBet,'額外隨機注');
@@ -78,13 +81,17 @@ const Coverage = ((engine) => {
 if(typeof module!=='undefined')module.exports=Coverage;
 
 function updateHistoricalCoverage(startPeriod,pool,drawn=[],info=null){
- const target=document.getElementById('probability-info');
- const balls=document.getElementById('previous-period-numbers');
+ const numbers=document.getElementById('previous-period-numbers');
+ const period=document.getElementById('previous-period-info');
+ let verificationDraw=null;
  if(!Number.isInteger(startPeriod)||startPeriod<2||startPeriod>lotteryData.length){
-  balls.innerHTML='<span class="hf-text--muted">無驗證期（較新一期）</span>';
-  target.innerHTML='<p class="hf-text--muted">目前範圍沒有較新一期可核對；新增下一期資料後才可核對。</p>';return;
+  period.textContent='';
+  numbers.innerHTML='<span class="hf-text--muted">目前選號範圍之前沒有較新一期開獎資料可驗證。</span>';
+ }else{
+  const draw=lotteryData[startPeriod-2];
+  verificationDraw=draw;
+  period.textContent=`${draw.draw_number} · ${draw.draw_date}`;
+  numbers.innerHTML=draw.numbers.map(n=>`<span class="hf-ball hf-ball--md ${pool.includes(n)?'hf-ball--primary-glow':'hf-ball--success'}" aria-label="正選 ${n}${pool.includes(n)?'，候選號碼命中':''}">${n}</span>`).join('')+`<span class="hf-separator">+</span><span class="hf-ball hf-ball--md ${pool.includes(draw.extra_number)?'hf-ball--warning-glow':'hf-ball--warning'}" aria-label="特別號 ${draw.extra_number}${pool.includes(draw.extra_number)?'，候選號碼命中':''}">${draw.extra_number}</span>`;
  }
- const draw=lotteryData[startPeriod-2];
- balls.innerHTML=draw.numbers.map(n=>`<span class="hf-ball hf-ball--md ${pool.includes(n)?'hf-ball--primary-glow':'hf-ball--success'}">${n}</span>`).join('')+`<span class="hf-separator">+</span><span class="hf-ball hf-ball--md ${pool.includes(draw.extra_number)?'hf-ball--warning-glow':'hf-ball--warning'}">${draw.extra_number}</span>`;
- target.innerHTML=Coverage.render(draw,pool,drawn,info);
+ return updateSelectionOdds(pool,drawn,info,verificationDraw);
 }
