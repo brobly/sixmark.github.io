@@ -65,6 +65,14 @@ const SelectionOdds = ((engine) => {
   });
   const regular=new Uint8Array(gs.length),banker=new Uint8Array(gs.length);
   const totals=Array(9).fill(0),conditional=Array(9).fill(0);
+  // Keep the first banker group's roles separate, including when an extra ticket
+  // is present. Pool hits alone cannot describe a banker ticket's outcome.
+  const bankerIndex=gs.findIndex(g=>g.bankers.length),bankerStates=new Map();
+  let bankerMasks;
+  if(bankerIndex>=0){
+   const g=gs[bankerIndex],bm=mask(g.bankers.filter(n=>universe.includes(n))),rm=mask(g.numbers.filter(n=>universe.includes(n)));
+   bankerMasks=[[full[0]&~(bm[0]|rm[0]),full[1]&~(bm[1]|rm[1])],rm,bm];
+  }
   const byPoolHits=Array.from({length:14},(_,i)=>{
    const regular=Math.floor(i/2),extra=i%2;
    const draws=engine.choose(candidates.length,regular)*engine.choose(universe.length-candidates.length,6-regular);
@@ -77,6 +85,14 @@ const SelectionOdds = ((engine) => {
    lo.fill(0);hi.fill(0);
    for(let j=0;j<gs.length;j++) for(const [t,a,b] of lookups[j][banker[j]*7+regular[j]]) {lo[t]|=a;hi[t]|=b;}
    for(let t=0;t<7;t++) {lo[7]|=lo[t];hi[7]|=hi[t];if(t<6){lo[8]|=lo[t];hi[8]|=hi[t];}}
+   if(bankerMasks)for(let extraRole=0;extraRole<3;extraRole++){
+    const a=bankerMasks[extraRole][0]&~drawLo,b=bankerMasks[extraRole][1]&~drawHi;
+    const available=pop(a)+pop(b);if(!available)continue;
+    const bankerRegular=banker[bankerIndex],runnerRegular=regular[bankerIndex],key=`${bankerRegular},${runnerRegular},${extraRole}`;
+    if(!bankerStates.has(key))bankerStates.set(key,{bankerRegular,runnerRegular,extraRole,denominator:0,favorable:Array(9).fill(0)});
+    const state=bankerStates.get(key);state.denominator+=weight*available;
+    for(let t=0;t<9;t++)state.favorable[t]+=weight*(pop(a&lo[t])+pop(b&hi[t]));
+   }
    for(let t=0;t<9;t++) {
     const a=lo[t]&~drawLo,b=hi[t]&~drawHi;
     const eligible=pop(a)+pop(b),inside=pop(a&pm[0])+pop(b&pm[1]),state=(6-outsidePool)*2;
@@ -108,8 +124,10 @@ const SelectionOdds = ((engine) => {
   yield* walk(0,6,0,0,1,0);
   const denominator=engine.choose(universe.length,6)*(universe.length-6),conditionalDenominator=engine.choose(candidates.length,6)*(candidates.length-6);
   for(const state of byPoolHits)state.probabilities=state.denominator?state.favorable.map(n=>n/state.denominator):null;
+  const byBankerHits=[...bankerStates.values()].sort((a,b)=>a.bankerRegular-b.bankerRegular||a.runnerRegular-b.runnerRegular||a.extraRole-b.extraRole);
+  for(const state of byBankerHits){state.probability=state.denominator/denominator;state.probabilities=state.favorable.map(n=>n/state.denominator);}
   return {probabilities:totals.map(n=>n/denominator),conditional:conditionalDenominator?conditional.map(n=>n/conditionalDenominator):null,
-   favorable:totals,conditionalFavorable:conditional,denominator,conditionalDenominator,byPoolHits,visited,weightTotal};
+   favorable:totals,conditionalFavorable:conditional,denominator,conditionalDenominator,byPoolHits,byBankerHits,visited,weightTotal};
  }
  return {pool,calculate,names,tiers};
 })(typeof module!=='undefined'?require('./core.js'):Engine);

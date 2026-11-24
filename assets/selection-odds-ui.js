@@ -24,21 +24,34 @@ function renderCandidateOdds(pool){
  <p>7 個開獎號碼全部在候選池：<strong>${oddsPercent(result.all7)}</strong>。</p>
  <details><summary>計算方式</summary><p>假設49個號碼公平、隨機、不重複開出。設候選碼數為 N、命中正選 r 個，P(r)＝C(N,r) × C(49−N,6−r) ÷ C(49,6)；其後中特別號的條件概率為 (N−r) ÷ 43，無特別號為 (43−N+r) ÷ 43。「中6個」合併特別號有、無兩種情況。</p></details></div></section>`;
 }
+const bankerExtraLabels=['膽腳以外','腳碼','膽碼'];
+function bankerHitLabel(state){return `膽中${state.bankerRegular}個正選、腳中${state.runnerRegular}個正選；特別號在${bankerExtraLabels[state.extraRole]}`;}
+function renderBankerOdds(result,info){
+ if(!result.byBankerHits?.length||!['banker','fiveBankerFullMeal'].includes(info?.mode))return '';
+ const states=result.byBankerHits;
+ const marginal=(role,count)=>Array.from({length:Math.min(count,6)+1},(_,r)=>`<tr><th scope="row">${role==='bankerRegular'?'膽':'腳'}中 ${r} 個正選</th><td>${oddsCell(states.filter(s=>s[role]===r).reduce((sum,s)=>sum+s.probability,0))}</td></tr>`).join('');
+ return `<section class="banker-odds"><h4 data-taught="1">膽／腳分開計概率</h4><p>${info.bankers.length} 膽：${info.bankers.join('、')}；${info.runners.length} 腳：${info.runners.join('、')}。每注必須包含全部膽碼，再選 ${6-info.bankers.length} 個腳碼。即使膽腳合計命中相同碼數，獎項亦可能不同。</p>
+ <details><summary>膽、腳各自命中正選的概率（特別號不限）</summary><div class="table-scroll"><table class="results-table odds-table"><thead><tr><th>命中條件</th><th>一般49碼開獎</th></tr></thead><tbody>${marginal('bankerRegular',info.bankers.length)}${marginal('runnerRegular',info.runners.length)}</tbody></table></div><p>膽與腳的命中數互相關聯，兩組概率不可直接相乘。</p></details>
+ <details><summary>膽／腳及特別號的完整命中組合</summary><p>「組合發生概率」計該命中情況出現的機會；「該情況下中獎概率」計已知該情況時，整批注碼至少一注中該獎的機會${info.randomBet?'（包括額外隨機注）':''}。</p><div class="table-scroll"><table class="results-table odds-table"><thead><tr><th>膽中正選</th><th>腳中正選</th><th>特別號位置</th><th>組合發生概率</th><th>該情況下中獎概率</th></tr></thead><tbody>${states.map(s=>`<tr><td>${s.bankerRegular}</td><td>${s.runnerRegular}</td><td>${bankerExtraLabels[s.extraRole]}</td><td>${oddsCell(s.probability)}</td><td>${SelectionOdds.names.map((name,i)=>s.probabilities[i]?`${name}：${oddsPercent(s.probabilities[i])}`:'').filter(Boolean).join('；')||'未中獎'}</td></tr>`).join('')}</tbody></table></div><p>設 B 個膽、R 個腳，膽中 b 個正選、腳中 r 個正選的概率為 C(B,b) × C(R,r) × C(49−B−R,6−b−r) ÷ C(49,6)。其後按剩餘43碼中，膽、腳或其餘號碼所佔數量，分開計特別號位置。</p></details></section>`;
+}
 function renderTicketOdds(result,bet,pool,info,verification=null){
  const labels=['6個正選','5個正選＋特別號','5個正選','4個正選＋特別號','4個正選','3個正選＋特別號','3個正選','中3個字或以上','中4個字或以上'];
  const names=[...SelectionOdds.names,'任何獎項','六獎或以上'];
  const total=Engine.total(bet),mode=info?.mode||'single';
- const verifiedState=verification?result.byPoolHits?.find(s=>s.regular===verification.regular&&s.extra===verification.extra):null;
- const verifiedTitle=verification?`候選池含${verification.regular}個正選${verification.extra?'＋特別號':'、無特別號'}時`:'按驗證期命中數';
- const verifiedLabel=verification?`${verification.regular} 個正選${verification.extra?'＋特別號':'，無特別號'}`:'';
+ const bankerVerification=verification?.bankerHits;
+ const verifiedState=bankerVerification?result.byBankerHits?.find(s=>s.bankerRegular===bankerVerification.bankerRegular&&s.runnerRegular===bankerVerification.runnerRegular&&s.extraRole===bankerVerification.extraRole):verification?result.byPoolHits?.find(s=>s.regular===verification.regular&&s.extra===verification.extra):null;
+ const verifiedTitle=bankerVerification?bankerHitLabel(bankerVerification)+'時':verification?`候選池含${verification.regular}個正選${verification.extra?'＋特別號':'、無特別號'}時`:'按驗證期命中數';
+ const verifiedLabel=bankerVerification?bankerHitLabel(bankerVerification):verification?`${verification.regular} 個正選${verification.extra?'＋特別號':'，無特別號'}`:'';
  const modeName={single:'單式',complex:'複式',smart:'聰明組合',smartComplex:'聰明組合＋複式',paired:'保留搭配',banker:'膽拖',mandel:'Mandel 濃縮法',fiveBankerFullMeal:'5膽拖全餐'}[mode]||'已保存注碼';
  return `<h4 data-taught="1">抽號模式中獎概率 · ${modeName}</h4>
  <p>${info?.bets&&['single','complex'].includes(mode)?`${info.bets.length} 注${mode==='complex'?`複式，每注 ${info.count} 碼`:''}；`:''}共 <strong>${total.toLocaleString()} 注六碼單式等值</strong>${info?.randomBet?'（包含額外隨機注）':''}。</p>
  <p>按目前顯示嘅整批注碼計算<strong>至少一注中該獎</strong>嘅概率；複式包含所有六碼組合，各注重疊已合併計算。同一期可中多個獎，獎項列不可直接相加。</p>
- <p class="odds-verification-note" data-concise="1">${verification?`驗證期 ${oddsText(verification.drawNumber)} · ${oddsText(verification.date)}：目前 ${pool.length} 碼候選池包含 <strong>${verifiedLabel}</strong>。第一欄概率按呢個命中數作條件，計算所有同樣命中數嘅開獎組合。`:'目前沒有驗證期，第一欄概率暫未能計算。'}</p>
+ ${renderBankerOdds(result,info)}
+ <p class="odds-verification-note" data-concise="1">${verification?`驗證期 ${oddsText(verification.drawNumber)} · ${oddsText(verification.date)}：${bankerVerification?'':`目前 ${pool.length} 碼候選池包含 `}<strong>${verifiedLabel}</strong>。第一欄概率按${bankerVerification?'膽、腳命中正選數及特別號位置':'呢個命中數'}作條件，計算所有同樣情況嘅開獎組合。${bankerVerification?'此欄亦列明已知命中組合的發生概率，避免將條件中獎率當成一般開獎機會。':''}`:'目前沒有驗證期，第一欄概率暫未能計算。'}</p>
+ ${bankerVerification&&verifiedState?`<p>驗證期膽／腳命中組合的發生概率：${oddsCell(verifiedState.probability)}。</p>`:''}
  <div class="table-scroll"><table class="results-table odds-table odds-ticket-table"><thead><tr><th>獎項／命中條件</th><th class="odds-verification-column">${verifiedTitle}</th><th>一般49碼開獎</th><th>7個開獎號碼全在候選池時</th></tr></thead><tbody>${names.map((name,i)=>`<tr><th scope="row">${name}<small>${labels[i]}</small></th><td class="odds-verification-column">${verifiedState?.probabilities?oddsCell(verifiedState.probabilities[i]):verification?'不適用':'暫無驗證期'}</td><td>${oddsCell(result.probabilities[i])}</td><td>${result.conditional?oddsCell(result.conditional[i]):'不適用'}</td></tr>`).join('')}</tbody></table></div>
  <p class="muted">${pool.length<7?'候選池只有6碼，無法包含全部7個開獎號碼，條件概率不適用。':`右欄假設6個正選及1個特別號全部在目前 ${pool.length} 碼候選池內，再計算已排注碼嘅中獎概率。`}</p>
- <details><summary>整批注碼計算方式</summary><p>一般開獎精確計算所有 C(49,6) × 43＝601,304,088 種正選與特別號結果。驗證期條件欄只計候選池命中正選個數、特別號有無均與驗證期相同的結果，再計算其中至少一注中該獎的比例。最右欄只計候選池內 C(${pool.length},6) × (${pool.length}−6) 種結果。每個結果逐獎項判斷有無至少一注中獎；相同注碼重複投注不會增加命中概率。</p></details>`;
+ <details><summary>整批注碼計算方式</summary><p>一般開獎精確計算所有 C(49,6) × 43＝601,304,088 種正選與特別號結果。驗證期條件欄只計${bankerVerification?'膽、腳各自命中正選數及特別號位置':'候選池命中正選個數、特別號有無'}均與驗證期相同的結果，再計算其中至少一注中該獎的比例。最右欄只計候選池內 C(${pool.length},6) × (${pool.length}−6) 種結果。每個結果逐獎項判斷有無至少一注中獎；相同注碼重複投注不會增加命中概率。</p></details>`;
 }
 async function updateSelectionOdds(pool,drawn=[],info=null,verificationDraw=null){
  if(selectionOddsJob){selectionOddsJob.cancelled=true;selectionOddsJob.worker?.terminate();}
@@ -51,6 +64,9 @@ async function updateSelectionOdds(pool,drawn=[],info=null,verificationDraw=null
  let bet;
  try{if(!info&&drawn.length!==6)throw Error('請先生成注碼，即可查看各獎項概率。');bet=Coverage.toBet(drawn,info);}
  catch(error){output.textContent=error.message;return;}
+ if(verification&&['banker','fiveBankerFullMeal'].includes(info?.mode)&&(bet.mode==='banker'||bet.groups?.some(g=>g.mode==='banker'))){
+  verification.bankerHits={bankerRegular:info.bankers.filter(n=>verificationDraw.numbers.includes(n)).length,runnerRegular:info.runners.filter(n=>verificationDraw.numbers.includes(n)).length,extraRole:info.bankers.includes(verificationDraw.extra_number)?2:info.runners.includes(verificationDraw.extra_number)?1:0};
+ }
  output.textContent='正在精確計算整批注碼嘅各獎項概率…';
  const finish=result=>{if(!job.cancelled)output.innerHTML=renderTicketOdds(result,bet,pool,info,verification);};
  const fallback=async()=>{
@@ -59,7 +75,7 @@ async function updateSelectionOdds(pool,drawn=[],info=null,verificationDraw=null
  };
  if(typeof Worker!=='undefined'){
   try{
-   const worker=new Worker('assets/selection-odds-worker.js?v=20261123-pool-hit-odds');job.worker=worker;
+   const worker=new Worker('assets/selection-odds-worker.js?v=20261124-repeat-banker-odds');job.worker=worker;
    worker.onmessage=({data})=>{if(job.cancelled)return;if(data.result){worker.terminate();finish(data.result);}else if(data.error){worker.terminate();output.textContent=data.error;}else if(data.progress)output.textContent=`正在精確計算整批注碼…已核算 ${data.progress.visited.toLocaleString()} 類開獎組合。`;};
    worker.onerror=()=>{worker.terminate();if(!job.cancelled)fallback().catch(error=>{if(!job.cancelled)output.textContent=error.message;});};
    worker.postMessage({bet,pool});return;

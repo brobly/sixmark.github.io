@@ -1,4 +1,4 @@
-importScripts('core.js?v=20261117-prospective','selection-odds.js?v=20261123-pool-hit-odds');
+importScripts('core.js?v=20261117-prospective','selection-odds.js?v=20261124-repeat-banker-odds');
 onmessage=({data})=>{
  try{
   const work=SelectionOdds.calculate(data.bet,data.pool);let step,last=0;

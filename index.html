@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>六合彩數據工作台</title>
-    <link rel="stylesheet" href="assets/base.css?v=20261117-prospective"><link rel="stylesheet" href="assets/ui.css?v=20261123-pool-hit-odds">
+    <link rel="stylesheet" href="assets/base.css?v=20261117-prospective"><link rel="stylesheet" href="assets/ui.css?v=20261124-repeat-banker-odds">
 <link rel="stylesheet" href="assets/tutorials.css?v=20261118-mode-layout">
 <link rel="stylesheet" href="assets/screen-tutorials.css?v=20261118-screen2">
 </head>
@@ -199,7 +199,7 @@
                                                 <option value="complex">複式（每注7–15個號碼）</option>
                                                 <option value="smart">聰明組合</option>
                                                 <option value="smartComplex">聰明組合+復式</option>
-                                                <option value="banker">膽拖（手動揀膽／腳）</option>
+                                                <option value="banker">膽拖（隨機／手動揀膽腳）</option>
                                                 <option value="mandel">Mandel 濃縮法</option>
                                             </select>
 
@@ -270,7 +270,18 @@
                                                 </label>
                                             </div>
                                         </div>
-                                        
+
+                                        <div class="draw-repeat-control">
+                                            <span>每局隨機</span>
+                                            <label class="draw-repeat-switch" for="draw-repeat-switch">
+                                                <input type="checkbox" id="draw-repeat-switch" role="switch" aria-label="固定買法" aria-describedby="draw-repeat-help" onchange="onDrawRepeatChange()">
+                                                <span class="draw-repeat-track" aria-hidden="true"></span>
+                                            </label>
+                                            <span>固定買法</span>
+                                            <strong id="draw-repeat-label" aria-live="polite">每局隨機</strong>
+                                            <p id="draw-repeat-help">每次篩選重新排注；膽拖會按指定數量重新隨機揀膽／腳。</p>
+                                        </div>
+
                                         <div id="banker-draw-container" class="banker-picker" style="display:none">
                                             <h4>點選號碼做膽／腳</h4>
                                             <div class="banker-targets">
@@ -748,28 +759,28 @@
 <script src="assets/core.js?v=20261117-prospective"></script>
 <script src="assets/coverage.js?v=20261123-pool-hit-odds"></script>
 <script src="assets/selection-cover.js?v=20261123-odds"></script>
-<script src="assets/selection-odds.js?v=20261123-pool-hit-odds"></script>
-<script src="assets/selection-odds-ui.js?v=20261123-candidate-toggle"></script>
+<script src="assets/selection-odds.js?v=20261124-repeat-banker-odds"></script>
+<script src="assets/selection-odds-ui.js?v=20261124-repeat-banker-odds"></script>
 <script src="assets/pairing.js?v=20261117-prospective"></script>
 <script src="assets/selection.js?v=20261118-blend-tie-fix"></script>
 <script src="assets/forecast.js?v=20261117-prospective"></script>
 <script src="assets/storage.js?v=20261123-odds"></script>
 <script src="assets/app.js?v=20261117-prospective"></script>
-<script src="assets/statistics.js?v=20261123-history-hits"></script>
+<script src="assets/statistics.js?v=20261124-repeat-banker-odds"></script>
 <script src="assets/mandel-engine.js?v=20261117-prospective"></script>
 <script src="assets/mandel.js?v=20261118-budget"></script>
-<script src="assets/ui.js?v=20261117-prospective"></script>
-<script src="assets/pairing-ui.js?v=20261118-budget"></script>
-<script src="assets/selection-ui.js?v=20261118-rolling49"></script>
+<script src="assets/ui.js?v=20261124-repeat-banker-odds"></script>
+<script src="assets/pairing-ui.js?v=20261124-repeat-banker-odds"></script>
+<script src="assets/selection-ui.js?v=20261124-repeat-banker-odds"></script>
 <script src="assets/research-build.js?v=20261118-blend-tie-fix"></script>
 <script src="assets/research.js?v=20261117-prospective"></script>
-<script src="assets/research-ui.js?v=20261117-prospective"></script>
+<script src="assets/research-ui.js?v=20261124-repeat-banker-odds"></script>
 <script src="assets/cover-templates.js?v=20261118-budget"></script>
 <script src="assets/budget.js?v=20261118-rolling49"></script>
 <script src="assets/pool-comparison.js?v=20261118-rolling49"></script>
 <script src="assets/ticket-research.js?v=20261118-pool20"></script>
 <script src="assets/ticket-build.js?v=20261118-rolling49"></script>
-<script src="assets/budget-ui.js?v=20261118-pool20"></script>
+<script src="assets/budget-ui.js?v=20261124-repeat-banker-odds"></script>
 <script src="assets/tutorials.js?v=20261118-rolling49"></script>
 <script src="assets/ux-navigation.js?v=20261118-mode-layout"></script>
 <script src="assets/screen-tutorials.js?v=20261118-rolling49"></script>
