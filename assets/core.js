@@ -1,7 +1,7 @@
 /* Pure calculation functions, shared by UI and regression tests. */
 const Engine = (() => {
  const keys=['first','second','third','fourth','fifth','sixth','seventh'];
- const defaults=[8000000,1000000,35000,9600,640,320,40];
+ const defaults=[8000000,1000000,56000,9600,640,320,40];
  function choose(n,k){if(k<0||n<0||k>n)return 0;let v=1;for(let i=1;i<=Math.min(k,n-k);i++)v=v*(n-i+1)/i;return Math.round(v);}
  function prize(m,e){return m===6?0:m===5?(e?1:2):m===4?(e?3:4):m===3?(e?5:6):-1;}
  function validNumbers(a,min=0,max=49){return Array.isArray(a)&&a.length>=min&&a.length<=max&&new Set(a).size===a.length&&a.every(n=>Number.isInteger(n)&&n>=1&&n<=49);}
