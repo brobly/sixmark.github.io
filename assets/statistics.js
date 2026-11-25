@@ -14,6 +14,10 @@
         /** 排名模式專用：false = 頻率前 N 名，true = 頻率最低 N 個（固定總數） */
         let rankShowColdComplement = false;
 
+        const balanceControlIds={hotStart:'filter-hot-start',hotEnd:'filter-hot-end',coldStart:'filter-cold-start',coldEnd:'filter-cold-end'};
+        function readBalanceRanges(){return Object.fromEntries(Object.entries(balanceControlIds).map(([key,id])=>[key,Number(document.getElementById(id).value)]));}
+        function restoreBalanceRanges(ranges){for(const [key,id] of Object.entries(balanceControlIds))document.getElementById(id).value=String(ranges[key]);}
+
         function fixedSelectionDraw(){return document.getElementById('draw-repeat-switch')?.checked===true;}
         function selectionDrawKey(){
             const mode=document.getElementById('draw-mode-select').value;
@@ -161,6 +165,14 @@
             const endIndex = endPeriod;
             const selectedData = lotteryData.slice(startIndex, endIndex);
 
+            let balancedResult=null,balanceRanges=null;
+            document.getElementById('cold-hot-error').textContent='';
+            if(filterMode==='cold_hot_balance'){
+                balanceRanges=readBalanceRanges();
+                try{balancedResult=Selection.balanced(selectedData,filterCount,balanceRanges);}
+                catch(e){document.getElementById('cold-hot-error').textContent=e.message;return;}
+            }
+
             selectedData.forEach(row => {
                 row.numbers.forEach(num => {
                     numberFreq[num]++;
@@ -199,64 +211,14 @@
                 window.currentPairResult = result;
                 modeDescription = `固定 ${filterCount} 碼（核心 ${result.cores.length}／搭配加入 ${result.added.length}／排名補足 ${result.fallback.length}）`;
             } else if (filterMode === 'cold_hot_balance') {
-                // 冷熱平衡模式：從高頻和低頻號碼中各抽取一半
-                // 將所有1-49號碼按頻率排序
-                const allNumbers = [];
-                for (let i = 1; i <= 49; i++) {
-                    allNumbers.push({
-                        number: i,
-                        frequency: numberFreq[i] || 0
-                    });
-                }
-                
-                // 按頻率降序排序
-                allNumbers.sort((a, b) => b.frequency - a.frequency);
-                
-                // 找出中位數頻率（用於區分高頻和低頻）
-                const medianIndex = Math.floor(allNumbers.length / 2);
-                const medianFrequency = allNumbers[medianIndex].frequency;
-                
-                // 分離高頻和低頻號碼
-                const highFreqNumbers = allNumbers.filter(item => item.frequency > medianFrequency).map(item => item.number);
-                const lowFreqNumbers = allNumbers.filter(item => item.frequency < medianFrequency).map(item => item.number);
-                // 頻率等於中位數的號碼，一半歸高頻，一半歸低頻
-                const medianFreqNumbers = allNumbers.filter(item => item.frequency === medianFrequency).map(item => item.number);
-                const medianSplit = Math.floor(medianFreqNumbers.length / 2);
-                highFreqNumbers.push(...medianFreqNumbers.slice(0, medianSplit));
-                lowFreqNumbers.push(...medianFreqNumbers.slice(medianSplit));
-                
-                // 計算需要抽取的數量
-                const isOdd = filterCount % 2 === 1;
-                const highCount = isOdd ? Math.floor(filterCount / 2) + 1 : filterCount / 2;
-                const lowCount = Math.floor(filterCount / 2);
-                
-                // 從高頻號碼中隨機抽取
-                let selectedHigh = getRandomNumbers(highFreqNumbers, Math.min(highCount, highFreqNumbers.length));
-                
-                // 如果高頻號碼不夠，從低頻號碼中補足
-                if (selectedHigh.length < highCount) {
-                    const needFromLow = highCount - selectedHigh.length;
-                    const availableLow = lowFreqNumbers.filter(n => !selectedHigh.includes(n));
-                    const additionalFromLow = getRandomNumbers(availableLow, Math.min(needFromLow, availableLow.length));
-                    selectedHigh = [...selectedHigh, ...additionalFromLow];
-                }
-                
-                // 從低頻號碼中隨機抽取（排除已選的高頻號碼）
-                const availableLow = lowFreqNumbers.filter(n => !selectedHigh.includes(n));
-                const selectedLow = getRandomNumbers(availableLow, Math.min(lowCount, availableLow.length));
-                
-                // 合併結果並排序
-                currentFilteredNumbers = [...selectedHigh, ...selectedLow];
-                const rest = allNumbers.map(x=>x.number).filter(n=>!currentFilteredNumbers.includes(n));
-                currentFilteredNumbers.push(...getRandomNumbers(rest, filterCount-currentFilteredNumbers.length));
-                currentFilteredNumbers.sort((a,b)=>a-b);
-                
-                modeDescription = `冷熱平衡模式 - 選取 ${filterCount} 個號碼（高頻${selectedHigh.length}個 + 低頻${selectedLow.length}個）`;
+                currentFilteredNumbers = balancedResult.numbers;
+                modeDescription = `冷熱平衡 · ${Selection.balanceRangeText(balanceRanges)} · 熱門${balancedResult.hot.length}個＋冷門${balancedResult.cold.length}個`;
+                if(currentFilteredNumbers.length<filterCount)modeDescription+=` · 目標${filterCount}個，範圍內共${currentFilteredNumbers.length}個不同號碼，已全部選取`;
             }
 
             const scoringFreq=Selection.frequencies(selectedData,filterMode!=='rank_regular');
             const unseen=currentFilteredNumbers.filter(n=>scoringFreq[n]===0).length;
-            if(unseen&&filterMode!=='random')modeDescription+=` · ${unseen} 碼於此區間未出現，依同頻排序補滿固定總數`;
+            if(unseen&&filterMode!=='random')modeDescription+=` · ${unseen} 碼於此區間未出現`+(filterMode==='cold_hot_balance'?'':'，依同頻排序補滿固定總數');
 
             // 保存頻率信息供其他功能使用
             window.currentNumberFreq = numberFreq;
@@ -663,10 +625,7 @@
             // 顯示篩選出數字的數量
             filteredNumbersCountDiv.textContent = `（共 ${filteredNumbers.length} 個）`;
 
-            currentFilterContext = {startPeriod,endPeriod,maxFrequency,threshold,filterMode,selectionSettings:{version:1,mode:filterMode,count:filteredNumbers.length,train:endPeriod-startPeriod+1,short:filterMode==='blend'?Number(document.getElementById('filter-short-periods').value):1,cold:rankShowColdComplement},dataAsOf:lotteryData[0].draw_date};
-            document.getElementById('pool-train').value=endPeriod-startPeriod+1;
-            document.getElementById('pool-size').value=filteredNumbers.length;
-            document.getElementById('pool-short').value=filterMode==='blend'?Number(document.getElementById('filter-short-periods').value):Math.min(10,endPeriod-startPeriod+1);
+            currentFilterContext = {startPeriod,endPeriod,maxFrequency,threshold,filterMode,selectionSettings:{version:1,mode:filterMode,count:filteredNumbers.length,train:endPeriod-startPeriod+1,short:filterMode==='blend'?Number(document.getElementById('filter-short-periods').value):1,cold:rankShowColdComplement,...(filterMode==='cold_hot_balance'?{balanceRanges:readBalanceRanges(),requestedCount:Number(document.getElementById('filter-count-select').value)}: {})},dataAsOf:lotteryData[0].draw_date};
             updateHistoricalCoverage(startPeriod,filteredNumbers);
 
             // 顯示符合條件的號碼
@@ -1437,7 +1396,7 @@
                             </div>
                         </div>
                         <div class="hf-history-meta">
-                            期數：第 ${item.startPeriod} ~ ${item.endPeriod} 期 | ${item.selectionSettings?'固定 '+item.filteredNumbers.length+' 碼':'舊版保存記錄'}
+                            期數：第 ${item.startPeriod} ~ ${item.endPeriod} 期 | ${item.selectionSettings?'固定 '+item.filteredNumbers.length+' 碼':'舊版保存記錄'}${item.selectionSettings?.balanceRanges?' | '+Selection.balanceRangeText(item.selectionSettings.balanceRanges):''}
                         </div>
                         ${item.drawModeInfo?.mode==='mandel'&&item.drawModeInfo.bets?'':buildHistoryPrizeSummary(item)}
                         <div class="hf-history-random">
@@ -1578,6 +1537,8 @@
             restoreControls(item.controls,document.getElementById('statistics'));
             document.getElementById('draw-repeat-switch').checked=item.controls?.['draw-repeat-switch']===true;
             if(item.filterMode) document.getElementById('filter-mode-select').value = item.filterMode;
+            if(item.filterMode==='cold_hot_balance')restoreBalanceRanges(item.selectionSettings?.balanceRanges||Selection.balanceDefaults);
+            if(item.selectionSettings)document.getElementById('filter-count-select').value=String(item.selectionSettings.requestedCount??item.selectionSettings.count);
             if(item.drawModeInfo?.mode&&item.drawModeInfo.mode!=='unavailable') document.getElementById('draw-mode-select').value = item.drawModeInfo.mode==='fiveBankerFullMeal'?'banker':item.drawModeInfo.mode;
             if(['banker','fiveBankerFullMeal'].includes(item.drawModeInfo?.mode)){document.getElementById('banker-draw-count').value=String(item.drawModeInfo.bankers?.length||5);document.getElementById('runner-draw-count').value=String(item.drawModeInfo.runners?.length||1);}
             if(['banker','fiveBankerFullMeal'].includes(item.drawModeInfo?.mode)&&validStatsBankerDraft(item.drawModeInfo)){statsBankerDraft={bankers:[...item.drawModeInfo.bankers],runners:[...item.drawModeInfo.runners]};statsBankerNotice='已還原歷史膽／腳，可修改後重新生成。';}
@@ -1609,6 +1570,7 @@
             const thresholdInfo = document.getElementById('filter-threshold-info');
             thresholdInfo.textContent = `期數範圍：第 ${item.startPeriod} 期 ~ 第 ${item.endPeriod} 期（共 ${item.endPeriod - item.startPeriod + 1} 期）｜最高出現次數：${item.maxFrequency} 次｜門檻值：${item.threshold} 次｜篩選出 ${item.filteredNumbers.length} 個號碼`;
             if(item.selectionSettings)thresholdInfo.textContent=`期數範圍：第 ${item.startPeriod} ~ ${item.endPeriod} 期｜${Selection.labels[item.filterMode]||'保存選號'}｜固定 ${item.filteredNumbers.length} 碼（原有保存號碼）`;
+            if(item.selectionSettings?.balanceRanges)thresholdInfo.textContent+='｜'+Selection.balanceRangeText(item.selectionSettings.balanceRanges);
             if(item.pairing) thresholdInfo.textContent = `期數範圍：第 ${item.startPeriod} 期 ~ 第 ${item.endPeriod} 期｜排名＋搭配｜最終 ${item.filteredNumbers.length} 碼`;
             
             // 更新篩選出數字的數量

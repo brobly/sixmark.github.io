@@ -245,6 +245,8 @@
             countSelect.disabled = false;
             countSelect.style.opacity = '1';
             document.getElementById('blend-controls').hidden=mode!=='blend';
+            document.getElementById('cold-hot-controls').hidden=mode!=='cold_hot_balance';
+            document.getElementById('cold-hot-error').textContent='';
 
             updateRankColdToggleUI();
             if(refresh && document.getElementById('high-frequency-result').style.display === 'block') filterHighFrequencyNumbers();

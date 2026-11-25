@@ -1,6 +1,6 @@
 /* Live interface snapshots in a script-free frame. Never click or write to the real app. */
 const ScreenLessons={
-'site-intro':[['.tab-nav','先揀你想做嘅事。'],['[data-pane="statistics"]','揀號：準備候選號碼。'],['[data-pane="arrange"]','排注：將號碼排成每注六碼。'],['[data-pane="verification"]','核對：查看每注有冇中獎。']],
+'site-intro':[['.tab-nav','先揀你想做嘅事。'],['[data-pane="statistics"]','揀號：準備候選號碼。'],['[data-pane="studies"]','研究：按範圍逐期驗證候選號碼。'],['[data-pane="verification"]','核對：查看每注有冇中獎。']],
 results:[['.latest-draw','呢度係資料最新一期。'],['.latest-draw .number-ball','前六個係正選號碼。'],['.latest-draw .extra-number-ball','呢個係特別號，獎項會分開計。']],
 search:[['#draw-search','喺呢度輸入期號，例如26/122。','26/122'],['button[onclick*="resultQuery"]','再按「搜尋」。'],['#results-content table','結果會列出符合條件嘅開獎記錄。']],
 range:[['#start-period','第1期代表資料最新一期。','1'],['#end-period','想睇最近20期，就填20。','20'],['.apply-btn','按呢度套用範圍。']],
@@ -30,7 +30,7 @@ legacy:[['#research-plan','揀返你原有方案。'],['#research-results','睇�
 examples:[['button[onclick="BudgetUI.example()"]','按呢度查看163注研究示例。'],['#budget-example','呢度列出完整注碼與成本；有獎不等於回本。']],
 history:[['#filter-history','喺呢度揀返歷史記錄。'],['#filter-history','載入原有注碼再核對，唔會重新抽票。']],
 saved:[['button[onclick="saveSet()"]','按呢度保存目前號碼組。'],['#saved-sets','已保存號碼組會列喺呢度。'],['button[onclick="copySelection()"]','需要貼去其他地方，就按複製號碼。']],
-backup:[['button[onclick="exportWorkspace()"]','一般號碼及舊研究用呢度備份。'],['#ticket-export','新版注碼研究要另外匯出呢份JSON。'],['#import-backup','一般備份用呢度還原；新版用新版研究匯入入口。']]
+backup:[['button[onclick="exportWorkspace()"]','號碼、設定及舊研究用呢度備份。'],['#import-backup','一般備份用呢度還原。']]
 };
 
 const screenBalls=(nums,hits=[])=>nums.map(n=>'<span class="number-ball '+(hits.includes(n)?'screen-example-hit':'')+'">'+n+'</span>').join('');

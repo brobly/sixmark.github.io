@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>六合彩數據工作台</title>
-    <link rel="stylesheet" href="assets/base.css?v=20261117-prospective"><link rel="stylesheet" href="assets/ui.css?v=20261124-repeat-banker-odds">
+    <link rel="stylesheet" href="assets/base.css?v=20261117-prospective"><link rel="stylesheet" href="assets/ui.css?v=20261125-pool-study">
 <link rel="stylesheet" href="assets/tutorials.css?v=20261118-mode-layout">
 <link rel="stylesheet" href="assets/screen-tutorials.css?v=20261118-screen2">
 </head>
@@ -32,33 +32,7 @@
                 <!-- 統計標籤頁 -->
                 <div id="statistics" class="tab-pane">
                     <h2>號碼統計分析</h2>
-<section class="budget-panel" aria-labelledby="budget-title">
-<h3 id="budget-title">固定注數：比較實際中獎機會</h3>
-<p>先定注數及目標，再比較同一號碼池的排注方式。以下為研究及模擬，不會代你投注。</p>
-<div class="budget-grid">
-<label>每期注數<select id="budget-count"><option>5</option><option selected>10</option><option>15</option></select></label>
-<label>主要目標<select id="budget-target"><option value="3">至少一注中3個正選</option><option value="4">至少一注中4個正選</option></select></label>
-<label>探索用號碼池<select id="budget-scope"><option value="all">全49碼</option><option value="selected">按所選方法揀號</option><option value="custom">手動輸入心水池</option></select></label>
-<label id="budget-selection-field" hidden>選號方法<select id="budget-selection"><option value="rank">排名（含特別號）</option><option value="rank_regular">排名（只計正選）</option><option value="blend">長短期混合</option><option value="rank_with_pair">排名＋搭配</option></select></label>
-<label id="budget-size-field" hidden>自動號碼池大小<select id="budget-size"><option>10</option><option>11</option><option selected>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option></select></label>
-<label id="budget-train-field" hidden>選號資料期數<input id="budget-train" type="number" min="1" max="500" value="100"></label>
-<label id="budget-short-field" hidden>混合短期<input id="budget-short" type="number" min="1" max="500" value="10"></label>
-<label>探索重現編號<input id="budget-seed" type="number" min="0" max="4294967295" value="20261118"></label>
-</div>
-<p id="budget-scope-note" class="muted" aria-live="polite">從全49碼排注。</p>
-<label id="budget-custom-field" class="budget-custom" hidden>心水號碼（以空格或逗號分隔）<input id="budget-custom" value="1 5 8 12 16 20 24 28 32 36 40 45"></label>
-<div class="search-row"><button id="budget-generate" onclick="BudgetUI.generate()">產生並比較兩組注碼</button><button id="budget-export" onclick="BudgetUI.exportBets()" disabled>匯出完整注碼 JSON</button></div>
-<p id="budget-status" role="status" aria-live="polite"></p><div id="budget-output"></div>
-<div class="search-row"><label>核對歷史一期 <select id="budget-draw"></select></label><button id="budget-check" onclick="BudgetUI.check()" disabled>核對這兩組注碼</button></div><div id="budget-check-result"></div>
-<details><summary>覆蓋方案：保證條件與整體機會</summary><p>12碼15注完整三碼覆蓋：池內有至少3個正選，至少一注中3個。此模板已逐一核對220種三碼組合。公平攪珠下，固定12碼完整覆蓋的整體中獎機會約14.8%；全49碼隨機15張不同注碼的平均機會約24.6%。兩者條件不同。</p><p>現有Mandel標準版覆蓋池內五碼組合：池內至少5個正選，至少一注中5個。刪注過濾會損失原覆蓋保證。</p><p><a href="https://combinatorialpress.com/ars-articles/volume-040-ars-articles/minimum-12-6-3-covers/" target="_blank" rel="noopener">12碼15注研究</a> · <a href="https://groups.google.com/g/rec.gambling.lottery/c/h9mVQc_rY3c" target="_blank" rel="noopener">163注原始來源</a></p><button onclick="BudgetUI.example()">查看49碼163注研究示例</button><div id="budget-example"></div></details>
-<hr><h3>新版前瞻：同注數，逐期比較中獎</h3>
-<p>開獎前鎖定五組注碼，資料更新後再核對。</p>
-<p id="ticket-config-summary"></p>
-<button type="button" onclick="BudgetUI.configureStudy()">設定研究選號及注數</button>
-<div class="search-row"><label>預定評估期數 <input id="budget-horizon" type="number" min="20" max="500" value="120"></label><label>新版研究方案 <select id="ticket-plan" onchange="BudgetUI.renderStudy()"><option value="new">建立新版研究</option></select></label><button id="ticket-create" onclick="BudgetUI.save(true)">鎖定新方案及首期五組注碼</button><button id="ticket-next" onclick="BudgetUI.save(false)" disabled>保存下一期五組注碼</button><button onclick="BudgetUI.renderStudy()">更新結果</button></div>
-<p id="ticket-status" role="status" aria-live="polite"></p><div id="ticket-results"></div>
-<div class="search-row"><button id="ticket-export" onclick="BudgetUI.exportStudy()" disabled>匯出新版研究 JSON</button><button id="ticket-csv" onclick="BudgetUI.csv()" disabled>匯出逐期 CSV</button><label>匯入新版備份 <input type="file" accept=".json,application/json" onchange="BudgetUI.importStudy(this)"></label></div>
-</section>
+
 
                     <div class="stats-controls">
                         <div class="range-selection">
@@ -116,7 +90,7 @@
                                                 <option value="cold_hot_balance">冷熱平衡</option>
                                                 <option value="random">純隨機</option>
                                             </select>
-                                            <select id="filter-count-select" aria-label="最終篩選號碼數" title="所有模式均以此數量作最終號碼總數" class="filter-count-select-sm" onchange="updateFilterModeDescription()">
+                                            <select id="filter-count-select" aria-label="最終篩選號碼數" title="目標號碼總數；冷熱平衡若範圍內號碼不足，會選取全部可用號碼" class="filter-count-select-sm" onchange="updateFilterModeDescription()">
 <option value="6">6個</option>
 <option value="7">7個</option>
 <option value="8">8個</option>
@@ -166,6 +140,23 @@
                                         </div>
                                     </div>
                                     <div id="blend-controls" hidden><label for="filter-short-periods">混合短期期數</label> <input id="filter-short-periods" type="number" min="1" value="10" onchange="updateFilterModeDescription()"><p class="muted">短期使用所選範圍中最新的幾期；長期使用整個所選範圍。兩邊先按期數換算頻率，再各佔50%；短期亦包含在長期內。例如長期20／短期10，最近10期合計佔75%權重，其餘10期佔25%。</p></div>
+                                    <div id="cold-hot-controls" class="cold-hot-controls" hidden>
+                                        <div class="cold-hot-range-row" role="group" aria-labelledby="hot-range-label">
+                                            <strong id="hot-range-label">最熱排名</strong>
+                                            <label>由 <input id="filter-hot-start" type="number" min="1" max="49" step="1" value="1" aria-label="最熱起始名次"></label>
+                                            <span>–</span>
+                                            <label><input id="filter-hot-end" type="number" min="1" max="49" step="1" value="25" aria-label="最熱結束名次"> 名</label>
+                                        </div>
+                                        <div class="cold-hot-range-row" role="group" aria-labelledby="cold-range-label">
+                                            <strong id="cold-range-label">最冷排名</strong>
+                                            <label>由 <input id="filter-cold-start" type="number" min="1" max="49" step="1" value="1" aria-label="最冷起始名次"></label>
+                                            <span>–</span>
+                                            <label><input id="filter-cold-end" type="number" min="1" max="49" step="1" value="24" aria-label="最冷結束名次"> 名</label>
+                                        </div>
+                                        <p class="muted">最熱第1名為出現最多，最冷第1名為出現最少。按所選期數計算，含特別號；同頻時熱榜按號碼由小至大，冷榜為倒序。優先兩邊各抽一半，一邊不足由另一邊補足；合共不足就選取範圍內全部號碼，重複號碼只計一次。</p>
+                                        <button type="button" onclick="filterHighFrequencyNumbers()">套用排名範圍</button>
+                                        <p id="cold-hot-error" class="error" role="alert"></p>
+                                    </div>
                                     <div class="hf-filter-info">
                                         <strong>篩選條件：</strong>
                                         <span id="filter-threshold-info" class="hf-highlight-text"></span>
@@ -337,64 +328,40 @@
                             </div>
                         </div>
                     </div>
-                    <section id="pool-comparison" class="backtest">
-                        <h3>固定碼數：較新一期命中比較</h3>
-                        <p class="ux-purpose">四種揀號方法＋全49碼，同注數比較隨機排注及覆蓋搜尋。</p>
-                        <div class="search-row">
-                            <label>每期選號用前幾期 <input id="pool-train" type="number" min="1" value="100"></label>
-                            <label>混合短期 <input id="pool-short" type="number" min="1" value="10"></label>
-                            <label>每次選幾碼 <input id="pool-size" type="number" min="6" max="49" value="10"></label>
-                            <label>核對最近幾期 <input id="pool-periods" type="number" min="1" value="100"></label>
-                            <label>每法每期注數 <select id="pool-tickets"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option selected>10</option></select></label>
-                            <button id="compare-pool-selections" onclick="comparePoolSelections()">逐期比較</button>
-                            <button id="cancel-pool-comparison" onclick="cancelPoolComparison()" hidden>取消</button>
-                            <button id="export-pool-comparison" onclick="exportPoolComparison()" disabled>匯出逐期注碼 CSV</button>
-                        </div>
-                        <p class="muted">每期重新揀號、重新排注，只用開獎前資料；全49碼兩組亦每期重排。每注6碼，同組不重複。</p>
-                        <label>比較指標 <select id="pool-ticket-goal" onchange="renderPoolComparison()"><option value="hit3">至少一注中3個或以上：期數</option><option value="hit4">至少一注中4個或以上：期數</option><option value="winningTickets">中3個或以上：總注數</option></select></label>
-                        <p id="pool-comparison-status" role="status" aria-live="polite"></p>
-                        <div id="pool-comparison-results"></div>
-                        <details><summary>只看號碼池命中（未計排注）</summary>
-                            <label>號碼池排序 <select id="pool-goal" onchange="renderPoolComparison()"><option value="mean">平均命中正選</option><option value="hit3">中3碼或以上期數</option><option value="hit4">中4碼或以上期數</option></select></label>
-                            <div id="pool-only-results"></div>
-                        </details>
+                    <section id="rolling-study" class="rolling-study" aria-labelledby="rolling-title">
+                        <h3 id="rolling-title" data-taught="1">逐期驗證</h3>
+                        <p data-concise="1">用指定期數範圍選出候選號碼，核對緊接較新一期，再逐期往舊推，統計每種篩選方式的歷史命中比例。</p>
+                        <fieldset id="rolling-settings">
+                            <legend>選號及驗證設定</legend>
+                            <div class="rolling-settings-grid">
+                                <label>首次選號：最近第幾期起<input id="rolling-start" type="number" min="2" step="1" value="2"></label>
+                                <label>首次選號：最近第幾期止<input id="rolling-end" type="number" min="2" step="1" value="101"></label>
+                                <label>每次目標號碼數<input id="rolling-count" type="number" min="6" max="49" step="1" value="14"></label>
+                                <label>逐期驗證幾期<input id="rolling-periods" type="number" min="1" step="1" value="100"></label>
+                            </div>
+                            <p id="rolling-range-note" class="muted" aria-live="polite"></p>
+                            <fieldset class="rolling-methods">
+                                <legend>篩選方式（可同時比較）</legend>
+                                <label><input id="rolling-method-rank" type="checkbox" checked> 排名模式（熱門）</label>
+                                <label><input id="rolling-method-rank_cold" type="checkbox" checked> 排名模式（冷門）</label>
+                                <label><input id="rolling-method-rank_regular" type="checkbox" checked> 純排名（只計正選）</label>
+                                <label><input id="rolling-method-blend" type="checkbox" checked> 長短期混合</label>
+                                <label><input id="rolling-method-rank_with_pair" type="checkbox" checked> 排名＋搭配</label>
+                                <label><input id="rolling-method-cold_hot_balance" type="checkbox" checked> 冷熱平衡</label>
+                                <label><input id="rolling-method-random" type="checkbox" checked> 純隨機</label>
+                            </fieldset>
+                            <div id="rolling-blend-controls" class="rolling-option"><label>混合短期期數 <input id="rolling-short" type="number" min="1" step="1" value="10"></label><p class="muted">使用所選範圍中最新幾期，與整個範圍各佔50%權重。</p></div>
+                            <div id="rolling-balance-controls" class="cold-hot-controls">
+                                <div class="cold-hot-range-row" role="group" aria-label="研究最熱排名範圍"><strong>最熱排名</strong><label>由 <input id="rolling-hot-start" aria-label="研究最熱起始名次" type="number" min="1" max="49" step="1" value="1"></label><span>–</span><label><input id="rolling-hot-end" aria-label="研究最熱結束名次" type="number" min="1" max="49" step="1" value="25"> 名</label></div>
+                                <div class="cold-hot-range-row" role="group" aria-label="研究最冷排名範圍"><strong>最冷排名</strong><label>由 <input id="rolling-cold-start" aria-label="研究最冷起始名次" type="number" min="1" max="49" step="1" value="1"></label><span>–</span><label><input id="rolling-cold-end" aria-label="研究最冷結束名次" type="number" min="1" max="49" step="1" value="24"> 名</label></div>
+                                <p class="muted" data-concise="1">最熱／最冷第1名分別為出現最多／最少。優先兩邊各抽一半，一邊不足由另一邊補足；合共不足就取範圍內全部號碼，重複只計一次。</p>
+                            </div>
+                            <p class="muted" data-concise="1">除「只計正選」外，排名均包含特別號。同頻時熱榜按號碼由小至大，冷熱平衡的冷榜為熱榜倒序。隨機及冷熱平衡每期抽一次，相同資料及設定可重現結果。</p>
+                        </fieldset>
+                        <div class="search-row"><button id="rolling-run" onclick="RollingStudyUI.run()">開始逐期驗證</button><button id="rolling-cancel" onclick="RollingStudyUI.cancel()" hidden>取消</button><button id="rolling-export" onclick="RollingStudyUI.exportCSV()" disabled>匯出明細及機率 CSV</button></div>
+                        <p id="rolling-status" role="status" aria-live="polite"></p>
+                        <div id="rolling-results"></div>
                     </section>
-                    <section id="research-panel" class="backtest">
-                        <h3>前瞻研究：固定規則，逐期比較</h3>
-                        <p>每期同時保存「純排名、只計正選、長短期混合」三組 10 碼。主要目標固定為<strong>號碼池中至少 3 個正選</strong>；完整注碼、注數及規則一併鎖定。</p>
-                        <label for="research-plan">研究方案</label>
-                        <select id="research-plan" onchange="renderResearch(this.value)"><option value="new">建立新方案</option></select>
-                        <div class="search-row research-settings">
-                            <label>每期選號用前幾期 <input id="research-train" type="number" min="1" max="500" value="20" onchange="updateResearchDraft()"></label>
-                            <label>混合短期 <input id="research-short" type="number" min="1" max="500" value="10" onchange="updateResearchDraft()"></label>
-                            <label>評估其後連續幾期 <input id="research-horizon" type="number" min="20" max="500" value="100" onchange="updateResearchDraft()"></label>
-                            <label>三組共用注碼方式 <select id="research-bet-mode" onchange="updateResearchDraft()"><option value="sample">固定注數（同預算）</option><option value="mandel">Mandel 標準濃縮</option></select></label>
-                            <label>每方法每期注數 <input id="research-tickets" type="number" min="1" max="210" value="10" onchange="updateResearchDraft()"></label>
-                        </div>
-                        <p id="research-draft-summary"></p>
-                        <div class="research-actions">
-                            <button id="research-create" onclick="saveResearch(true)">鎖定方案及首期選號</button>
-                            <button id="research-lock" onclick="saveResearch(false)" hidden>保存下一期三組選號及注碼</button>
-                            <button onclick="renderResearch()">更新核對顯示</button>
-                            <button id="research-csv" onclick="exportResearchCSV()">匯出逐期 CSV</button>
-                            <button id="research-export" onclick="exportResearch()">匯出研究備份</button>
-                            <label class="research-import">匯入研究備份 <input id="research-import" type="file" accept=".json,application/json" onchange="importResearchFile(this)"></label>
-                        </div>
-                        <p id="research-status" role="status" aria-live="polite"></p>
-                        <details class="research-help"><summary>每期怎樣用？</summary><ol><li>首次設定期數及注數，鎖定方案；開始後不能改規則或重抽。</li><li>每次手動更新開獎資料後，按「更新核對顯示」，再保存下一期的三組選號。</li><li>必須在開獎日前保存；同日保存因欠缺精確開獎時間而保守排除。漏存不補選，亦不延長原定評估期數。</li><li>完成預定期數後一起評估三種方法。次要指標不取代原先主要目標，100 期亦不代表足以證明有效。</li></ol><p>全部為研究模擬，沒有代為下注。記錄只存於此瀏覽器，請定期匯出備份；本機時間沒有第三方驗證。網站不會自動下載開獎資料。研究備份亦包含於「核對中獎 → 匯出備份」。</p></details>
-                        <div id="research-results"></div>
-                    </section>
-                    <section id="forecast-panel" class="backtest">
-                        <h3>個別預存記錄（只比較號碼池）</h3>
-                        <p>先以最新一期為起點篩選，再保存目前號碼池。同一基準期只保存第一筆，並一併保存同碼數的純排名作比較。新增開獎資料後，會核對基準期緊接的下一期。</p>
-                        <button onclick="saveForecast()">鎖定目前篩選，等待下一期</button>
-                        <button onclick="renderForecasts()">更新核對顯示</button>
-                        <button onclick="exportForecasts()">匯出預存記錄 CSV</button>
-                        <p id="forecast-status" role="status"></p>
-                        <p class="muted">記錄保存在此瀏覽器，並納入「核對中獎 → 匯出備份」。本機時間及匯入檔案沒有獨立時間驗證；只把保存日期早於開獎日期的記錄納入前瞻統計。同日或較後保存只列為補錄。網站不會自動下載新開獎資料。</p>
-                        <div id="forecast-results"></div>
-                    </section>
-                    <section id="pair-comparison" class="backtest"></section>
                     <div id="stats-content" class="loading">正在載入統計數據...</div>
                 </div>
 
@@ -762,27 +729,28 @@
 <script src="assets/selection-odds.js?v=20261124-repeat-banker-odds"></script>
 <script src="assets/selection-odds-ui.js?v=20261124-repeat-banker-odds"></script>
 <script src="assets/pairing.js?v=20261117-prospective"></script>
-<script src="assets/selection.js?v=20261118-blend-tie-fix"></script>
-<script src="assets/forecast.js?v=20261117-prospective"></script>
-<script src="assets/storage.js?v=20261123-odds"></script>
-<script src="assets/app.js?v=20261117-prospective"></script>
-<script src="assets/statistics.js?v=20261124-repeat-banker-odds"></script>
+<script src="assets/selection.js?v=20261125-flexible-cold-hot"></script>
+<script src="assets/forecast.js?v=20261125-cold-hot-ranges"></script>
+<script src="assets/storage.js?v=20261125-flexible-cold-hot"></script>
+<script src="assets/app.js?v=20261125-cold-hot-ranges"></script>
+<script src="assets/statistics.js?v=20261125-pool-study"></script>
 <script src="assets/mandel-engine.js?v=20261117-prospective"></script>
 <script src="assets/mandel.js?v=20261118-budget"></script>
-<script src="assets/ui.js?v=20261124-repeat-banker-odds"></script>
-<script src="assets/pairing-ui.js?v=20261124-repeat-banker-odds"></script>
-<script src="assets/selection-ui.js?v=20261124-repeat-banker-odds"></script>
+<script src="assets/ui.js?v=20261125-pool-study"></script>
+<script src="assets/pairing-ui.js?v=20261125-pool-study"></script>
+<script src="assets/selection-ui.js?v=20261125-pool-study"></script>
 <script src="assets/research-build.js?v=20261118-blend-tie-fix"></script>
 <script src="assets/research.js?v=20261117-prospective"></script>
-<script src="assets/research-ui.js?v=20261124-repeat-banker-odds"></script>
+<script src="assets/research-ui.js?v=20261125-pool-study"></script>
 <script src="assets/cover-templates.js?v=20261118-budget"></script>
 <script src="assets/budget.js?v=20261118-rolling49"></script>
 <script src="assets/pool-comparison.js?v=20261118-rolling49"></script>
 <script src="assets/ticket-research.js?v=20261118-pool20"></script>
 <script src="assets/ticket-build.js?v=20261118-rolling49"></script>
-<script src="assets/budget-ui.js?v=20261124-repeat-banker-odds"></script>
+<script src="assets/rolling-study.js?v=20261125-pool-study"></script>
+<script src="assets/rolling-study-ui.js?v=20261125-pool-study"></script>
 <script src="assets/tutorials.js?v=20261118-rolling49"></script>
-<script src="assets/ux-navigation.js?v=20261118-mode-layout"></script>
-<script src="assets/screen-tutorials.js?v=20261118-rolling49"></script>
+<script src="assets/ux-navigation.js?v=20261125-pool-study"></script>
+<script src="assets/screen-tutorials.js?v=20261125-pool-study"></script>
 </body>
 </html> 

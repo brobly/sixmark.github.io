@@ -50,7 +50,8 @@ function saveForecast(){
  try{
   const ctx=currentFilterContext,s=ctx?.selectionSettings;
   if(!s||s.version!==1||ctx.startPeriod!==1||ctx.dataAsOf!==lotteryData[0].draw_date||!Engine.validNumbers(currentFilteredNumbers,6,49))throw Error('請先以最新第1期為起點，重新篩選目前要保存的號碼。');
-  if(Number($('start-period').value)!==ctx.startPeriod||Number($('end-period').value)!==ctx.endPeriod||$('filter-mode-select').value!==s.mode||Number($('filter-count-select').value)!==s.count||(s.mode==='blend'&&Number($('filter-short-periods').value)!==s.short)||rankShowColdComplement!==s.cold)throw Error('設定已更改，請先重新篩選再鎖定。');
+  if(Number($('start-period').value)!==ctx.startPeriod||Number($('end-period').value)!==ctx.endPeriod||$('filter-mode-select').value!==s.mode||Number($('filter-count-select').value)!==(s.requestedCount??s.count)||(s.mode==='blend'&&Number($('filter-short-periods').value)!==s.short)||rankShowColdComplement!==s.cold)throw Error('設定已更改，請先重新篩選再鎖定。');
+  if(s.mode==='cold_hot_balance'&&(!s.balanceRanges||Object.entries(readBalanceRanges()).some(([key,value])=>s.balanceRanges[key]!==value)))throw Error('冷熱排名範圍已更改，請先重新篩選再鎖定。');
   const stored=Store.get('forecasts',[]);if(!Forecast.validList(stored))throw Error('預存記錄格式損壞，請保留備份檔，暫不加入新記錄。');
   const records=stored;
   if(records.some(r=>r.anchorDraw===lotteryData[0].draw_number&&r.anchorDate===lotteryData[0].draw_date))throw Error('此基準期已鎖定第一筆選號，不能覆寫或重複加入。');
@@ -60,7 +61,7 @@ function saveForecast(){
   renderForecasts();$('forecast-status').textContent=`已鎖定 ${record.numbers.length} 碼，等待 ${record.anchorDraw} 之後緊接的一期。`;
  }catch(e){$('forecast-status').textContent=e.message;}
 }
-function forecastLabel(r){return `${Selection.labels[r.mode]}${r.cold?'（冷門）':''} · ${r.numbers.length}碼／${r.train}期${r.mode==='blend'?'／短期'+r.short+'期':''}`;}
+function forecastLabel(r){return `${Selection.labels[r.mode]}${r.cold?'（冷門）':''} · ${r.numbers.length}碼／${r.train}期${r.mode==='blend'?'／短期'+r.short+'期':''}${r.balanceRanges?' · '+Selection.balanceRangeText(r.balanceRanges):''}`;}
 function renderForecasts(){
  const records=forecastRecords(),resolved=records.map(r=>({r,result:Forecast.resolve(r,lotteryData)})),settled=resolved.filter(x=>x.result.status==='settled'),groups=new Map();
  for(const x of settled){const key=forecastLabel(x.r);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(x);}
@@ -68,4 +69,4 @@ function renderForecasts(){
  $('forecast-results').innerHTML=`<p>共 ${records.length} 筆；已完成並可計前瞻 ${settled.length} 筆；等待 ${resolved.filter(x=>x.result.status==='pending').length} 筆。各組只比較相同設定及同一批核對期。</p>${[...groups].map(([label,items])=>`<h4>${escapeText(label)}</h4>${poolMetricTable([{label:'預先鎖定選號',summary:Selection.summary(items.map(x=>x.result))},{label:'同碼數純排名基準（保存時一併鎖定）',summary:Selection.summary(items.map(x=>x.result.baseline))}])}`).join('')}${!records.length?'<p class="empty-state">尚未預先保存選號。</p>':`<details open><summary>最近 ${Math.min(20,records.length)} 筆記錄（CSV可匯出全部）</summary><div class="table-scroll"><table class="results-table"><thead><tr><th>保存時間／基準期</th><th>方法及鎖定號碼</th><th>核對期</th><th>正選／特別號</th><th>狀態</th></tr></thead><tbody>${resolved.slice(0,20).map(({r,result})=>`<tr><td>${escapeText(r.createdAt)}<br>${r.anchorDraw} · ${r.anchorDate}</td><td>${escapeText(forecastLabel(r))}<br>${r.numbers.join('、')}</td><td>${result.draw?result.draw.draw_number+' · '+result.draw.draw_date:'—'}</td><td>${result.draw?result.hits+' / 6；特別號'+(result.extra?'有':'無'):'—'}</td><td>${status[result.status]}</td></tr>`).join('')}</tbody></table></div></details>`}`;
 }
 function exportForecasts(){const rows=forecastRecords();download('預先保存選號.csv',['保存時間,基準期,基準日期,模式,選號期數,短期期數,號碼池,基準號碼池,核對期,核對日期,命中正選,中特別號,基準命中正選,狀態',...rows.map(r=>{const s=Forecast.resolve(r,lotteryData);return [r.createdAt,r.anchorDraw,r.anchorDate,forecastLabel(r),r.train,r.short,r.numbers.join(' '),r.baseline.join(' '),s.draw?.draw_number||'',s.draw?.draw_date||'',s.hits??'',s.extra??'',s.baseline?.hits??'',s.status].join(',');})].join('\n'),'text/csv');}
-document.addEventListener('DOMContentLoaded',renderForecasts);
+document.addEventListener('DOMContentLoaded',()=>{if($('forecast-panel'))renderForecasts();});

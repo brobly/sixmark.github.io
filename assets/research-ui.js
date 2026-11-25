@@ -85,4 +85,4 @@ async function exportResearchCSV(){
   download('前瞻研究逐期記錄.csv','\uFEFF'+rows.map(row=>row.map(value=>'"'+String(value).replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv');
  }catch(e){$('research-status').textContent=e.message;}
 }
-document.addEventListener('DOMContentLoaded',()=>renderResearch());
+document.addEventListener('DOMContentLoaded',()=>{if($('research-panel'))renderResearch();});

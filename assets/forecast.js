@@ -2,11 +2,12 @@
 const Forecast = ((engine,selection)=>{
  const day=value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)&&Number.isFinite(Date.parse(value))&&new Date(value).toISOString().slice(0,10)===value;
  const hkDay=value=>{const t=Date.parse(value);return Number.isFinite(t)?new Date(t+8*3600000).toISOString().slice(0,10):'';};
- function valid(r){return !!r&&r.version===1&&r.algorithmVersion===1&&typeof r.createdAt==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(r.createdAt)&&Number.isFinite(Date.parse(r.createdAt))&&r.savedDay===hkDay(r.createdAt)&&day(r.anchorDate)&&r.savedDay>=r.anchorDate&&typeof r.anchorDraw==='string'&&/^\d{2}\/\d{3}$/.test(r.anchorDraw)&&engine.validNumbers(r.numbers,6,49)&&engine.validNumbers(r.baseline,r.numbers.length,r.numbers.length)&&Object.hasOwn(selection.labels,r.mode)&&Number.isInteger(r.train)&&r.train>=1&&r.train<=10000&&Number.isInteger(r.short)&&r.short>=1&&r.short<=r.train&&typeof r.cold==='boolean';}
+ function valid(r){return !!r&&r.version===1&&r.algorithmVersion===1&&typeof r.createdAt==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(r.createdAt)&&Number.isFinite(Date.parse(r.createdAt))&&r.savedDay===hkDay(r.createdAt)&&day(r.anchorDate)&&r.savedDay>=r.anchorDate&&typeof r.anchorDraw==='string'&&/^\d{2}\/\d{3}$/.test(r.anchorDraw)&&engine.validNumbers(r.numbers,6,49)&&engine.validNumbers(r.baseline,r.numbers.length,r.numbers.length)&&Object.hasOwn(selection.labels,r.mode)&&Number.isInteger(r.train)&&r.train>=1&&r.train<=10000&&Number.isInteger(r.short)&&r.short>=1&&r.short<=r.train&&typeof r.cold==='boolean'&&(r.balanceRanges===undefined||(r.mode==='cold_hot_balance'&&selection.validBalanceRanges(r.balanceRanges)));}
  function validList(records){return Array.isArray(records)&&records.length<=500&&records.every(valid)&&new Set(records.map(r=>r.anchorDraw+'|'+r.anchorDate)).size===records.length;}
- function create(data,{numbers,mode,train,short=1,cold=false},now=new Date().toISOString()){
+ function create(data,{numbers,mode,train,short=1,cold=false,balanceRanges},now=new Date().toISOString()){
   if(!Number.isInteger(train)||train<1||train>data.length)throw Error('選號範圍無效。');
   const r={version:1,algorithmVersion:1,createdAt:now,savedDay:hkDay(now),anchorDraw:data[0].draw_number,anchorDate:data[0].draw_date,numbers:[...numbers],baseline:selection.select(data.slice(0,train),{mode:'rank',count:numbers.length}),mode,train,short,cold:!!cold};
+  if(mode==='cold_hot_balance'&&balanceRanges!==undefined)r.balanceRanges={...balanceRanges};
   if(!valid(r)||r.savedDay<r.anchorDate)throw Error('保存資料或本機日期無效，請檢查日期及選號。');
   return r;
  }

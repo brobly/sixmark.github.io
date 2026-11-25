@@ -2,6 +2,29 @@
 const Selection = ((engine,pairing)=>{
  const labels={default:'純排名（含特別號）',rank:'純排名（含特別號）',rank_regular:'純排名（只計正選）',blend:'長短期混合（含特別號）',rank_with_pair:'排名＋搭配',cold_hot_balance:'冷熱平衡'};
  function frequencies(rows,extra=true){const scores=Array(50).fill(0);for(const d of rows)for(const n of [...d.numbers,...(extra?[d.extra_number]:[])])scores[n]++;return scores;}
+ const balanceDefaults={hotStart:1,hotEnd:25,coldStart:1,coldEnd:24};
+ function validBalanceRanges(r){return !!r&&['hot','cold'].every(k=>Number.isInteger(r[k+'Start'])&&Number.isInteger(r[k+'End'])&&r[k+'Start']>=1&&r[k+'Start']<=r[k+'End']&&r[k+'End']<=49);}
+ function balanceRangeText(r){return `最熱第${r.hotStart}–${r.hotEnd}名／最冷第${r.coldStart}–${r.coldEnd}名`;}
+ function balanced(rows,count,ranges=balanceDefaults,random=Math.random){
+  if(!Array.isArray(rows)||!rows.length||!Number.isInteger(count)||count<6||count>49)throw Error('請選擇6–49個號碼及有效資料範圍。');
+  if(!validBalanceRanges(ranges))throw Error('排名範圍須為1–49的整數，起始名次不可大於結束名次。');
+  const scores=frequencies(rows),ranked=Array.from({length:49},(_,i)=>i+1).sort((a,b)=>scores[b]-scores[a]||a-b);
+  const hotPool=ranked.slice(ranges.hotStart-1,ranges.hotEnd),coldPool=[...ranked].reverse().slice(ranges.coldStart-1,ranges.coldEnd);
+  const targetCount=Math.min(count,new Set([...hotPool,...coldPool]).size);
+  // Keep the split as even as possible, filling a short side from the other range.
+  const hotCount=Math.min(hotPool.length,Math.max(Math.ceil(targetCount/2),targetCount-coldPool.length)),coldCount=targetCount-hotCount;
+  const shuffle=pool=>{const a=[...pool];for(let i=a.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+  // Reserve enough shared candidates for the cold quota when the ranges overlap.
+  const hot=[];let shared=0;
+  for(const n of shuffle(hotPool)){
+   const inCold=coldPool.includes(n);
+   if(inCold&&coldPool.length-shared<=coldCount)continue;
+   hot.push(n);if(inCold)shared++;
+   if(hot.length===hotCount)break;
+  }
+  const cold=shuffle(coldPool.filter(n=>!hot.includes(n))).slice(0,coldCount);
+  return {numbers:[...hot,...cold].sort((a,b)=>a-b),hot,cold};
+ }
  function select(rows,{mode='rank',count=10,short=10,cold=false}={}){
   if(!Array.isArray(rows)||!rows.length||!Number.isInteger(count)||count<6||count>49)throw Error('請選擇6–49個號碼及有效資料範圍。');
   if(!['default','rank','rank_regular','blend','rank_with_pair'].includes(mode))throw Error('不支援此比較方法。');
@@ -30,6 +53,6 @@ const Selection = ((engine,pairing)=>{
   }
   return rows;
  }
- return {labels,frequencies,select,hits,summary,baseline,compare,blendWeightText};
+ return {labels,frequencies,select,hits,summary,baseline,compare,blendWeightText,balanceDefaults,validBalanceRanges,balanceRangeText,balanced};
 })(typeof module!=='undefined'?require('./core.js'):Engine,typeof module!=='undefined'?require('./pairing.js'):Pairing);
 if(typeof module!=='undefined')module.exports=Selection;

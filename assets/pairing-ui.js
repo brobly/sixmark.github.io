@@ -40,6 +40,7 @@ function exportPairComparison(){if(!pairComparisonRows.length)return;download('�
 document.addEventListener('DOMContentLoaded',()=>{
  const host=document.getElementById('pair-comparison');
  updateDrawModeUI(false);
+ if(!host)return;
  host.innerHTML='<h3>排名與搭配策略比較 · 歷史回測</h3><p>固定號碼池、注數及成本，以更早資料選號，再核對下一期。包含正選及特別號的歷史頻率。</p><div class="search-row"><label>訓練期數 <input id="pair-train" type="number" min="1" value="100"></label><label>驗證期數 <input id="pair-periods" type="number" min="20" value="120"></label><label>最終號碼數 <input id="pair-size" type="number" min="6" max="20" value="12"></label><label>每期注數 <input id="pair-bets" type="number" min="1" max="10" value="5"></label><button id="compare-pairs" onclick="comparePairStrategies()">比較四種方法</button><button id="export-pairs" onclick="exportPairComparison()" disabled>匯出比較 CSV</button></div><div id="pair-comparison-result" role="status" aria-live="polite"></div>';
  const saved=Store.get('workspace',{}).controls||{};
  for(const id of ['pair-train','pair-periods','pair-size','pair-bets'])if(saved[id]!==undefined)document.getElementById(id).value=String(saved[id]);
