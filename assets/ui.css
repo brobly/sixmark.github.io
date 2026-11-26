@@ -121,6 +121,22 @@
 .rolling-balls{display:flex;flex-wrap:wrap;gap:5px;max-width:360px}
 .rolling-ball{display:inline-flex;align-items:center;justify-content:center;width:29px;height:29px;border-radius:50%;background:#eeeafa;color:#51409b;font-size:.85rem}
 .rolling-hit{background:#d8f1e4;color:#175b3c;font-weight:700}.rolling-extra{background:#ffe7c2;color:#814400;font-weight:700}
+.rolling-interval-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:16px 0 24px;align-items:start}
+.rolling-interval-card{min-width:0;border:1px solid #d9d3eb;border-radius:10px;padding:16px;background:#faf9ff}
+.rolling-interval-card h5{font-size:1.1rem;margin:0 0 12px;color:#51409b}
+.rolling-interval-card p{margin:8px 0}.rolling-interval-card .muted{font-size:.875rem}
+.rolling-interval-average strong{display:block;font-size:1.7rem;color:var(--ink);font-variant-numeric:tabular-nums}
+.rolling-interval-records{margin-top:12px;border-top:1px solid #d9d3eb}.rolling-interval-records summary{font-size:.95rem}
+.rolling-interval-help summary{padding:8px 0;color:#51409b;font-size:.875rem}
+.rolling-interval-help p{margin:0 0 12px;font-size:.875rem}
+.rolling-interval-timeline{display:grid;gap:8px;list-style:none;padding:0;margin:12px 0}
+.rolling-interval-timeline li{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;border:1px solid #e4dff1;border-radius:8px;padding:10px 12px;background:#fff}
+.rolling-interval-hit{min-width:0;overflow-wrap:anywhere}
+.rolling-interval-hit strong{display:block;font-size:1rem}.rolling-interval-hit small{display:flex;flex-wrap:wrap;gap:0 8px;color:var(--muted);font-size:.875rem}
+.rolling-interval-gap{font-size:.875rem;font-weight:600;color:#51409b;background:#eeeafa;border-radius:6px;padding:4px 8px;white-space:nowrap}
+.rolling-interval-consecutive{color:#175b3c;background:#d8f1e4}
+.rolling-interval-first{color:#596579;background:#f0f2f6;font-weight:400}
+@media(max-width:768px){.rolling-interval-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:768px){.rolling-settings-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rolling-study fieldset{padding:12px}.rolling-methods{gap:12px}}
 @media(max-width:420px){.rolling-settings-grid{grid-template-columns:1fr}}
 @media(max-width:768px){.hf-mode-inline{max-width:100%;flex-wrap:wrap}.hf-mode-inline select{max-width:100%}}

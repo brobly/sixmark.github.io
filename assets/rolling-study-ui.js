@@ -15,6 +15,19 @@ const RollingStudyUI=(()=>{
   const values=kind==='exact'?RollingStudy.levels:RollingStudy.thresholds;
   return `<div class="table-scroll"><table class="results-table rolling-table"><thead><tr><th scope="col">${kind==='exact'?'恰好命中':'至少命中'}</th>${result.groups.map(g=>`<th scope="col">${esc(RollingStudy.labels[g.mode])}<small>${g.minSize===g.maxSize?g.minSize:`${g.minSize}–${g.maxSize}`} 個候選號碼</small></th>`).join('')}</tr></thead><tbody>${values.map((score,i)=>`<tr><th scope="row">${score} 字${kind==='exact'?'':'以上'}${score===6.5?'<small>6正選＋特別號</small>':''}</th>${result.groups.map(g=>`<td>${cell(g[kind][i],g.total)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
  }
+ function intervalCard(item){
+  const calculation=item.intervalCount?`間隔合計 ${item.totalGap} 期 ÷ ${item.intervalCount} 個完整間隔。`:'至少出現2次才可計算平均間隔。';
+  const records=item.count?`<details class="rolling-interval-records"><summary>查看全部 ${item.count} 次出現紀錄</summary>
+   <p class="muted">${item.leadingGap?`由範圍起點第${item.startPeriod}期起，先有 ${item.leadingGap} 期未達標。`:`範圍起點第${item.startPeriod}期已達標。`}</p>
+   <ol class="rolling-interval-timeline" aria-label="${item.threshold}字以上出現紀錄">${item.occurrences.map(r=>`<li><span class="rolling-interval-hit"><strong>第${r.period}期 · ${r.score} 字</strong><small><span>${esc(r.draw)}</span><time datetime="${esc(r.date)}">${esc(r.date)}</time></small></span><span class="rolling-interval-gap${r.gap===null?' rolling-interval-first':r.gap===0?' rolling-interval-consecutive':''}"${r.gap===null?'':' title="與上一筆達標紀錄的間隔"'}>${r.gap===null?'首筆紀錄':r.gap===0?'連續出現':`隔 ${r.gap} 期`}</span></li>`).join('')}</ol>
+   <p class="muted">${item.trailingGap?`最後一次達標後，至範圍終點第${item.endPeriod}期仍有 ${item.trailingGap} 期未達標。`:`最後一次達標正好在範圍終點第${item.endPeriod}期。`}</p>
+   </details>`:`<p class="muted">這 ${item.total} 個驗證期內未有 ${item.threshold} 字以上的紀錄。</p>`;
+  return `<section class="rolling-interval-card" aria-labelledby="rolling-interval-title-${item.threshold}"><h5 id="rolling-interval-title-${item.threshold}">${item.threshold} 字以上</h5><p class="rolling-interval-average">平均相隔<strong>${item.averageGap===null?'—':`${item.averageGap.toFixed(2)} 期`}</strong></p><p>出現 ${item.count} / ${item.total} 期 · ${item.intervalCount} 個完整間隔</p><p class="muted">${calculation}</p>${records}</section>`;
+ }
+ function renderIntervals(mode){
+  const group=result.groups.find(g=>g.mode===mode),first=result.rows[0].period,last=result.rows.at(-1).period;
+  el('rolling-intervals').innerHTML=`<h4>命中間隔 · 3字以上／4字以上</h4><p>按「${esc(RollingStudy.labels[mode])}」全部 ${result.settings.periods} 個驗證期計算：第${first}–${last}期，不受明細分頁影響。</p><details class="rolling-interval-help"><summary>間隔計算說明</summary><p class="muted">沿用明細順序，由新至舊排列。每筆右側標籤顯示與上一筆達標紀錄的間隔。「以上」包含該字數及更高字數；3.5字計入3字以上，未達4字以上。相隔期數只計兩次達標之間的期數：第77期到第79期＝隔1期；相鄰兩期達標顯示「連續出現」，計算平均時當作0期。平均＝間隔期數總和 ÷ 完整間隔數，範圍頭尾未構成完整間隔的期數不計入。</p></details><div class="rolling-interval-grid">${group.intervals.map(intervalCard).join('')}</div>`;
+ }
  function render(){
   const s=result.settings,first=result.rows[0],last=result.rows.at(-1);
   el('rolling-results').innerHTML=`<div class="metric-grid"><div>每種方式驗證<strong>${s.periods} 期</strong></div><div>每次選號資料<strong>${s.end-s.start+1} 期</strong></div><div>目標號碼數<strong>${s.count} 個</strong></div><div>篩選方式<strong>${s.methods.length} 種</strong></div></div>
@@ -22,11 +35,12 @@ const RollingStudyUI=(()=>{
    <p class="muted" data-concise="1">機率以歷史命中期數 ÷ ${s.periods} 個驗證期計算。統計整個候選號碼池；.5 代表特別號。各「恰好命中」比例合共100%；「以上」包含更高命中數，彼此會重疊。歷史比例不代表下一期機率。</p>
    <h4 data-taught="1">各命中數機率 · 0 至 6.5 字</h4>${table('exact')}
    <h4 data-taught="1">累積命中機率 · 3 字以上至 6.5 字全中</h4>${table('atLeast')}
-   <details class="rolling-details"><summary>逐期驗證明細</summary><label>篩選方式 <select id="rolling-detail-method" onchange="RollingStudyUI.detail(true)">${s.methods.map(m=>`<option value="${m}">${esc(RollingStudy.labels[m])}</option>`).join('')}</select></label><div id="rolling-detail-rows"></div></details>`;
-  page=0;detail();
+   <details class="rolling-details"><summary>逐期驗證明細及命中間隔</summary><label>篩選方式 <select id="rolling-detail-method" onchange="RollingStudyUI.detail(true)">${s.methods.map(m=>`<option value="${m}">${esc(RollingStudy.labels[m])}</option>`).join('')}</select></label><div id="rolling-intervals"></div><div id="rolling-detail-rows"></div></details>`;
+  detail(true);
  }
  function detail(reset=false){
   if(!result)return;if(reset)page=0;
+  if(reset)renderIntervals(el('rolling-detail-method').value);
   const rows=result.rows.filter(r=>r.mode===el('rolling-detail-method').value),size=25,pages=Math.ceil(rows.length/size);
   page=Math.max(0,Math.min(page,pages-1));
   el('rolling-detail-rows').innerHTML=`<p class="muted">綠色為命中正選；橙色為命中特別號。</p><div class="table-scroll"><table class="results-table rolling-detail-table"><thead><tr><th>驗證期（較新一期）</th><th>選號資料範圍</th><th>候選號碼</th><th>命中</th></tr></thead><tbody>${rows.slice(page*size,(page+1)*size).map(r=>`<tr><td>第${r.period}期 · ${esc(r.draw)}<br>${esc(r.date)}<small>正選 ${r.winning.join('、')}<br>特別號 ${r.special}</small></td><td>第${r.start}–${r.end}期<small>${esc(r.trainingOldest)} 至 ${esc(r.trainingNewest)}</small></td><td><div class="rolling-balls">${r.numbers.map(n=>`<span class="rolling-ball${r.winning.includes(n)?' rolling-hit':n===r.special?' rolling-extra':''}" aria-label="${n}${r.winning.includes(n)?'，命中正選':n===r.special?'，命中特別號':''}">${n}</span>`).join('')}</div><small>共${r.numbers.length}個</small></td><td><strong>${r.score} 字</strong><small>${r.hits}正選${r.extra?'＋特別號':''}</small></td></tr>`).join('')}</tbody></table></div><div class="pager"><button onclick="RollingStudyUI.turn(-1)" ${page===0?'disabled':''}>上一頁</button><span>${page+1} / ${pages}</span><button onclick="RollingStudyUI.turn(1)" ${page===pages-1?'disabled':''}>下一頁</button></div>`;
@@ -45,6 +59,10 @@ const RollingStudyUI=(()=>{
   if(!result)return;const s=result.settings,rows=[['篩選方式','目標號碼數','實際號碼數','首次選號起點','首次選號終點','驗證期數','短期期數','冷熱排名範圍','驗證期位置','驗證期號','驗證日期','選號起點','選號終點','選號最早日期','選號最新日期','候選號碼','開獎正選','特別號','命中正選','命中特別號','命中字數'],...result.rows.map(r=>[RollingStudy.labels[r.mode],s.count,r.numbers.length,s.start,s.end,s.periods,r.mode==='blend'?s.short:'',r.mode==='cold_hot_balance'?Selection.balanceRangeText(s.balanceRanges):'',r.period,r.draw,r.date,r.start,r.end,r.trainingOldest,r.trainingNewest,r.numbers.join(' '),r.winning.join(' '),r.special,r.hits,r.extra,r.score])];
   rows.push([],['機率統計','篩選方式','條件','命中期數','驗證期數','機率']);
   for(const g of result.groups)for(const kind of ['exact','atLeast'])for(const item of g[kind])rows.push(['機率統計',RollingStudy.labels[g.mode],`${kind==='exact'?'恰好':'至少'}${item.score}字`,item.count,g.total,item.probability]);
+  rows.push([],['間隔統計（只計兩次達標之間的期數；頭尾未完整間隔不計入平均）','篩選方式','條件','驗證期數','範圍起點','範圍終點','出現期數','完整間隔數','間隔總期數','平均相隔期數','首次達標前未達標期數','最後達標後未達標期數']);
+  for(const g of result.groups)for(const item of g.intervals)rows.push(['間隔統計',RollingStudy.labels[g.mode],`${item.threshold}字以上`,item.total,item.startPeriod,item.endPeriod,item.count,item.intervalCount,item.totalGap,item.averageGap??'',item.leadingGap??'',item.trailingGap??'']);
+  rows.push([],['出現紀錄（由新至舊；首次出現的間隔留空）','篩選方式','條件','驗證期位置','驗證期號','驗證日期','命中字數','與上次達標之間相隔期數']);
+  for(const g of result.groups)for(const item of g.intervals)for(const r of item.occurrences)rows.push(['出現紀錄',RollingStudy.labels[g.mode],`${item.threshold}字以上`,r.period,r.draw,r.date,r.score,r.gap??'']);
   download('逐期驗證號碼池.csv',rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv');
  }
  document.addEventListener('DOMContentLoaded',()=>{el('rolling-settings').addEventListener('change',changed);changed();});

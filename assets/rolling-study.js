@@ -33,6 +33,20 @@ const RollingStudy=((engine,selection,pairing)=>{
   const cell=(score,count)=>({score,count,probability:total?count/total:0});
   return {total,exact:levels.map((score,i)=>cell(score,counts[i])),atLeast:thresholds.map(score=>cell(score,counts.slice(score*2).reduce((a,b)=>a+b,0)))};
  }
+ // Follow the table's period positions (newest to oldest). Only periods BETWEEN hits count.
+ function intervals(rows,threshold){
+  const ordered=[...rows].sort((a,b)=>a.period-b.period),occurrences=[];
+  for(const r of ordered){
+   if(r.score<threshold)continue;
+   const previous=occurrences.at(-1);
+   occurrences.push({period:r.period,draw:r.draw,date:r.date,score:r.score,gap:previous?r.period-previous.period-1:null});
+  }
+  const startPeriod=ordered[0]?.period??null,endPeriod=ordered.at(-1)?.period??null;
+  const count=occurrences.length,intervalCount=Math.max(0,count-1),totalGap=occurrences.reduce((sum,r)=>sum+(r.gap??0),0);
+  return {threshold,total:ordered.length,startPeriod,endPeriod,occurrences,count,intervalCount,totalGap,
+   averageGap:intervalCount?totalGap/intervalCount:null,
+   leadingGap:count?occurrences[0].period-startPeriod:null,trailingGap:count?endPeriod-occurrences.at(-1).period:null};
+ }
  async function run(data,input,{onProgress=()=>{},isCancelled=()=>false,yieldControl=()=>Promise.resolve()}={}){
   const s=settings(data,input),rows=[];
   for(let offset=0;offset<s.periods;offset++){
@@ -46,8 +60,8 @@ const RollingStudy=((engine,selection,pairing)=>{
    if(offset%5===0)await yieldControl();
   }
   if(isCancelled())throw Error('已取消逐期驗證。');
-  return {version:1,settings:s,rows,groups:s.methods.map(mode=>{const items=rows.filter(r=>r.mode===mode);return {mode,...summary(items),minSize:Math.min(...items.map(r=>r.numbers.length)),maxSize:Math.max(...items.map(r=>r.numbers.length))};})};
+  return {version:1,settings:s,rows,groups:s.methods.map(mode=>{const items=rows.filter(r=>r.mode===mode);return {mode,...summary(items),intervals:[3,4].map(threshold=>intervals(items,threshold)),minSize:Math.min(...items.map(r=>r.numbers.length)),maxSize:Math.max(...items.map(r=>r.numbers.length))};})};
  }
- return {methods,labels,levels,thresholds,settings,choose,summary,run};
+ return {methods,labels,levels,thresholds,settings,choose,summary,intervals,run};
 })(typeof module!=='undefined'?require('./core.js'):Engine,typeof module!=='undefined'?require('./selection.js'):Selection,typeof module!=='undefined'?require('./pairing.js'):Pairing);
 if(typeof module!=='undefined')module.exports=RollingStudy;
