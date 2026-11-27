@@ -80,6 +80,29 @@ const Coverage = ((engine) => {
 })(typeof module!=='undefined'?require('./core.js'):Engine);
 if(typeof module!=='undefined')module.exports=Coverage;
 
+function updateVerificationRanks(startPeriod,draw){
+ const target=document.getElementById('verification-rank-content');
+ if(!draw){target.textContent='目前沒有較新一期可顯示排名。';return;}
+ const context=typeof currentFilterContext!=='undefined'?currentFilterContext:null;
+ if(!context||context.startPeriod!==startPeriod||!Number.isInteger(context.endPeriod)||context.endPeriod<startPeriod||context.endPeriod>lotteryData.length){
+  target.textContent='請重新篩選號碼，以顯示對應範圍的排名。';return;
+ }
+ const settings=context.selectionSettings,mode=settings?.mode||context.filterMode||'rank';
+ if(mode==='blend'&&!Number.isInteger(settings?.short)){
+  target.textContent='此舊記錄未保存混合短期期數，請重新篩選以查看排名。';return;
+ }
+ try{
+  // The verification draw is deliberately outside this historical selection window.
+  const ranks=Selection.rankings(lotteryData.slice(startPeriod-1,context.endPeriod),{mode,short:settings?.short});
+  const numbers=[...draw.numbers,draw.extra_number];
+  const basis=mode==='rank_regular'?'只計正選':mode==='blend'?`長短期混合 · 短期${settings.short}期`:mode==='random'?'頻率參考（隨機選號）':mode==='rank_with_pair'?'頻率參考（排名＋搭配）':'頻率（含特別號）';
+  const tieRule='同頻時熱榜按號碼由小至大，冷榜為熱榜倒序；最冷排名＝50 − 最熱排名。';
+  target.innerHTML=`<p class="verification-rank-note" title="${tieRule}">選號第${startPeriod}–${context.endPeriod}期 · ${basis} · 冷＝50−熱</p>
+   <div class="verification-rank-scroll"><table class="verification-rank-table" aria-label="驗證期七個開獎號碼的熱冷排名"><thead><tr><th scope="col">號碼</th>${numbers.map((n,i)=>`<th scope="col"${i===6?' class="verification-rank-extra"':''} aria-label="${i===6?'特別號':'正選'} ${n}">${n}${i===6?'<small>特別號</small>':''}</th>`).join('')}</tr></thead>
+   <tbody>${[['hot','最熱排名'],['cold','最冷排名']].map(([key,label])=>`<tr><th scope="row">${label}</th>${numbers.map(n=>`<td>${ranks[key].indexOf(n)+1}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+ }catch(error){target.textContent=error.message;}
+}
+
 function updateHistoricalCoverage(startPeriod,pool,drawn=[],info=null){
  const numbers=document.getElementById('previous-period-numbers');
  const period=document.getElementById('previous-period-info');
@@ -93,5 +116,6 @@ function updateHistoricalCoverage(startPeriod,pool,drawn=[],info=null){
   period.textContent=`${draw.draw_number} · ${draw.draw_date}`;
   numbers.innerHTML=draw.numbers.map(n=>`<span class="hf-ball hf-ball--md ${pool.includes(n)?'hf-ball--primary-glow':'hf-ball--success'}" aria-label="正選 ${n}${pool.includes(n)?'，候選號碼命中':''}">${n}</span>`).join('')+`<span class="hf-separator">+</span><span class="hf-ball hf-ball--md ${pool.includes(draw.extra_number)?'hf-ball--warning-glow':'hf-ball--warning'}" aria-label="特別號 ${draw.extra_number}${pool.includes(draw.extra_number)?'，候選號碼命中':''}">${draw.extra_number}</span>`;
  }
+ updateVerificationRanks(startPeriod,verificationDraw);
  return updateSelectionOdds(pool,drawn,info,verificationDraw);
 }

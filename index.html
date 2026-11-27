@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>六合彩數據工作台</title>
-    <link rel="stylesheet" href="assets/base.css?v=20261117-prospective"><link rel="stylesheet" href="assets/ui.css?v=20261126-hit-intervals-ui21">
+    <link rel="stylesheet" href="assets/base.css?v=20261117-prospective"><link rel="stylesheet" href="assets/ui.css?v=20261127-dynamic-ranks2">
 <link rel="stylesheet" href="assets/tutorials.css?v=20261118-mode-layout">
 <link rel="stylesheet" href="assets/screen-tutorials.css?v=20261118-screen2">
 </head>
@@ -69,7 +69,7 @@
                             </div>
                             <div class="apply-buttons">
                                 <button class="apply-btn" onclick="applyRangeSelection()">🔍 應用範圍統計</button>
-                                <button class="apply-btn filter-btn" onclick="filterHighFrequencyNumbers()">🎲 篩選高頻號碼</button>
+                                <button id="filter-run" class="apply-btn filter-btn" onclick="filterHighFrequencyNumbers()">🎲 篩選高頻號碼</button>
                             </div>
                         </div>
                         
@@ -87,10 +87,10 @@
                                                 <option value="rank_regular">純排名（只計正選）</option>
                                                 <option value="blend">長短期混合（含特別號）</option>
                                                 <option value="rank_with_pair">排名＋搭配（固定總數）</option>
-                                                <option value="cold_hot_balance">冷熱平衡</option>
+                                                <option value="cold_hot_balance">自訂熱／冷排名</option>
                                                 <option value="random">純隨機</option>
                                             </select>
-                                            <select id="filter-count-select" aria-label="最終篩選號碼數" title="目標號碼總數；冷熱平衡若範圍內號碼不足，會選取全部可用號碼" class="filter-count-select-sm" onchange="updateFilterModeDescription()">
+                                            <select id="filter-count-select" aria-label="最終篩選號碼數" title="目標號碼總數；自訂熱／冷排名的總數必須相同" class="filter-count-select-sm" onchange="updateFilterModeDescription()">
 <option value="6">6個</option>
 <option value="7">7個</option>
 <option value="8">8個</option>
@@ -141,21 +141,25 @@
                                     </div>
                                     <div id="blend-controls" hidden><label for="filter-short-periods">混合短期期數</label> <input id="filter-short-periods" type="number" min="1" value="10" onchange="updateFilterModeDescription()"><p class="muted">短期使用所選範圍中最新的幾期；長期使用整個所選範圍。兩邊先按期數換算頻率，再各佔50%；短期亦包含在長期內。例如長期20／短期10，最近10期合計佔75%權重，其餘10期佔25%。</p></div>
                                     <div id="cold-hot-controls" class="cold-hot-controls" hidden>
-                                        <div class="cold-hot-range-row" role="group" aria-labelledby="hot-range-label">
-                                            <strong id="hot-range-label">最熱排名</strong>
-                                            <label>由 <input id="filter-hot-start" type="number" min="1" max="49" step="1" value="1" aria-label="最熱起始名次"></label>
-                                            <span>–</span>
-                                            <label><input id="filter-hot-end" type="number" min="1" max="49" step="1" value="25" aria-label="最熱結束名次"> 名</label>
+                                        <p id="filter-rank-transfer-status" class="rank-transfer-notice" role="status" hidden></p>
+                                        <div class="rank-range-header"><strong>排名範圍</strong><button id="filter-rank-toggle" type="button" aria-expanded="true" aria-controls="filter-rank-editor" onclick="RankRangesUI.toggle('filter')">收起</button></div>
+                                        <p id="filter-rank-collapsed" class="rank-range-collapsed" hidden></p>
+                                        <div id="filter-rank-editor" class="rank-range-editor">
+                                        <div class="rank-range-line">
+                                            <strong id="filter-hot-label">最熱排名</strong><input id="filter-hot-ranges" type="hidden" value="1-5">
+                                            <div id="filter-hot-segments" class="rank-range-segments" role="group" aria-labelledby="filter-hot-label"></div>
                                         </div>
-                                        <div class="cold-hot-range-row" role="group" aria-labelledby="cold-range-label">
-                                            <strong id="cold-range-label">最冷排名</strong>
-                                            <label>由 <input id="filter-cold-start" type="number" min="1" max="49" step="1" value="1" aria-label="最冷起始名次"></label>
-                                            <span>–</span>
-                                            <label><input id="filter-cold-end" type="number" min="1" max="49" step="1" value="24" aria-label="最冷結束名次"> 名</label>
+                                        <div class="rank-range-line">
+                                            <label id="filter-cold-label" class="cold-hot-toggle"><input id="filter-include-cold" type="checkbox" checked onchange="updateBalanceRangeFeedback()"> 最冷排名</label><input id="filter-cold-ranges" type="hidden" value="1-5">
+                                            <div id="filter-cold-segments" class="rank-range-segments" role="group" aria-labelledby="filter-cold-label"></div>
                                         </div>
-                                        <p class="muted">最熱第1名為出現最多，最冷第1名為出現最少。按所選期數計算，含特別號；同頻時熱榜按號碼由小至大，冷榜為倒序。優先兩邊各抽一半，一邊不足由另一邊補足；合共不足就選取範圍內全部號碼，重複號碼只計一次。</p>
-                                        <button type="button" onclick="filterHighFrequencyNumbers()">套用排名範圍</button>
-                                        <p id="cold-hot-error" class="error" role="alert"></p>
+                                        </div>
+                                        <div class="rank-range-footer">
+                                            <p id="filter-balance-summary" class="cold-hot-summary" role="status" aria-live="polite"></p>
+                                            <details class="rank-range-help"><summary>規則</summary><p>＋ 增加範圍，− 刪除範圍。名次限1–49，包含頭尾；總數須等於目標，熱／冷不可撞號。排名包含特別號，同頻時熱榜按號碼由小至大，冷榜為熱榜倒序。</p></details>
+                                            <button id="filter-apply-ranges" type="button" onclick="filterHighFrequencyNumbers()">套用</button>
+                                        </div>
+                                        <p id="cold-hot-error" class="cold-hot-warning" role="alert"></p>
                                     </div>
                                     <div class="hf-filter-info">
                                         <strong>篩選條件：</strong>
@@ -171,6 +175,10 @@
                                         <span id="previous-period-info" class="muted"></span>
                                         <div id="previous-period-numbers" class="hf-numbers-display" aria-live="polite"></div>
                                     </div>
+                                    <section class="hf-result-box-green verification-ranks" aria-labelledby="verification-rank-title">
+                                        <strong id="verification-rank-title">驗證號碼排名</strong>
+                                        <div id="verification-rank-content" aria-live="polite"></div>
+                                    </section>
                                     <div class="hf-result-box-green">
                                         <strong>詳細中獎概率</strong>
                                         <div id="probability-panel" class="hf-probability-panel">
@@ -328,14 +336,82 @@
                             </div>
                         </div>
                     </div>
+                    <section id="rank-occurrence-study" class="frequency-study rank-occurrence-study" aria-labelledby="rank-occurrence-title">
+                        <h3 id="rank-occurrence-title" data-taught="1">排名出現統計</h3>
+                        <p data-concise="1">逐期累加開出名次，再按出現次數排榜。例如「最熱第23名」出現最多次，就排在最熱榜第1位。</p>
+                        <form id="rank-occurrence-settings" class="frequency-controls" onsubmit="RankOccurrenceUI.run(event)">
+                            <div class="frequency-fields">
+                                <strong>統計驗證範圍</strong>
+                                <label for="rank-occurrence-validation-start">最近第 <input id="rank-occurrence-validation-start" type="number" min="1" step="1" value="1" required> 期</label>
+                                <label for="rank-occurrence-validation-end">至第 <input id="rank-occurrence-validation-end" type="number" min="1" step="1" value="100" required> 期</label>
+                                <strong id="rank-occurrence-period-count" role="status" aria-live="polite"></strong>
+                                <span class="muted">第1期＝資料最新一期</span>
+                            </div>
+                            <div class="frequency-fields rank-occurrence-options">
+                                <label for="rank-occurrence-lookback">每次排名用較舊 <input id="rank-occurrence-lookback" type="number" min="1" step="1" value="10" required> 期資料</label>
+                            </div>
+                            <div class="frequency-fields rank-occurrence-options">
+                                <label for="rank-occurrence-mode">排名依據 <select id="rank-occurrence-mode"><option value="rank">頻率（含特別號）</option><option value="rank_regular">頻率（只計正選）</option><option value="blend">長短期混合（含特別號）</option></select></label>
+                                <label for="rank-occurrence-target">統計對象 <select id="rank-occurrence-target"><option value="all">正選＋特別號</option><option value="regular">只計正選</option><option value="special">只計特別號</option></select></label>
+                                <label id="rank-occurrence-blend" for="rank-occurrence-short" hidden>混合短期 <input id="rank-occurrence-short" type="number" min="1" step="1" value="10"> 期</label>
+                            </div>
+                            <p id="rank-occurrence-window" class="muted"></p>
+                            <button id="rank-occurrence-run" type="submit">統計排名出現次數</button>
+                            <p id="rank-occurrence-error" class="cold-hot-warning" role="alert" hidden></p>
+                        </form>
+                        <p id="rank-occurrence-status" class="muted" role="status" aria-live="polite"></p>
+                        <div id="rank-occurrence-results" hidden>
+                            <div class="frequency-toolbar"><strong id="rank-occurrence-summary" aria-live="polite"></strong><button id="rank-occurrence-export" type="button" onclick="RankOccurrenceUI.exportCSV()" disabled>匯出 CSV</button></div>
+                            <p id="rank-occurrence-basis" class="muted"></p>
+                            <p id="rank-occurrence-dates" class="muted"></p>
+                            <p class="frequency-rule" data-concise="1">每期只用較舊資料計排名。兩榜按出現次數由多至少排；同次數按原名次由小至大排。冷名次＝50−熱名次。</p>
+                            <div class="rank-occurrence-transfer">
+                                <div class="frequency-fields"><label for="rank-occurrence-take-count">最熱出現榜：採用榜首 <input id="rank-occurrence-take-count" type="number" min="6" max="49" step="1" value="14" oninput="RankOccurrenceUI.transferFeedback()"> 個名次</label><label for="rank-occurrence-destination">套入位置 <select id="rank-occurrence-destination" onchange="RankOccurrenceUI.transferFeedback()"><option value="filter">揀號</option><option value="rolling">逐期驗證</option></select></label><button id="rank-occurrence-transfer" type="button" onclick="RankOccurrenceUI.applyHot()">一鍵套入揀號</button></div>
+                                <p id="rank-occurrence-transfer-preview" aria-live="polite"></p>
+                                <p id="rank-occurrence-transfer-note" class="muted"></p>
+                                <p id="rank-occurrence-transfer-error" class="cold-hot-warning" role="alert" hidden></p>
+                            </div>
+                            <div id="rank-occurrence-boards" class="rank-occurrence-boards"></div>
+                            <details><summary>逐期名次明細</summary><div id="rank-occurrence-detail" class="frequency-scroll rank-occurrence-detail" role="region" aria-label="逐期開出名次" tabindex="0"></div></details>
+                        </div>
+                    </section>
+                    <section id="frequency-study" class="frequency-study" aria-labelledby="frequency-title">
+                        <h3 id="frequency-title" data-taught="1">號碼熱／冷排名</h3>
+                        <p>查看指定期數內，全部 49 個號碼的出現次數及熱／冷名次。</p>
+                        <form class="frequency-controls" onsubmit="FrequencyStudyUI.run(event)">
+                            <div class="frequency-fields">
+                                <label for="frequency-start">最近第 <input id="frequency-start" type="number" min="1" step="1" value="1" required> 期</label>
+                                <label for="frequency-end">至第 <input id="frequency-end" type="number" min="1" step="1" value="100" required> 期</label>
+                                <label for="frequency-basis">統計 <select id="frequency-basis"><option value="all">正選＋特別號</option><option value="regular">只計正選</option></select></label>
+                                <button id="frequency-run" type="submit">更新排名</button>
+                            </div>
+                            <div class="frequency-presets" role="group" aria-label="快速選擇最近期數">
+                                <span>最近</span><button type="button" onclick="FrequencyStudyUI.preset(10)">10期</button><button type="button" onclick="FrequencyStudyUI.preset(30)">30期</button><button type="button" onclick="FrequencyStudyUI.preset(50)">50期</button><button type="button" onclick="FrequencyStudyUI.preset(100)">100期</button><button type="button" onclick="FrequencyStudyUI.preset(lotteryData.length)">全部</button>
+                                <span class="muted">第1期＝資料最新一期</span>
+                            </div>
+                            <p id="frequency-error" class="cold-hot-warning" role="alert" hidden></p>
+                        </form>
+                        <p id="frequency-status" class="muted" role="status" aria-live="polite"></p>
+                        <div id="frequency-results" hidden>
+                            <p id="frequency-summary" class="frequency-summary" aria-live="polite"></p>
+                            <p id="frequency-dates" class="muted"></p>
+                            <div class="frequency-toolbar">
+                                <label for="frequency-order">清單排序 <select id="frequency-order" onchange="FrequencyStudyUI.render()"><option value="hot">最熱第1名起</option><option value="cold">最冷第1名起</option><option value="number">號碼由小至大</option></select></label>
+                                <button id="frequency-export" type="button" onclick="FrequencyStudyUI.exportCSV()" disabled>匯出 CSV</button>
+                            </div>
+                            <p class="frequency-rule">同次數按號碼由小至大排熱榜；冷榜倒序（冷＝50−熱）。0次亦列入排名。</p>
+                            <div id="frequency-table" class="frequency-scroll" role="region" aria-label="49個號碼熱冷排名清單" tabindex="0"></div>
+                        </div>
+                    </section>
                     <section id="rolling-study" class="rolling-study" aria-labelledby="rolling-title">
                         <h3 id="rolling-title" data-taught="1">逐期驗證</h3>
                         <p data-concise="1">用指定期數範圍選出候選號碼，核對緊接較新一期，再逐期往舊推，統計每種篩選方式的歷史命中比例。</p>
                         <fieldset id="rolling-settings">
                             <legend>選號及驗證設定</legend>
+                            <p><button id="rolling-dynamic-preset" type="button" onclick="RollingStudyUI.useDynamicRanks()">設定100期動態驗證（16個號碼）</button></p>
                             <div class="rolling-settings-grid">
-                                <label>首次選號：最近第幾期起<input id="rolling-start" type="number" min="2" step="1" value="2"></label>
-                                <label>首次選號：最近第幾期止<input id="rolling-end" type="number" min="2" step="1" value="101"></label>
+                                <label>首次資料：最近第幾期起<input id="rolling-start" type="number" min="2" step="1" value="2"></label>
+                                <label>首次資料：最近第幾期止<input id="rolling-end" type="number" min="2" step="1" value="101"></label>
                                 <label>每次目標號碼數<input id="rolling-count" type="number" min="6" max="49" step="1" value="14"></label>
                                 <label>逐期驗證幾期<input id="rolling-periods" type="number" min="1" step="1" value="100"></label>
                             </div>
@@ -347,16 +423,39 @@
                                 <label><input id="rolling-method-rank_regular" type="checkbox" checked> 純排名（只計正選）</label>
                                 <label><input id="rolling-method-blend" type="checkbox" checked> 長短期混合</label>
                                 <label><input id="rolling-method-rank_with_pair" type="checkbox" checked> 排名＋搭配</label>
-                                <label><input id="rolling-method-cold_hot_balance" type="checkbox" checked> 冷熱平衡</label>
+                                <label><input id="rolling-method-cold_hot_balance" type="checkbox" checked> 自訂熱／冷排名</label>
+                                <label><input id="rolling-method-rank_occurrence" type="checkbox"> 動態排名（每期重選名次）</label>
                                 <label><input id="rolling-method-random" type="checkbox" checked> 純隨機</label>
                             </fieldset>
+                            <div id="rolling-dynamic-controls" class="rolling-option" hidden>
+                                <label>每次號碼排名用較舊 <input id="rolling-rank-lookback" type="number" min="1" step="1" value="100"> 期</label>
+                                <p id="rolling-dynamic-note" class="muted" aria-live="polite"></p>
+                                <details class="rank-range-help"><summary>每期如何重選名次</summary><p>上方「首次資料」是用來學習名次的開獎期範圍。每個學習期先用它之前的資料計號碼排名，再累加正選及特別號開出的熱名次，取出現次數最高的指定數量名次；同次數按名次由小至大。最後用驗證期之前的資料重新排號碼，按本期選出的名次揀號。每驗證一期，兩層資料都往舊推一期，驗證期及較新資料不會參與該期選號。</p></details>
+                                <p id="rolling-dynamic-error" class="cold-hot-warning" role="alert" hidden></p>
+                            </div>
                             <div id="rolling-blend-controls" class="rolling-option"><label>混合短期期數 <input id="rolling-short" type="number" min="1" step="1" value="10"></label><p class="muted">使用所選範圍中最新幾期，與整個範圍各佔50%權重。</p></div>
                             <div id="rolling-balance-controls" class="cold-hot-controls">
-                                <div class="cold-hot-range-row" role="group" aria-label="研究最熱排名範圍"><strong>最熱排名</strong><label>由 <input id="rolling-hot-start" aria-label="研究最熱起始名次" type="number" min="1" max="49" step="1" value="1"></label><span>–</span><label><input id="rolling-hot-end" aria-label="研究最熱結束名次" type="number" min="1" max="49" step="1" value="25"> 名</label></div>
-                                <div class="cold-hot-range-row" role="group" aria-label="研究最冷排名範圍"><strong>最冷排名</strong><label>由 <input id="rolling-cold-start" aria-label="研究最冷起始名次" type="number" min="1" max="49" step="1" value="1"></label><span>–</span><label><input id="rolling-cold-end" aria-label="研究最冷結束名次" type="number" min="1" max="49" step="1" value="24"> 名</label></div>
-                                <p class="muted" data-concise="1">最熱／最冷第1名分別為出現最多／最少。優先兩邊各抽一半，一邊不足由另一邊補足；合共不足就取範圍內全部號碼，重複只計一次。</p>
+                                <p id="rolling-rank-transfer-status" class="rank-transfer-notice" role="status" hidden></p>
+                                <div class="rank-range-header"><strong>排名範圍</strong><button id="rolling-rank-toggle" type="button" aria-expanded="true" aria-controls="rolling-rank-editor" onclick="RankRangesUI.toggle('rolling')">收起</button></div>
+                                <p id="rolling-rank-collapsed" class="rank-range-collapsed" hidden></p>
+                                <div id="rolling-rank-editor" class="rank-range-editor">
+                                <div class="rank-range-line">
+                                    <strong id="rolling-hot-label">最熱排名</strong><input id="rolling-hot-ranges" type="hidden" value="1-7">
+                                    <div id="rolling-hot-segments" class="rank-range-segments" role="group" aria-labelledby="rolling-hot-label"></div>
+                                </div>
+                                <div class="rank-range-line">
+                                    <label id="rolling-cold-label" class="cold-hot-toggle"><input id="rolling-include-cold" type="checkbox" checked> 最冷排名</label><input id="rolling-cold-ranges" type="hidden" value="1-7">
+                                    <div id="rolling-cold-segments" class="rank-range-segments" role="group" aria-labelledby="rolling-cold-label"></div>
+                                </div>
+                                </div>
+                                <div class="rank-range-footer">
+                                    <p id="rolling-balance-summary" class="cold-hot-summary" role="status" aria-live="polite"></p>
+                                    <details class="rank-range-help"><summary>規則</summary><p>＋ 增加範圍，− 刪除範圍。名次限1–49，包含頭尾；總數須等於目標，熱／冷不可撞號。排名包含特別號，同頻時熱榜按號碼由小至大，冷榜為熱榜倒序。</p></details>
+                                    
+                                </div>
+                                <p id="rolling-balance-error" class="cold-hot-warning" role="alert" hidden></p>
                             </div>
-                            <p class="muted" data-concise="1">除「只計正選」外，排名均包含特別號。同頻時熱榜按號碼由小至大，冷熱平衡的冷榜為熱榜倒序。隨機及冷熱平衡每期抽一次，相同資料及設定可重現結果。</p>
+                            <details class="rank-range-help"><summary>排名及隨機規則</summary><p>除「只計正選」外，排名均包含特別號。最熱／最冷第1名分別為出現最多／最少。同頻時熱榜按號碼由小至大，冷榜為熱榜倒序；最冷排名＝50 − 最熱排名。純隨機每期抽一次；相同資料及設定可重現結果。</p></details>
                         </fieldset>
                         <div class="search-row"><button id="rolling-run" onclick="RollingStudyUI.run()">開始逐期驗證</button><button id="rolling-cancel" onclick="RollingStudyUI.cancel()" hidden>取消</button><button id="rolling-export" onclick="RollingStudyUI.exportCSV()" disabled>匯出明細、機率及間隔 CSV</button></div>
                         <p id="rolling-status" role="status" aria-live="polite"></p>
@@ -722,35 +821,40 @@
         </div>
     </div>
 
-    <script src="assets/draws.js?v=20261118-draw-26-1232"></script>
-<script src="assets/core.js?v=20261125-third-prize1"></script>
-<script src="assets/coverage.js?v=20261123-pool-hit-odds1"></script>
-<script src="assets/selection-cover.js?v=20261123-odds1"></script>
-<script src="assets/selection-odds.js?v=20261124-repeat-banker-odds1"></script>
-<script src="assets/selection-odds-ui.js?v=20261124-repeat-banker-odds1"></script>
-<script src="assets/pairing.js?v=20261117-prospective1"></script>
-<script src="assets/selection.js?v=20261125-flexible-cold-hot1"></script>
-<script src="assets/forecast.js?v=20261125-cold-hot-ranges1"></script>
-<script src="assets/storage.js?v=20261125-flexible-cold-hot1"></script>
-<script src="assets/app.js?v=20261125-cold-hot-ranges1"></script>
-<script src="assets/statistics.js?v=20261125-pool-study1"></script>
-<script src="assets/mandel-engine.js?v=20261117-prospective1"></script>
-<script src="assets/mandel.js?v=20261118-budget1"></script>
-<script src="assets/ui.js?v=20261125-pool-study2"></script>
-<script src="assets/pairing-ui.js?v=20261125-pool-study1"></script>
-<script src="assets/selection-ui.js?v=20261125-pool-study1"></script>
-<script src="assets/research-build.js?v=20261118-blend-tie-fix1"></script>
-<script src="assets/research.js?v=20261117-prospective1"></script>
-<script src="assets/research-ui.js?v=20261125-pool-study1"></script>
-<script src="assets/cover-templates.js?v=20261118-budget1"></script>
-<script src="assets/budget.js?v=20261118-rolling491"></script>
-<script src="assets/pool-comparison.js?v=20261118-rolling491"></script>
-<script src="assets/ticket-research.js?v=20261118-pool201"></script>
-<script src="assets/ticket-build.js?v=20261118-rolling491"></script>
-<script src="assets/rolling-study.js?v=20261126-hit-intervals1"></script>
-<script src="assets/rolling-study-ui.js?v=20261126-hit-intervals-ui3"></script>
-<script src="assets/tutorials.js?v=20261118-rolling491"></script>
-<script src="assets/ux-navigation.js?v=20261125-pool-study1"></script>
-<script src="assets/screen-tutorials.js?v=20261125-pool-study1"></script>
+    <script src="assets/draws.js?v=20261118-draw-26-166"></script>
+<script src="assets/core.js?v=20261125-third-prize166"></script>
+<script src="assets/coverage.js?v=20261127-reverse-ranks266"></script>
+<script src="assets/selection-cover.js?v=20261123-odds166"></script>
+<script src="assets/selection-odds.js?v=20261127-selection-audit166"></script>
+<script src="assets/selection-odds-ui.js?v=20261127-selection-audit166"></script>
+<script src="assets/pairing.js?v=20261117-prospective166"></script>
+<script src="assets/selection.js?v=20261127-rank-transfer166"></script>
+<script src="assets/rank-ranges-ui.js?v=20261127-rank-collapse266"></script>
+<script src="assets/forecast.js?v=20261127-shared-rank-ranges66"></script>
+<script src="assets/storage.js?v=20261127-rank-period-range66"></script>
+<script src="assets/app.js?v=20261127-shared-rank-ranges66"></script>
+<script src="assets/statistics.js?v=20261127-selection-audit166"></script>
+<script src="assets/mandel-engine.js?v=20261117-prospective166"></script>
+<script src="assets/mandel.js?v=20261118-budget166"></script>
+<script src="assets/ui.js?v=20261125-pool-study266"></script>
+<script src="assets/pairing-ui.js?v=20261125-pool-study166"></script>
+<script src="assets/selection-ui.js?v=20261125-pool-study166"></script>
+<script src="assets/research-build.js?v=20261118-blend-tie-fix166"></script>
+<script src="assets/research.js?v=20261117-prospective166"></script>
+<script src="assets/research-ui.js?v=20261125-pool-study166"></script>
+<script src="assets/cover-templates.js?v=20261118-budget166"></script>
+<script src="assets/budget.js?v=20261118-rolling491166"></script>
+<script src="assets/pool-comparison.js?v=20261118-rolling491166"></script>
+<script src="assets/ticket-research.js?v=20261118-pool201166"></script>
+<script src="assets/ticket-build.js?v=20261118-rolling491166"></script>
+<script src="assets/rank-occurrence.js?v=20261127-dynamic-ranks166"></script>
+<script src="assets/rolling-study.js?v=20261127-dynamic-ranks166"></script>
+<script src="assets/rolling-study-ui.js?v=20261127-dynamic-ranks266"></script>
+<script src="assets/frequency-study.js?v=20261127-frequency-list166"></script>
+<script src="assets/frequency-study-ui.js?v=20261127-frequency-list166"></script>
+<script src="assets/rank-occurrence-ui.js?v=20261127-selection-audit166"></script>
+<script src="assets/tutorials.js?v=20261118-rolling491166"></script>
+<script src="assets/ux-navigation.js?v=20261127-rank-collapse266"></script>
+<script src="assets/screen-tutorials.js?v=20261125-pool-study166"></script>
 </body>
 </html> 

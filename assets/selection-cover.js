@@ -3,7 +3,7 @@ const SelectionCover = ((engine)=>{
  function pick(pool,size,random){const a=[...pool];for(let i=0;i<size;i++){const j=i+Math.floor(random()*(a.length-i));[a[i],a[j]]=[a[j],a[i]];}return a.slice(0,size).sort((a,b)=>a-b);}
  function triples(a){const out=[];for(let i=0;i<a.length-2;i++)for(let j=i+1;j<a.length-1;j++)for(let k=j+1;k<a.length;k++)out.push((a[i]*50+a[j])*50+a[k]);return out;}
  function generate(pool,size,count,random=Math.random){
-  if(!engine.validNumbers(pool,6,49)||!Number.isInteger(size)||size<6||size>15||size>pool.length||!Number.isInteger(count)||count<1||count>10)throw Error('請選擇有效碼數及1–10注。');
+  if(!engine.validNumbers(pool,6,49)||!Number.isInteger(size)||size<6||size>15||size>pool.length||!Number.isInteger(count)||count<1||count>30)throw Error('請選擇有效碼數及1–30注。');
   const maximum=engine.choose(pool.length,size);
   if(count>maximum)throw Error(`目前 ${pool.length} 碼只能排 ${maximum} 注不同的 ${size} 碼組合；請減少注數或增加候選號碼。`);
   const covered=new Set(),seen=new Set(),uses=Array(50).fill(0),bets=[];

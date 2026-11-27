@@ -14,9 +14,50 @@
         /** 排名模式專用：false = 頻率前 N 名，true = 頻率最低 N 個（固定總數） */
         let rankShowColdComplement = false;
 
-        const balanceControlIds={hotStart:'filter-hot-start',hotEnd:'filter-hot-end',coldStart:'filter-cold-start',coldEnd:'filter-cold-end'};
-        function readBalanceRanges(){return Object.fromEntries(Object.entries(balanceControlIds).map(([key,id])=>[key,Number(document.getElementById(id).value)]));}
-        function restoreBalanceRanges(ranges){for(const [key,id] of Object.entries(balanceControlIds))document.getElementById(id).value=String(ranges[key]);}
+        function readBalanceRanges(){return {hot:document.getElementById('filter-hot-ranges').value.trim(),cold:document.getElementById('filter-cold-ranges').value.trim(),includeCold:document.getElementById('filter-include-cold').checked};}
+        function restoreBalanceRanges(ranges){
+            const r=Selection.normalizeRanges(ranges);
+            document.getElementById('filter-hot-ranges').value=r.hot;
+            document.getElementById('filter-cold-ranges').value=r.cold;
+            document.getElementById('filter-include-cold').checked=r.includeCold;
+            updateBalanceRangeFeedback();
+        }
+        function applyStudyHotRanks(transfer){
+            const ranks=Selection.parseRanks(transfer.hot,'最熱');
+            if(!Number.isInteger(transfer.count)||transfer.count<6||transfer.count>49||ranks.length!==transfer.count)throw Error('套入名次總數須與目標號碼數相同（6–49個）。');
+            document.getElementById('filter-mode-select').value='cold_hot_balance';
+            document.getElementById('filter-count-select').value=String(transfer.count);
+            document.getElementById('filter-hot-ranges').value=transfer.hot;
+            document.getElementById('filter-include-cold').checked=false;
+            document.getElementById('high-frequency-result').style.display='block';
+            updateFilterModeDescription(false);
+            const notice=document.getElementById('filter-rank-transfer-status');
+            notice.textContent=`已套入出現次數榜首 ${transfer.count} 個最熱名次，目標 ${transfer.count} 個，最冷已關閉。沿用揀號目前期數；按「套用」更新篩選結果。`;
+            notice.hidden=false;
+            switchTab('statistics');
+            document.getElementById('cold-hot-controls').scrollIntoView({block:'center'});
+            saveWorkspace();
+        }
+        function updateBalanceRangeFeedback(){
+            const active=document.getElementById('filter-mode-select').value==='cold_hot_balance';
+            const ranges=readBalanceRanges(),count=Number(document.getElementById('filter-count-select').value);
+            const start=Number(document.getElementById('start-period').value),end=Number(document.getElementById('end-period').value);
+            const validWindow=Number.isInteger(start)&&Number.isInteger(end)&&start>=1&&end>=start&&end<=lotteryData.length;
+            RankRangesUI.sync('filter');
+            document.getElementById('filter-balance-summary').textContent='';
+            let warning='';
+            if(active){
+                try{
+                    const details=Selection.rangeDetails(ranges,count,validWindow?lotteryData.slice(start-1,end):[]);
+                    document.getElementById('filter-balance-summary').textContent=`熱 ${details.hotRanks.length}＋冷 ${details.coldRanks.length}＝${details.total} / ${count} 個`;
+                    warning=details.errors.join(' ');
+                }catch(error){warning=error.message;}
+            }
+            document.getElementById('cold-hot-error').textContent=warning?'警告：'+warning:'';
+            document.getElementById('filter-run').disabled=!!warning||!validWindow;
+            document.getElementById('filter-apply-ranges').disabled=!!warning||!validWindow;
+            return !warning;
+        }
 
         function fixedSelectionDraw(){return document.getElementById('draw-repeat-switch')?.checked===true;}
         function selectionDrawKey(){
@@ -142,6 +183,9 @@
                 return;
             }
 
+            if(!updateBalanceRangeFeedback())return;
+            const transferNotice=document.getElementById('filter-rank-transfer-status');
+            if(transferNotice){transferNotice.textContent='';transferNotice.hidden=true;}
             updateStatsWithRange(startPeriod,endPeriod);
 
             // 取得篩選模式
@@ -212,8 +256,7 @@
                 modeDescription = `固定 ${filterCount} 碼（核心 ${result.cores.length}／搭配加入 ${result.added.length}／排名補足 ${result.fallback.length}）`;
             } else if (filterMode === 'cold_hot_balance') {
                 currentFilteredNumbers = balancedResult.numbers;
-                modeDescription = `冷熱平衡 · ${Selection.balanceRangeText(balanceRanges)} · 熱門${balancedResult.hot.length}個＋冷門${balancedResult.cold.length}個`;
-                if(currentFilteredNumbers.length<filterCount)modeDescription+=` · 目標${filterCount}個，範圍內共${currentFilteredNumbers.length}個不同號碼，已全部選取`;
+                modeDescription = `自訂熱／冷排名 · ${Selection.balanceRangeText(balanceRanges)} · 熱門${balancedResult.hot.length}個＋冷門${balancedResult.cold.length}個`;
             }
 
             const scoringFreq=Selection.frequencies(selectedData,filterMode!=='rank_regular');
@@ -578,7 +621,7 @@
                     });
                     displayHtml += '</div>';
                     const mandelBetsForInfo = mandelBets.map(b => ({ numbers: b }));
-                    displayHtml += buildMandelPrizeSummaryHtml(mandelBetsForInfo, Number(document.getElementById('start-period').value), {});
+                    displayHtml += buildMandelPrizeSummaryHtml(mandelBetsForInfo, currentFilterContext?.startPeriod, {});
                     displayHtml += `<div class="five-banker-stats">`;
                     displayHtml += `📊 全買 C(${n},6) = ${fullBuy} 注 | 濃縮: ${mandelBets.length} 注 | 節省: ${saving}%<br>`;
                     displayHtml += `💰 成本: $${totalCost.toLocaleString()}`;

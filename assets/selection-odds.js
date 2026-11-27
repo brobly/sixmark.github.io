@@ -11,7 +11,7 @@ const SelectionOdds = ((engine) => {
    states.push({regular,extra,probability:p*(extra?count-regular:43-count+regular)/43});
   }
   return {count,states,hit3:states.filter(s=>s.regular>=3).reduce((a,s)=>a+s.probability,0),
-   hit4:states.filter(s=>s.regular+s.extra>=4).reduce((a,s)=>a+s.probability,0),
+   hit4:states.filter(s=>s.regular>=4).reduce((a,s)=>a+s.probability,0),
    all7:states.find(s=>s.regular===6&&s.extra===1).probability};
  }
  function groups(bet) {

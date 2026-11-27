@@ -246,10 +246,10 @@
             countSelect.style.opacity = '1';
             document.getElementById('blend-controls').hidden=mode!=='blend';
             document.getElementById('cold-hot-controls').hidden=mode!=='cold_hot_balance';
-            document.getElementById('cold-hot-error').textContent='';
+            const validRanks=updateBalanceRangeFeedback();
 
             updateRankColdToggleUI();
-            if(refresh && document.getElementById('high-frequency-result').style.display === 'block') filterHighFrequencyNumbers();
+            if(refresh && validRanks && document.getElementById('high-frequency-result').style.display === 'block') filterHighFrequencyNumbers();
         }
 
         /** 歷史覆蓋分析區：收起 / 展開（偏好存於 localStorage） */
@@ -303,6 +303,7 @@
                 applyBtn.disabled = false;
                 applyBtn.textContent = '🔍 應用範圍統計';
             }
+            updateBalanceRangeFeedback();
         }
 
         /** 單期開獎：六個正選（排序）+ 特別號，依排名號碼高亮球色 */

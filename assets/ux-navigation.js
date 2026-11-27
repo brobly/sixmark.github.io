@@ -8,7 +8,20 @@ document.addEventListener('DOMContentLoaded',()=>{
  nav.innerHTML='';for(const [id,title] of sections){const b=document.createElement('button');b.className='tab-button';b.dataset.pane=id;b.textContent=title;b.onclick=()=>switchTab(id);nav.append(b);}
  $('arrange').replaceChildren();
  $('studies').querySelector('h2').dataset.taught='1';
- $('studies').append($('rolling-study'));
+ const studyNav=document.createElement('div');studyNav.className='study-navigation';studyNav.setAttribute('role','group');studyNav.setAttribute('aria-label','研究項目');
+ const studyPanels=[['rank-occurrence-study','排名出現統計'],['frequency-study','號碼熱／冷排名'],['rolling-study','逐期驗證']];
+ window.showStudyPanel=id=>{
+  if(!studyPanels.some(([panel])=>panel===id))return;
+  switchTab('studies');
+  for(const [panel] of studyPanels)$(panel).hidden=panel!==id;
+  for(const button of studyNav.children)button.setAttribute('aria-pressed',String(button.getAttribute('aria-controls')===id));
+ };
+ for(const [id,title] of studyPanels){
+  const b=document.createElement('button');b.type='button';b.textContent=title;b.setAttribute('aria-controls',id);b.setAttribute('aria-pressed',String(id==='rank-occurrence-study'));
+  b.onclick=()=>showStudyPanel(id);
+  studyNav.append(b);$(id).hidden=id!=='rank-occurrence-study';
+ }
+ $('studies').append(studyNav,...studyPanels.map(([id])=>$(id)));
  const tools=document.querySelector('.workspace-tools');if(tools)$('records').append(tools);
  const saved=$('saved-sets')?.closest('details');if(saved)$('records').append(saved);
  // Keep the list beside its heading, clear button and frequency summary on the selection page.
